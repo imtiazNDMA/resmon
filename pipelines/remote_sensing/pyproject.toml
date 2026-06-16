@@ -3,7 +3,7 @@ name = "remote-sensing"
 version = "0.1.0"
 description = "Remote-sensing pipeline (SAR water extraction → Observation)"
 requires-python = ">=3.13"
-dependencies = ["core", "pipelines-common"]
+dependencies = ["core", "pipelines-common", "numpy>=1.26", "scikit-learn>=1.5"]
 
 [tool.uv.sources]
 core = { workspace = true }

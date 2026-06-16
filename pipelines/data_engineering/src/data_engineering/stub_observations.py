@@ -31,7 +31,7 @@ _STUB_INSERT = text(
       '{}'::jsonb
     FROM ground_truth gt
     JOIN reservoir r ON r.reservoir_id = gt.reservoir_id
-    WHERE gt.row_quality <> 'quarantine'
+    WHERE gt.row_quality <> 'quarantine' AND gt.pct_filled IS NOT NULL
     ON CONFLICT (reservoir_id, acquisition_date) DO UPDATE
       SET surface_area = EXCLUDED.surface_area
     """

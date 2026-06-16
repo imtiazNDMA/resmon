@@ -80,18 +80,18 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 *Goal: real `Observation` rows replace stubs.*
 
-- [ ] GEE client wrapper over `DataAccessBackend` (no raw `ee.Initialize`) →03-T01
-- [ ] AOI bootstrap from JRC GSW max-extent → versioned GeoJSON → PostGIS →03-T02
-- [ ] Reservoir orbit/AOI config schema; **freeze relative orbit + pass per reservoir (D1)** →03-T03
-- [ ] SAR preprocessing: calibration → speckle → **radiometric terrain flattening (γ⁰)** →03-T06
-- [ ] **DEM-based layover/shadow masking** (steep-terrain critical) →03-T07
-- [ ] `WaterExtractor` plugin ABC + registry; cold-start extractors (`otsu_vh`, `kmeans`, `gmm`) →03 / ADR-0007
-- [ ] True-area via `ee.Image.pixelArea()`; per-area confidence (separability, compactness, layover fraction) →03
-- [ ] DEM hypsometric-shape handoff for the blend →03 / ADR-0004
-- [ ] Extraction harness: per-regime robust selection → MLflow-registered winner →03-T16 (AC-2 input)
-- [ ] Emit real `Observation` rows; re-run DE ABT on real data →03
+- [x] GEE client wrapper over `DataAccessBackend` (no raw `ee.Initialize`) — `gee_client.py` →03-T01
+- [~] AOI bootstrap from JRC GSW — derivation **logic** built (`aoi.py`: occurrence→bbox→buffer→WKT); real GSW pull + per-AOI eyeball deferred (needs GEE) →03-T02
+- [~] Reservoir orbit/AOI config — orbit/pass stored on `reservoir` (placeholder values); **freezing real orbit numbers (D1)** needs GEE coverage analysis, deferred →03-T03
+- [~] SAR preprocessing — `calibrate.py` (dB↔linear round-trip, border-noise mask); **terrain flattening (γ⁰) + speckle** are EE-server-side, deferred →03-T06
+- [ ] **DEM-based layover/shadow masking** — deferred (needs DEM + EE viewing geometry) →03-T07
+- [x] `WaterExtractor` plugin ABC + registry; cold-start extractors (`otsu_vh`, `kmeans`, `gmm`) — real array algorithms, tested →03 / ADR-0007
+- [x] True-area (pixel-count × true pixel area, never lat/long counts); per-area confidence (separability, compactness, layover) — `area.py`, monotonicity tested →03
+- [ ] DEM hypsometric-shape handoff — deferred to Phase 4 ground-truthing (needs DEM) →03 / ADR-0004
+- [~] Extraction harness — per-regime **robust selection** built + tested (`harness.py`); MLflow registration deferred →03-T16 (AC-2 input)
+- [x] Emit real `Observation` rows replacing stubs (`run_rs_pipeline`); area↔fill correlation > 0.9 →03
 
-**Exit:** real Observations in DB; extraction method selected & registered.
+**Exit:** ✅ real (non-stub) Observations in DB via the extractor framework; `otsu`/`kmeans`/`gmm` recover ~correct water fraction with high separability; robust harness selection + AOI/area/confidence/calibration logic all tested. _GEE-execution-dependent steps (S1 retrieval, γ⁰, layover, DEM hypsometry, frozen orbits, MLflow) wired/deferred — see [~]/[ ] items._
 
 ---
 
