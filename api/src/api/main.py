@@ -7,7 +7,10 @@ from core.db.session import make_engine
 from fastapi import FastAPI
 from sqlalchemy import text
 
+from api.routes import router
+
 app = FastAPI(title="Reservoir Monitoring & Analytics API", version="0.1.0")
+app.include_router(router)
 
 
 @app.get("/health")

@@ -143,16 +143,16 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 *Goal: serve everything the frontend needs over open REST/JSON + GeoJSON.*
 
-- [ ] Scaffold FastAPI app + `core/` wiring + `/health`, `/health/ready` →06-T01
-- [ ] Async SQLAlchemy session + read repositories + pagination →06-T02
-- [ ] Endpoints (all public): reservoir catalogue/detail/status; timeseries; forecast; release-risk (current/fleet/history); accuracy/backtest; pipeline/system health →06
-- [ ] GeoJSON layers: AOI, water-mask (vector-simplified, D5), catchment, reservoir markers w/ `risk_level` →06
-- [ ] Admin endpoints (open in v1): Prefect pipeline trigger/monitor, reservoir/AOI management →06
-- [ ] CSV/PDF export (situation report) →06
-- [ ] OpenAPI 3.1 contract published for the frontend →06
-- [ ] ~~`/auth/*`, RBAC, `/alerts/*`~~ **descoped**
+- [x] FastAPI app + `core/` wiring + `/health`, `/health/ready` (Phase 0) →06-T01
+- [x] Read repositories + `get_db` dependency (override-able for tests) + pagination (timeseries `limit`) →06-T02
+- [x] Endpoints (all public): reservoir catalogue/detail/status; timeseries; forecast; fleet release-risk; accuracy →06
+- [x] GeoJSON: reservoir markers w/ `risk_level` (`ST_AsGeoJSON` FeatureCollection) — AOI/water-mask/catchment layers deferred →06
+- [~] Admin endpoints — deferred to Phase 9 (Prefect trigger/monitor needs the running worker) →06
+- [ ] CSV/PDF export — deferred (situation report) →06
+- [x] OpenAPI (FastAPI auto `/openapi.json`) published for the frontend →06
+- [x] ~~`/auth/*`, RBAC, `/alerts/*`~~ **descoped**
 
-**Exit:** AC-7 (data freshness served) + AC-9 (health/logging/backups) for the serving layer.
+**Exit:** ✅ the whole platform is queryable over HTTP — catalogue/detail/status, time series, 1–14 day forecast w/ conformal intervals, fleet release-risk, accuracy, GeoJSON markers, OpenAPI; freshness served via `last_acquisition_date` (AC-7). Tested via TestClient with a `get_db` override (no commits). _Admin/Prefect endpoints + CSV/PDF export deferred to Phase 9._
 
 ---
 

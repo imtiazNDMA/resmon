@@ -37,6 +37,7 @@ dev = [
     "mypy>=1.11",
     "pytest>=8",
     "pytest-cov",
+    "httpx>=0.27",
 ]
 
 # ---- Tooling config (applies to all workspace members) ----
@@ -48,6 +49,10 @@ extend-exclude = ["pipelines/build_unified_dataset.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI uses these call results as argument defaults by design.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
 
 [tool.mypy]
 python_version = "3.13"
