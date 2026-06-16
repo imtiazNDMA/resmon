@@ -17,10 +17,10 @@ export function ForecastChart({ forecast }: { forecast: Forecast | null }) {
   }
   const data = forecast.points.map((p) => ({
     date: p.horizon_date,
-    predicted: Number(p.predicted_pct_filled.toFixed(1)),
-    low: Number(p.interval_low.toFixed(1)),
-    high: Number(p.interval_high.toFixed(1)),
-    band: [Number(p.interval_low.toFixed(1)), Number(p.interval_high.toFixed(1))],
+    predicted: Number(p.predicted_pct_filled),
+    low: Number(p.interval_low),
+    high: Number(p.interval_high),
+    band: [Number(p.interval_low), Number(p.interval_high)],
   }));
   return (
     <ResponsiveContainer width="100%" height={220}>

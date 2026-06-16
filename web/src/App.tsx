@@ -14,6 +14,11 @@ import {
   type TimeseriesPoint,
 } from "./types";
 
+// Coerce defensively: Postgres `numeric` may arrive as a string ("512.000"); make it a
+// number before formatting so the UI never crashes on `.toFixed`.
+const fx = (v: number | string | null | undefined, digits = 1): string =>
+  v == null || Number.isNaN(Number(v)) ? "—" : Number(v).toFixed(digits);
+
 function RiskBadge({ level }: { level: RiskLevel | null }) {
   const lvl = level ?? "Low";
   return (
@@ -108,28 +113,26 @@ export default function App() {
               </div>
 
               <div className="kpis">
-                <Kpi label="fill" value={status ? `${status.pct_filled.toFixed(1)}%` : "…"} />
+                <Kpi label="fill" value={status ? `${fx(status.pct_filled, 1)}%` : "…"} />
                 <Kpi
                   label="level vs FRL"
                   value={
                     status?.level_m != null
-                      ? `${status.level_m.toFixed(1)} / ${selectedReservoir.frl_m.toFixed(0)} m`
+                      ? `${fx(status.level_m, 1)} / ${fx(selectedReservoir.frl_m, 0)} m`
                       : "…"
                   }
                 />
                 <Kpi
                   label="storage"
                   value={
-                    status?.live_storage_bcm != null
-                      ? `${status.live_storage_bcm.toFixed(2)} BCM`
-                      : "…"
+                    status?.live_storage_bcm != null ? `${fx(status.live_storage_bcm, 2)} BCM` : "…"
                   }
                 />
                 <Kpi
                   label="release prob · lead"
                   value={
                     status?.release_probability != null
-                      ? `${(status.release_probability * 100).toFixed(0)}% · ${
+                      ? `${fx(Number(status.release_probability) * 100, 0)}% · ${
                           status.estimated_lead_time_days ?? "—"
                         }d`
                       : "…"

@@ -15,8 +15,8 @@ export function TrendChart({ points }: { points: TimeseriesPoint[] }) {
   if (points.length === 0) return <p className="muted">No history.</p>;
   const data = points.map((p) => ({
     date: p.date,
-    fill: Number(p.pct_filled.toFixed(1)),
-    normal: p.normal_storage_pct == null ? null : Number(p.normal_storage_pct.toFixed(1)),
+    fill: Number(p.pct_filled),
+    normal: p.normal_storage_pct == null ? null : Number(p.normal_storage_pct),
   }));
   return (
     <ResponsiveContainer width="100%" height={220}>
