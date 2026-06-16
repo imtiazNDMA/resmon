@@ -1,0 +1,29 @@
+# Prod overlay: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up`.
+# Restart policies + resource limits; no source mounts; proxy terminates real TLS.
+
+services:
+  postgres:
+    restart: unless-stopped
+
+  mlflow:
+    restart: unless-stopped
+
+  prefect-server:
+    restart: unless-stopped
+
+  prefect-worker:
+    restart: unless-stopped
+
+  api:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  web:
+    restart: unless-stopped
+
+  proxy:
+    restart: unless-stopped

@@ -16,18 +16,20 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 *Goal: one-command bring-up, migrated schema, green CI. Unblocks everything.*
 
-- [ ] Scaffold monorepo + `uv` workspace; `core/`, `db/`, `pipelines/`, `orchestration/`, `api/`, `web/`, `infra/`, `tests/` →01-T01
-- [ ] `.gitattributes` LF enforcement + go-task/POSIX scripts (Windows host, run inside containers) →01
-- [ ] Shared multi-stage `uv` Python base image →01-T05
-- [ ] `docker-compose` (base/dev/prod): `postgres`+PostGIS, `mlflow`, `prefect-server`, `prefect-worker`, `api`, `web`, `pipeline-worker`, `proxy` (Caddy) →01-T10 (AC-8)
-- [ ] `.env.example` + file-mounted secrets convention; wire `geeservice.json` as `GEE_SA_KEY_FILE` →01
-- [ ] `DataAccessBackend` ABC + `GEEBackend` + `FixtureBackend` (the swappable GEE seam) →01-T12
-- [ ] `core/` SQLAlchemy 2.x models + Pydantic v2 schemas mirroring the frozen contract →02-T01
-- [ ] Alembic baseline migration →02
-- [ ] Contract tests: `Observation`/`ABT`/`ForecastForcing` schema matches `contract_version` →01/02
-- [ ] CI skeleton: ruff + mypy + lockfile check + pytest on ephemeral PostGIS →01-T20 (AC-12 partial)
+- [x] Scaffold monorepo + `uv` workspace; `core/`, `db/`, `pipelines/`, `orchestration/`, `api/`, `web/`, `infra/`, `tests/` →01-T01
+- [x] `.gitattributes` LF enforcement + `Taskfile.yml` (Windows host, run inside containers) →01
+- [x] Shared multi-stage `uv` Python base image (`infra/docker/python.Dockerfile`) →01-T05
+- [x] `docker-compose` (base/dev/prod): `postgres`+PostGIS, `mlflow`, `prefect-server`, `prefect-worker`, `api`, `web`, `pipeline-worker`, `proxy` (Caddy) →01-T10 (AC-8)
+- [x] `.env.example` + file-mounted secrets convention; `geeservice.json` git-ignored, wired as `GEE_SA_KEY_FILE` →01
+- [x] `DataAccessBackend` ABC + `GEEBackend` + `FixtureBackend` (the swappable GEE seam) →01-T12
+- [x] `core/` SQLAlchemy 2.x models + Pydantic v2 schemas mirroring the frozen contract →02-T01
+- [x] Alembic baseline migration (applies + round-trips on PostGIS; `alembic check` clean) →02
+- [x] Contract tests: `Observation`/`ABT`/`ForecastForcing` schema matches `contract_version` (7 tests) →01/02
+- [x] CI skeleton: ruff + mypy + lockfile check + pytest + `alembic upgrade/check` on ephemeral PostGIS →01-T20 (AC-12 partial)
 
-**Exit:** `docker compose up` brings the stack up; migrations apply; CI green.
+**Exit:** ✅ migrations apply + round-trip; CI gates green locally (ruff/format/mypy/pytest/lockfile); compose config valid. _Note: a local Postgres owns host 5432 — use `POSTGRES_HOST_PORT` to republish (see README)._
+
+**Phase-0 deviations from plan (recorded):** Python pinned **3.13** (host has 3.13/3.14; mature geospatial wheels) not 3.12; `area_confidence`/`layover_shadow_fraction` use `float`/DOUBLE per the **contract** (plan 02 §5.3 said `real` — a plan bug); compose host Postgres port parameterised via `POSTGRES_HOST_PORT`.
 
 ---
 

@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, "build/**"]
+  pull_request:
+
+jobs:
+  lint-type:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Lockfile is current
+        run: uv lock --check
+      - name: Ruff lint
+        run: uv run ruff check .
+      - name: Ruff format
+        run: uv run ruff format --check .
+      - name: Mypy
+        run: uv run mypy .
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: reservoir
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d reservoir"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      # In CI we connect as the superuser (no init-script roles in the service container).
+      DATABASE_URL_RW: postgresql+psycopg://postgres:postgres@localhost:5432/reservoir
+      DATABASE_URL_RO: postgresql+psycopg://postgres:postgres@localhost:5432/reservoir
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Apply migrations (clean checkout → head)
+        run: uv run alembic -c db/alembic.ini upgrade head
+      - name: Schema matches models (no drift)
+        run: uv run alembic -c db/alembic.ini check
+      - name: Tests (contract parity + unit)
+        run: uv run pytest -q
+      # TODO(P1): data-validation gate (pandera/GE) — AC-12
+      # TODO(P5): regression backtest gate — AC-12

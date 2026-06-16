@@ -1,0 +1,25 @@
+# Dev override (auto-merged by `docker compose`): hot reload + source bind-mounts.
+# uv installs workspace members editable, so mounting src/ over the image reflects edits.
+
+services:
+  api:
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "${API_HOST_PORT:-8000}:8000"
+    volumes:
+      - ../../api/src:/app/api/src
+      - ../../core/src:/app/core/src
+
+  prefect-worker:
+    volumes:
+      - ../../pipelines:/app/pipelines
+      - ../../orchestration/src:/app/orchestration/src
+      - ../../core/src:/app/core/src
+
+  mlflow:
+    ports:
+      - "5000:5000"
+
+  prefect-server:
+    ports:
+      - "4200:4200"

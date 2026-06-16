@@ -1,0 +1,9 @@
+{
+  "name": "reservoir-web",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Phase 0 placeholder. Phase 8 adds Vite + React + TS + Leaflet (D12: shadcn/ui + Recharts).",
+  "scripts": {
+    "build": "echo 'Phase 8: real Vite build replaces the static placeholder'"
+  }
+}

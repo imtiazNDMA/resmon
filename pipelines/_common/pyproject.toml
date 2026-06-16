@@ -1,0 +1,21 @@
+[project]
+name = "pipelines-common"
+version = "0.1.0"
+description = "Shared pipeline substrate: DataAccessBackend, retry/backoff, run-context"
+requires-python = ">=3.13"
+dependencies = [
+    "core",
+    "xarray>=2024.1",
+    "numpy>=1.26",
+    "tenacity>=9",
+]
+
+[tool.uv.sources]
+core = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pipelines_common"]

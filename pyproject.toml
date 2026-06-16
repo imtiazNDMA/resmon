@@ -1,7 +1,60 @@
 [project]
 name = "reservoir-analytics"
 version = "0.1.0"
-description = "Add your description here"
+description = "Reservoir Monitoring & Analytics Platform — workspace root"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "core",
+    "db",
+    "pipelines-common",
+    "orchestration",
+    "api",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["core", "db", "pipelines/*", "orchestration", "api"]
+
+[tool.uv.sources]
+core = { workspace = true }
+db = { workspace = true }
+pipelines-common = { workspace = true }
+remote-sensing = { workspace = true }
+data-engineering = { workspace = true }
+ml = { workspace = true }
+orchestration = { workspace = true }
+api = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "pytest>=8",
+    "pytest-cov",
+]
+
+# ---- Tooling config (applies to all workspace members) ----
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["pipelines/build_unified_dataset.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.13"
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+namespace_packages = true
+explicit_package_bases = true
+exclude = ["build/", "dist/", "pipelines/build_unified_dataset\\.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "core", "pipelines", "api"]
+python_files = ["test_*.py"]
+addopts = "-q"

@@ -1,0 +1,127 @@
+# Base topology (plan 01 §6.1). Service names are a published contract.
+# Run from repo root: docker compose -f infra/compose/docker-compose.yml ... (Taskfile wraps this).
+
+x-app-build: &app-build
+  context: ../..
+  dockerfile: infra/docker/python.Dockerfile
+
+x-app-env: &app-env
+  APP_ENV: ${APP_ENV:-dev}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  LOG_FORMAT: ${LOG_FORMAT:-json}
+  DATABASE_URL_RW: ${DATABASE_URL_RW:-postgresql+psycopg://app_rw:app_rw@postgres:5432/reservoir}
+  DATABASE_URL_RO: ${DATABASE_URL_RO:-postgresql+psycopg://app_ro:app_ro@postgres:5432/reservoir}
+  MLFLOW_TRACKING_URI: ${MLFLOW_TRACKING_URI:-http://mlflow:5000}
+  PREFECT_API_URL: ${PREFECT_API_URL:-http://prefect-server:4200/api}
+  DATA_ACCESS_BACKEND: ${DATA_ACCESS_BACKEND:-fixture}
+  DATA_STALENESS_THRESHOLD_DAYS: ${DATA_STALENESS_THRESHOLD_DAYS:-14}
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-reservoir}
+      POSTGRES_USER: ${POSTGRES_SUPERUSER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERPASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER:-postgres} -d ${POSTGRES_DB:-reservoir}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  mlflow:
+    build:
+      context: ../..
+      dockerfile: infra/docker/mlflow.Dockerfile
+    image: reservoir-mlflow:local
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql+psycopg2://mlflow:mlflow@postgres:5432/reservoir
+      MLFLOW_ARTIFACT_ROOT: /artifacts
+    volumes:
+      - mlflow-artifacts:/artifacts
+    expose:
+      - "5000"
+
+  prefect-server:
+    image: prefecthq/prefect:2-latest
+    command: prefect server start --host 0.0.0.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PREFECT_API_DATABASE_CONNECTION_URL: postgresql+asyncpg://app_rw:app_rw@postgres:5432/reservoir
+      PREFECT_SERVER_API_HOST: 0.0.0.0
+    expose:
+      - "4200"
+
+  prefect-worker:
+    build: *app-build
+    image: reservoir-app:local
+    command: prefect worker start --pool reservoir-pool --type process
+    depends_on:
+      - prefect-server
+    environment:
+      <<: *app-env
+
+  api:
+    build: *app-build
+    image: reservoir-app:local
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  web:
+    build:
+      context: ../../web
+      dockerfile: Dockerfile
+    image: reservoir-web:local
+    expose:
+      - "80"
+
+  pipeline-worker:
+    build: *app-build
+    image: reservoir-app:local
+    command: python -c "print('pipeline-worker idle; flows land P1+')"
+    profiles: ["workers"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+
+  proxy:
+    image: caddy:2-alpine
+    depends_on:
+      - api
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../docker/proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  pgdata:
+  mlflow-artifacts:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,82 @@
+# go-task developer command surface (plan 01 T-04). Works on the Windows host.
+# Compose runs from repo root; POSTGRES_HOST_PORT lets hosts with a local Postgres
+# avoid the 5432 clash (e.g. POSTGRES_HOST_PORT=55432 task up).
+version: "3"
+
+vars:
+  COMPOSE: docker compose -f infra/compose/docker-compose.yml
+
+tasks:
+  up:
+    desc: Bring up the full stack (one command — AC-8).
+    cmds:
+      - "{{.COMPOSE}} up -d"
+
+  up-db:
+    desc: Bring up just Postgres+PostGIS.
+    cmds:
+      - "{{.COMPOSE}} up -d postgres"
+
+  down:
+    desc: Stop and remove the stack (keeps volumes).
+    cmds:
+      - "{{.COMPOSE}} down"
+
+  logs:
+    desc: Tail logs for all services.
+    cmds:
+      - "{{.COMPOSE}} logs -f"
+
+  config:
+    desc: Validate the merged compose config.
+    cmds:
+      - "{{.COMPOSE}} config -q && echo 'compose config OK'"
+
+  migrate:
+    desc: Apply DB migrations to head.
+    cmds:
+      - uv run alembic -c db/alembic.ini upgrade head
+
+  makemigration:
+    desc: 'Autogenerate a migration: task makemigration -- "message".'
+    cmds:
+      - uv run alembic -c db/alembic.ini revision --autogenerate -m "{{.CLI_ARGS}}"
+
+  check-migration:
+    desc: Assert the DB schema matches the models (no drift).
+    cmds:
+      - uv run alembic -c db/alembic.ini check
+
+  lint:
+    desc: Ruff lint + format check.
+    cmds:
+      - uv run ruff check .
+      - uv run ruff format --check .
+
+  fmt:
+    desc: Auto-fix lint + format.
+    cmds:
+      - uv run ruff check --fix .
+      - uv run ruff format .
+
+  typecheck:
+    desc: Mypy.
+    cmds:
+      - uv run mypy .
+
+  test:
+    desc: Run the test suite.
+    cmds:
+      - uv run pytest -q
+
+  gee-check:
+    desc: GEE auth smoke test (placeholder until Phase 2).
+    cmds:
+      - echo "GEE auth check lands in Phase 2 (infra/scripts/gee-auth-check.py)."
+
+  ci:
+    desc: Run the local equivalent of CI gates.
+    cmds:
+      - task: lint
+      - task: typecheck
+      - task: test
