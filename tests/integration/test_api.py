@@ -39,6 +39,9 @@ def test_health(client):
 def test_reservoir_catalogue_and_detail(client):
     r = client.get("/reservoirs")
     assert r.status_code == 200 and len(r.json()) == 3
+    # numeric columns must be JSON numbers, not Decimal strings (the frontend calls .toFixed)
+    assert isinstance(r.json()[0]["frl_m"], (int, float))
+    assert isinstance(r.json()[0]["live_capacity_bcm"], (int, float))
     assert client.get("/reservoirs/pong").status_code == 200
     assert client.get("/reservoirs/does_not_exist").status_code == 404
 
@@ -48,7 +51,7 @@ def test_status_and_timeseries(client):
     assert "risk_level" in status and "pct_filled" in status
     ts = client.get("/reservoirs/pong/timeseries?limit=10").json()
     assert 0 < len(ts) <= 10
-    assert "pct_filled" in ts[0]
+    assert isinstance(ts[0]["pct_filled"], (int, float))  # JSON number for the trend chart
 
 
 def test_forecast_and_release_risk(client):

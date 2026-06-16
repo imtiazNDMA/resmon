@@ -45,7 +45,7 @@ call uv run python scripts/bootstrap.py
 if errorlevel 1 ( echo   ERROR: bootstrap failed. & pause & exit /b 1 )
 
 echo [6/6] Starting API (port 18000) and web dashboard (port 5173)...
-start "Reservoir API" cmd /k uv run uvicorn api.main:app --host 0.0.0.0 --port 18000
+start "Reservoir API" cmd /k uv run uvicorn api.main:app --host 0.0.0.0 --port 18000 --reload
 if not exist "web\node_modules" (
   echo        Installing web dependencies ^(first run only, please wait^)...
   pushd web && call npm install && popd

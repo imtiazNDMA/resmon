@@ -11,6 +11,11 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 
+def _f(v: object) -> float | None:
+    """Postgres ``numeric`` arrives as ``Decimal`` (→ JSON string); coerce to a JSON number."""
+    return float(v) if v is not None else None  # type: ignore[arg-type]
+
+
 def list_reservoirs(s: Session) -> list[dict]:
     rows = (
         s.execute(
@@ -22,7 +27,10 @@ def list_reservoirs(s: Session) -> list[dict]:
         .mappings()
         .all()
     )
-    return [dict(r) for r in rows]
+    return [
+        {**dict(r), "frl_m": _f(r["frl_m"]), "live_capacity_bcm": _f(r["live_capacity_bcm"])}
+        for r in rows
+    ]
 
 
 def get_reservoir(s: Session, rid: str) -> dict | None:
@@ -37,7 +45,13 @@ def get_reservoir(s: Session, rid: str) -> dict | None:
         .mappings()
         .first()
     )
-    return dict(row) if row else None
+    if not row:
+        return None
+    return {
+        **dict(row),
+        "frl_m": _f(row["frl_m"]),
+        "live_capacity_bcm": _f(row["live_capacity_bcm"]),
+    }
 
 
 def latest_status(s: Session, rid: str) -> dict | None:
@@ -109,7 +123,16 @@ def timeseries(s: Session, rid: str, limit: int) -> list[dict]:
         .mappings()
         .all()
     )
-    return [dict(r) for r in reversed(rows)]
+    return [
+        {
+            "date": r["date"],
+            "pct_filled": _f(r["pct_filled"]),
+            "level_m": _f(r["level_m"]),
+            "live_storage_bcm": _f(r["live_storage_bcm"]),
+            "normal_storage_pct": _f(r["normal_storage_pct"]),
+        }
+        for r in reversed(rows)
+    ]
 
 
 def latest_forecast(s: Session, rid: str) -> list[dict]:
