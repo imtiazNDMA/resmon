@@ -8,3 +8,10 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Secrets — never commit
+geeservice.json
+*.key
+.env
+.env.*
+!.env.example
