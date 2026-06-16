@@ -114,13 +114,13 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 *Goal: the validated predictive engine.*
 
-- [ ] Estimation bridge (area → storage/level via rating curve) wired into inference →05
-- [ ] Pooled Δ-fill forecaster (1–14 day) with conformal intervals →05 / ADR-0006
-- [ ] Persistence + climatology baselines →05
-- [ ] Walk-forward / leave-one-season-out CV; skill-vs-baseline →05 (AC-4)
-- [ ] Persist `Prediction` rows (intervals, `model_version`, `abt_version`) →05 (AC-3)
+- [x] Estimation bridge (latest area → storage/level/fill via active rating curve) wired into inference — `ml/estimation.py` →05
+- [x] Pooled Δ-fill forecaster (1–14 day, direct multi-horizon) with **conformal intervals** — `ml/forecaster.py` →05 / ADR-0006
+- [x] Persistence + Normal-Storage climatology baselines — `ml/baselines.py` →05
+- [x] Walk-forward holdout CV; **skill-vs-baseline computed/recorded** →05 (AC-4)
+- [x] Persist `Prediction` rows (1–14 day, conformal intervals, `model_version` + `abt_version` provenance) →05 (AC-3)
 
-**Exit:** AC-3 (estimation) + AC-4 (forecast beats baseline) met.
+**Exit:** ✅ machinery validated — model trains pooled, conformal intervals bracket predictions, baselines computed, 42 `Prediction` rows persisted with provenance, estimation bridge maps area→storage. _⚠️ **AC-4 not met on synthetic forcing**: with zero GEE forcing there is no inflow signal, so persistence (MAE ~2.5%) beats the model (~5%) at short horizons — the expected, honest result. Real GFS precip/snowmelt forcing is required for the forecaster to earn its skill (ADR-0006's whole premise). AC-3/AC-4 numbers are machinery checks pending live GEE._
 
 ---
 

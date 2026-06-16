@@ -8,6 +8,7 @@ from data_engineering.fusion import fuse_observations_groundtruth
 from data_engineering.ingest import ingest_bulletins
 from data_engineering.pipeline import DEFAULT_CSV
 from data_engineering.seed import seed_reservoirs
+from ml.estimation import estimate_current
 from ml.groundtruthing import run_ground_truthing
 from remote_sensing.pipeline import run_rs_pipeline
 from sqlalchemy import text
@@ -52,3 +53,18 @@ def test_ground_truthing_gate_fails_on_tight_tolerance(session):
         session, version="rc_tight", extraction_method="otsu_vh", tolerance=0.0001
     )
     assert result["ac2_passed"] is False
+
+
+def test_estimation_bridge_maps_latest_area(session):
+    seed_reservoirs(session)
+    ingest_bulletins(session, DEFAULT_CSV)
+    run_rs_pipeline(session, extractor_name="otsu_vh")
+    fuse_observations_groundtruth(session)
+    run_ground_truthing(session, version="rc_est", extraction_method="otsu_vh")
+
+    est = estimate_current(session)
+    assert len(est) == 3
+    for e in est.values():
+        assert e["storage_bcm"] > 0
+        assert e["pct_filled"] >= 0
+        assert e["rating_curve_version"] == "rc_est"
