@@ -172,7 +172,9 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 - [x] 4-tier colour-blind-safe risk palette + label (`RISK_COLOR`, D11) →07
 - [x] ~~Login / role routing / alerts inbox~~ **descoped**
 
-**Exit:** ✅ React + Leaflet + Recharts dashboard **builds clean** (`tsc --noEmit` + `vite build`, 877 modules) — map with risk-coloured markers, reservoir tabs, KPI cards, trend chart (fill vs normal), 1–14 day forecast with conformal-interval band, risk badge, freshness. Multi-stage Dockerfile (node build → nginx). _Verified to compile/build with Node 24; not browser-rendered in this environment. Tailwind/shadcn/TanStack/MSW/Playwright + admin page deferred._
+**Exit:** ✅ **Map-centric GIS console** (React + Leaflet + Recharts) builds clean — **satellite basemap** (Esri) + Street, a **layer control** with real overlays (reservoir AOI from JRC GSW, catchment from HydroBASINS, **Sentinel-1 water extent**), risk-coloured dam markers, a risk legend, fleet risk chips, and a side panel (KPIs, fill-vs-normal trend, 1–14 day forecast with conformal band, SAR water-extent line, staleness banner). Numeric fields coerced defensively. _Verified to build with Node 24; not browser-rendered here._
+
+**Real GEE now wired (was deferred):** `remote_sensing/gee_real.py` + `scripts/populate_geometry.py` derive real AOI (JRC GSW), catchment (HydroBASINS) and Sentinel-1 water masks live from Earth Engine (service-account `geeservice.json`, project verified working) and persist them to PostGIS (`reservoir.aoi_geom`/`catchment_geom`, `observation.water_mask_geom` via migration 0003). API serves them at `/geojson/{aoi,catchment,water-extent}`. `start.bat` runs the populate step (non-fatal). _The historical accuracy figures remain synthetic-machinery until full historical SAR extraction runs; the map geometry is real._
 
 **Exit:** AC-6 — dashboard renders map, risk indicators, KPIs, forecast/accuracy charts.
 

@@ -1,3 +1,7 @@
+import type { FeatureCollection as GeoJSONFeatureCollection } from "geojson";
+
+export type GeoFC = GeoJSONFeatureCollection;
+
 export type RiskLevel = "Low" | "Watch" | "Warning" | "Imminent";
 
 export interface Reservoir {
@@ -19,6 +23,8 @@ export interface Status {
   release_probability: number | null;
   estimated_lead_time_days: number | null;
   last_acquisition_date: string | null;
+  data_age_days: number | null;
+  stale: boolean;
 }
 
 export interface TimeseriesPoint {

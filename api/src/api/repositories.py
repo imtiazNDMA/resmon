@@ -205,6 +205,55 @@ def accuracy(s: Session) -> dict:
     }
 
 
+def aoi_features(s: Session) -> list[dict]:
+    rows = (
+        s.execute(
+            text(
+                "SELECT reservoir_id, name, aoi_version, ST_AsGeoJSON(aoi_geom) AS g "
+                "FROM reservoir WHERE aoi_geom IS NOT NULL ORDER BY reservoir_id"
+            )
+        )
+        .mappings()
+        .all()
+    )
+    return [dict(r) for r in rows]
+
+
+def catchment_features(s: Session) -> list[dict]:
+    rows = (
+        s.execute(
+            text(
+                "SELECT reservoir_id, name, catchment_version, ST_AsGeoJSON(catchment_geom) AS g "
+                "FROM reservoir WHERE catchment_geom IS NOT NULL ORDER BY reservoir_id"
+            )
+        )
+        .mappings()
+        .all()
+    )
+    return [dict(r) for r in rows]
+
+
+def water_extent_features(s: Session) -> list[dict]:
+    rows = (
+        s.execute(
+            text(
+                """
+            SELECT DISTINCT ON (o.reservoir_id)
+                o.reservoir_id, r.name, o.surface_area, o.acquisition_date,
+                ST_AsGeoJSON(o.water_mask_geom) AS g
+            FROM observation o
+            JOIN reservoir r ON r.reservoir_id = o.reservoir_id
+            WHERE o.water_mask_geom IS NOT NULL
+            ORDER BY o.reservoir_id, o.acquisition_date DESC
+            """
+            )
+        )
+        .mappings()
+        .all()
+    )
+    return [dict(r) for r in rows]
+
+
 def reservoir_features(s: Session) -> list[dict]:
     rows = (
         s.execute(

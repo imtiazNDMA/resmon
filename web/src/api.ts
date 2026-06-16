@@ -1,4 +1,12 @@
-import type { FeatureCollection, FleetRisk, Forecast, Reservoir, Status, TimeseriesPoint } from "./types";
+import type {
+  FeatureCollection,
+  FleetRisk,
+  Forecast,
+  GeoFC,
+  Reservoir,
+  Status,
+  TimeseriesPoint,
+} from "./types";
 
 const BASE = "/api";
 
@@ -16,4 +24,7 @@ export const api = {
   forecast: (id: string) => getJson<Forecast>(`/reservoirs/${id}/forecast`),
   fleetRisk: () => getJson<FleetRisk[]>("/release-risk"),
   geojson: () => getJson<FeatureCollection>("/geojson/reservoirs"),
+  aoi: () => getJson<GeoFC>("/geojson/aoi"),
+  catchment: () => getJson<GeoFC>("/geojson/catchment"),
+  waterExtent: () => getJson<GeoFC>("/geojson/water-extent"),
 };

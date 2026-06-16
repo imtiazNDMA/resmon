@@ -7,15 +7,16 @@ import { TrendChart } from "./components/TrendChart";
 import {
   RISK_COLOR,
   type FeatureCollection,
+  type FleetRisk,
   type Forecast,
+  type GeoFC,
   type Reservoir,
   type RiskLevel,
   type Status,
   type TimeseriesPoint,
 } from "./types";
 
-// Coerce defensively: Postgres `numeric` may arrive as a string ("512.000"); make it a
-// number before formatting so the UI never crashes on `.toFixed`.
+// Coerce defensively: Postgres `numeric` may arrive as a string ("512.000").
 const fx = (v: number | string | null | undefined, digits = 1): string =>
   v == null || Number.isNaN(Number(v)) ? "—" : Number(v).toFixed(digits);
 
@@ -39,7 +40,11 @@ function Kpi({ label, value }: { label: string; value: string }) {
 
 export default function App() {
   const [reservoirs, setReservoirs] = useState<Reservoir[]>([]);
-  const [geojson, setGeojson] = useState<FeatureCollection | null>(null);
+  const [markers, setMarkers] = useState<FeatureCollection | null>(null);
+  const [aoi, setAoi] = useState<GeoFC | null>(null);
+  const [catchment, setCatchment] = useState<GeoFC | null>(null);
+  const [water, setWater] = useState<GeoFC | null>(null);
+  const [fleet, setFleet] = useState<FleetRisk[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
   const [series, setSeries] = useState<TimeseriesPoint[]>([]);
@@ -47,10 +52,21 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([api.reservoirs(), api.geojson()])
-      .then(([rs, gj]) => {
+    Promise.all([
+      api.reservoirs(),
+      api.geojson(),
+      api.aoi(),
+      api.catchment(),
+      api.waterExtent(),
+      api.fleetRisk(),
+    ])
+      .then(([rs, gj, a, c, w, fr]) => {
         setReservoirs(rs);
-        setGeojson(gj);
+        setMarkers(gj);
+        setAoi(a);
+        setCatchment(c);
+        setWater(w);
+        setFleet(fr);
         if (rs.length > 0) setSelected(rs[0].reservoir_id);
       })
       .catch((e: unknown) => setError(String(e)));
@@ -73,60 +89,83 @@ export default function App() {
     [reservoirs, selected],
   );
 
+  const waterInfo = useMemo(() => {
+    const f = water?.features.find((x) => x.properties?.reservoir_id === selected);
+    return f?.properties as
+      | { surface_area_km2?: number; acquisition_date?: string }
+      | undefined;
+  }, [water, selected]);
+
   return (
-    <div className="app">
-      <header>
-        <h1>Reservoir Monitoring &amp; Analytics</h1>
-        <p className="muted">
-          SAR-derived storage &amp; release-risk early warning · weather-immune ·{" "}
-          {status?.last_acquisition_date
-            ? `last acquisition ${status.last_acquisition_date}`
-            : "awaiting first SAR acquisition"}
-        </p>
+    <div className="gis">
+      <header className="topbar">
+        <div className="brand">
+          <span className="logo">◉</span>
+          <div>
+            <div className="title">Reservoir Monitoring &amp; Analytics</div>
+            <div className="subtitle">SAR-derived storage · release-risk early warning</div>
+          </div>
+        </div>
+        <div className="fleet-chips">
+          {fleet.map((f) => (
+            <button
+              key={f.reservoir_id}
+              className={`chip ${f.reservoir_id === selected ? "active" : ""}`}
+              style={{ borderColor: RISK_COLOR[f.risk_level] }}
+              onClick={() => setSelected(f.reservoir_id)}
+            >
+              <span className="chip-dot" style={{ background: RISK_COLOR[f.risk_level] }} />
+              {reservoirs.find((r) => r.reservoir_id === f.reservoir_id)?.name ?? f.reservoir_id}
+              <span className="chip-risk">{f.risk_level}</span>
+            </button>
+          ))}
+        </div>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
-      <div className="layout">
+      <div className="gis-body">
         <section className="map-pane">
-          <ReservoirMap features={geojson} onSelect={setSelected} />
+          <ReservoirMap
+            markers={markers}
+            aoi={aoi}
+            catchment={catchment}
+            water={water}
+            selectedId={selected}
+            onSelect={setSelected}
+          />
         </section>
 
-        <section className="detail-pane">
-          <div className="reservoir-tabs">
-            {reservoirs.map((r) => (
-              <button
-                key={r.reservoir_id}
-                className={r.reservoir_id === selected ? "active" : ""}
-                onClick={() => setSelected(r.reservoir_id)}
-              >
-                {r.name}
-              </button>
-            ))}
-          </div>
-
+        <aside className="side-pane">
           {selectedReservoir && (
             <>
               <div className="detail-head">
-                <h2>{selectedReservoir.name}</h2>
+                <div>
+                  <h2>{selectedReservoir.name}</h2>
+                  <div className="muted">{selectedReservoir.basin} basin</div>
+                </div>
                 <RiskBadge level={status?.risk_level ?? null} />
               </div>
+
+              {status?.stale && (
+                <div className="stale-banner">
+                  ⏳ Data {status.data_age_days}d old · serving last-known forecast-based risk
+                </div>
+              )}
 
               <div className="kpis">
                 <Kpi label="fill" value={status ? `${fx(status.pct_filled, 1)}%` : "…"} />
                 <Kpi
-                  label="level vs FRL"
+                  label="level / FRL"
                   value={
                     status?.level_m != null
-                      ? `${fx(status.level_m, 1)} / ${fx(selectedReservoir.frl_m, 0)} m`
+                      ? `${fx(status.level_m, 0)} / ${fx(selectedReservoir.frl_m, 0)} m`
                       : "…"
                   }
                 />
                 <Kpi
                   label="storage"
-                  value={
-                    status?.live_storage_bcm != null ? `${fx(status.live_storage_bcm, 2)} BCM` : "…"
-                  }
+                  value={status?.live_storage_bcm != null ? `${fx(status.live_storage_bcm, 2)} BCM` : "…"}
                 />
                 <Kpi
                   label="release prob · lead"
@@ -140,14 +179,26 @@ export default function App() {
                 />
               </div>
 
+              {waterInfo?.surface_area_km2 != null && (
+                <div className="sar-line">
+                  🛰 Sentinel-1 water extent: <b>{fx(waterInfo.surface_area_km2, 1)} km²</b>
+                  {waterInfo.acquisition_date ? ` · ${waterInfo.acquisition_date}` : ""}
+                </div>
+              )}
+
               <h3>Storage trend (vs seasonal normal)</h3>
               <TrendChart points={series} />
 
               <h3>1–14 day forecast (conformal interval)</h3>
               <ForecastChart forecast={forecast} />
+
+              <p className="footnote">
+                Accuracy is a historical backtest. AOI (JRC GSW), catchment (HydroBASINS) and
+                water extent (Sentinel-1) are live from Google Earth Engine.
+              </p>
             </>
           )}
-        </section>
+        </aside>
       </div>
     </div>
   );

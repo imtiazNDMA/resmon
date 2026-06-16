@@ -57,6 +57,55 @@ def accuracy(db: Session = Depends(get_db)) -> dict:
     return repo.accuracy(db)
 
 
+def _feature_collection(rows: list[dict], props) -> dict:
+    feats = []
+    for r in rows:
+        if not r.get("g"):
+            continue
+        feats.append({"type": "Feature", "geometry": json.loads(r["g"]), "properties": props(r)})
+    return {"type": "FeatureCollection", "features": feats}
+
+
+@router.get("/geojson/aoi", tags=["geojson"])
+def geojson_aoi(db: Session = Depends(get_db)) -> dict:
+    """Reservoir AOI polygons (JRC Global Surface Water footprint)."""
+    return _feature_collection(
+        repo.aoi_features(db),
+        lambda r: {
+            "reservoir_id": r["reservoir_id"],
+            "name": r["name"],
+            "aoi_version": r["aoi_version"],
+        },
+    )
+
+
+@router.get("/geojson/catchment", tags=["geojson"])
+def geojson_catchment(db: Session = Depends(get_db)) -> dict:
+    """Upstream catchment polygons (HydroSHEDS HydroBASINS)."""
+    return _feature_collection(
+        repo.catchment_features(db),
+        lambda r: {
+            "reservoir_id": r["reservoir_id"],
+            "name": r["name"],
+            "version": r["catchment_version"],
+        },
+    )
+
+
+@router.get("/geojson/water-extent", tags=["geojson"])
+def geojson_water_extent(db: Session = Depends(get_db)) -> dict:
+    """Latest Sentinel-1 water extent per reservoir (with true area + acquisition date)."""
+    return _feature_collection(
+        repo.water_extent_features(db),
+        lambda r: {
+            "reservoir_id": r["reservoir_id"],
+            "name": r["name"],
+            "surface_area_km2": float(r["surface_area"]),
+            "acquisition_date": str(r["acquisition_date"]),
+        },
+    )
+
+
 @router.get("/geojson/reservoirs", tags=["geojson"])
 def reservoir_geojson(db: Session = Depends(get_db)) -> dict:
     """Leaflet-ready FeatureCollection of reservoir markers, coloured by risk_level."""

@@ -73,6 +73,18 @@ def test_geojson_feature_collection(client):
     assert "risk_level" in f["properties"]
 
 
+def test_geojson_layers(client):
+    # AOI polygons exist after seeding (placeholder until GEE populates real ones).
+    aoi = client.get("/geojson/aoi").json()
+    assert aoi["type"] == "FeatureCollection"
+    assert len(aoi["features"]) == 3
+    assert aoi["features"][0]["geometry"]["type"] in ("Polygon", "MultiPolygon")
+    # Catchment / water-extent layers are valid collections (empty until GEE populates them).
+    for path in ("/geojson/catchment", "/geojson/water-extent"):
+        layer = client.get(path).json()
+        assert layer["type"] == "FeatureCollection"
+
+
 def test_openapi_published(client):
     schema = client.get("/openapi.json").json()
     assert schema["info"]["title"] == "Reservoir Monitoring & Analytics API"

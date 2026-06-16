@@ -9,12 +9,14 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
+from geoalchemy2 import Geometry
 from sqlalchemy import (
     CheckConstraint,
     Date,
     DateTime,
     Double,
     ForeignKey,
+    Index,
     Integer,
     Text,
     func,
@@ -47,7 +49,10 @@ class Observation(Base):
         Double, nullable=False
     )  # 0–1 (contract: float)
     processing_params: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    # additive provenance (not in contract column set)
+    # additive provenance / served-overlay columns (not in contract column set; allow-listed)
+    water_mask_geom: Mapped[object | None] = mapped_column(
+        Geometry("MULTIPOLYGON", srid=4326, spatial_index=False), nullable=True
+    )  # vectorised water extent for the Leaflet overlay (FR-API-2)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -62,4 +67,9 @@ class Observation(Base):
             name="ck_observation_layover",
         ),
         CheckConstraint("pass_direction IN ('ASC','DESC')", name="ck_observation_pass_dir"),
+        Index(
+            "idx_observation_water_mask_geom",
+            "water_mask_geom",
+            postgresql_using="gist",
+        ),
     )
