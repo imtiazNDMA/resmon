@@ -104,7 +104,10 @@ def run_forecasting(
         text(
             "INSERT INTO model_version (model_name, version, model_stage, "
             "trained_on_abt_version, metrics) VALUES "
-            "('forecaster', :v, 'staging', :abt, CAST(:m AS jsonb)) RETURNING id"
+            "('forecaster', :v, 'staging', :abt, CAST(:m AS jsonb)) "
+            "ON CONFLICT (model_name, version) DO UPDATE SET "
+            "metrics = EXCLUDED.metrics, trained_on_abt_version = EXCLUDED.trained_on_abt_version "
+            "RETURNING id"
         ),
         {"v": version, "abt": abt_version, "m": json.dumps(metrics)},
     ).scalar_one()

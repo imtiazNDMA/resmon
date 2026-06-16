@@ -695,10 +695,18 @@ version = "0.1.0"
 source = { editable = "orchestration" }
 dependencies = [
     { name = "core" },
+    { name = "data-engineering" },
+    { name = "ml" },
+    { name = "remote-sensing" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "core", editable = "core" }]
+requires-dist = [
+    { name = "core", editable = "core" },
+    { name = "data-engineering", editable = "pipelines/data_engineering" },
+    { name = "ml", editable = "pipelines/ml" },
+    { name = "remote-sensing", editable = "pipelines/remote_sensing" },
+]
 
 [[package]]
 name = "packaging"

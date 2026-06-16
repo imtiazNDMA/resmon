@@ -51,7 +51,11 @@ jobs:
         run: uv run alembic -c db/alembic.ini upgrade head
       - name: Schema matches models (no drift)
         run: uv run alembic -c db/alembic.ini check
-      - name: Tests (contract parity + unit)
+      - name: Tests (contract parity + unit + integration)
+        env:
+          DATA_ACCESS_BACKEND: fixture
+          LOKY_MAX_CPU_COUNT: "2"
+        # The pytest run is the AC-12 gate: it includes the pandera data-validation
+        # checks (test_de_pipeline), the AC-10 ABT leakage probe, the AC-2 rating-curve
+        # gate (test_groundtruthing), and the AC-5 release-episode backtest (test_release).
         run: uv run pytest -q
-      # TODO(P1): data-validation gate (pandera/GE) — AC-12
-      # TODO(P5): regression backtest gate — AC-12

@@ -23,9 +23,15 @@ def engine():
 
 @pytest.fixture
 def conn(engine):
-    """A connection in a transaction rolled back after each test (no persisted data)."""
+    """A connection in a transaction rolled back after each test (no persisted data).
+
+    Truncates the app tables at the start of the transaction so each test sees a clean
+    slate even if the database already holds committed data (e.g. from the demo
+    bootstrap). The TRUNCATE rolls back with everything else, leaving that data intact.
+    """
     with engine.connect() as c:
         tx = c.begin()
+        c.execute(text("TRUNCATE reservoir, model_version CASCADE"))
         try:
             yield c
         finally:

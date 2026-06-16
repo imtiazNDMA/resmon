@@ -4,6 +4,9 @@ layer never writes (NFR-SEC-3). All return plain dicts/rows for the routers to s
 
 from __future__ import annotations
 
+from datetime import date
+
+from core.config import get_settings
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -69,6 +72,11 @@ def latest_status(s: Session, rid: str) -> dict | None:
         ),
         {"r": rid},
     ).scalar()
+    # Graceful-degradation / staleness (NFR-REL-6, D8): age from the freshest signal
+    # (SAR acquisition if any, else the latest bulletin).
+    threshold = get_settings().data_staleness_threshold_days
+    ref = last_acq or gt["date"]
+    age_days = (date.today() - ref).days if ref is not None else None
     return {
         "reservoir_id": rid,
         "as_of": gt["date"],
@@ -83,6 +91,8 @@ def latest_status(s: Session, rid: str) -> dict | None:
         if risk and risk["estimated_lead_time_days"] is not None
         else None,
         "last_acquisition_date": last_acq,
+        "data_age_days": age_days,
+        "stale": age_days is None or age_days > threshold,
     }
 
 
