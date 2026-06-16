@@ -37,23 +37,23 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 *Goal: the canonical physical schema everything writes/reads.*
 
-- [ ] `reservoir` (AOI + catchment geom SRID 4326, FRL, capacity, `release_thresholds` jsonb, rule-curve proxy, `orbit_relative`/`pass_direction`) →02-T02
-- [ ] `reservoir_capacity_history` (sedimentation / time-varying capacity) →02
-- [ ] `observation` (contract §1, incl. `extraction_method='stub'` support) →02-T03
-- [ ] `ground_truth` (bulletin columns, `row_quality`) →02
-- [ ] `ground_truth_match` (AC-2 evidence) →02-T04
-- [ ] `rating_curve` (blended; observed/extrapolated ranges; `dem_epoch_waterline_m`) →02-T04
-- [ ] `catchment_forcing` **+ `evaporation` column (contract v3)** →02 / contract bump
-- [ ] `forecast_forcing` (horizon-keyed, contract §3) →02
-- [ ] `analytical_base_table` + `abt_current` view (contract §2, versioned snapshot) →02-T05 (AC-10)
-- [ ] `model_version`, `prediction`, `release_risk` (append-only) →02
-- [ ] `pipeline_run` (observability/idempotency) →02
-- [ ] ~~`app_user`/`role`/`user_role`~~ **descoped (no auth)**
-- [ ] ~~`alert`~~ **descoped (no alert system)**
+- [x] `reservoir` (AOI + catchment geom SRID 4326, FRL, capacity, `release_thresholds` jsonb, rule-curve proxy, `orbit_relative`/`pass_direction`) →02-T02
+- [x] `reservoir_capacity_history` (sedimentation / time-varying capacity) →02
+- [x] `observation` (contract §1, incl. `extraction_method='stub'` support) →02-T03
+- [x] `ground_truth` (bulletin columns, `row_quality`) →02
+- [x] `ground_truth_match` (AC-2 evidence) →02-T04
+- [x] `rating_curve` (blended; observed/extrapolated ranges; `dem_epoch_waterline_m`) →02-T04
+- [x] `catchment_forcing` **+ `evaporation` column (contract v3)** →02 / contract bump
+- [x] `forecast_forcing` (horizon-keyed, contract §3) →02
+- [x] `analytical_base_table` + `abt_current` view (contract §2, versioned snapshot) →02-T05 (AC-10)
+- [x] `model_version`, `prediction`, `release_risk` (append-only, trigger-enforced) →02
+- [x] `pipeline_run` (observability/idempotency) →02
+- [x] ~~`app_user`/`role`/`user_role`~~ **descoped (no auth)**
+- [x] ~~`alert`~~ **descoped (no alert system)**
 
-**Action:** bump `docs/contracts/observation-and-abt.md` to `contract_version: 3` (add `evaporation`), note in changelog, notify tracks.
+**Action:** ✅ bumped `docs/contracts/observation-and-abt.md` to `contract_version: 3` (added `evaporation`), changelog updated, `CONTRACT_VERSION` in lockstep, parity test green.
 
-**Exit:** all tables migrated; constraint/schema tests pass.
+**Exit:** ✅ all 13 tables migrated (0002), `alembic check` clean, downgrade→upgrade round-trips; integration tests pass (SRID 4326, idempotent upsert, append-only trigger, one-active-curve partial-unique, CHECK constraints); ruff/format/mypy/pytest(20) green.
 
 ---
 

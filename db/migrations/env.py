@@ -7,6 +7,7 @@ import os
 from alembic import context
 from core.config import get_settings
 from core.models import Base
+from geoalchemy2 import alembic_helpers as ga
 from sqlalchemy import create_engine, pool
 
 target_metadata = Base.metadata
@@ -18,6 +19,10 @@ _POSTGIS_SCHEMAS = {"tiger", "tiger_data", "topology"}
 
 
 def include_object(obj, name, type_, reflected, compare_to):  # noqa: ANN001
+    # GeoAlchemy2 helper first (excludes geometry_columns view, manages spatial types),
+    # then our PostGIS system-table/schema exclusions.
+    if not ga.include_object(obj, name, type_, reflected, compare_to):
+        return False
     if type_ == "table" and name in _POSTGIS_TABLES:
         return False
     schema = getattr(obj, "schema", None)
@@ -37,6 +42,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         compare_type=True,
         include_object=include_object,
+        render_item=ga.render_item,
         dialect_opts={"paramstyle": "named"},
     )
     with context.begin_transaction():
@@ -51,6 +57,7 @@ def run_migrations_online() -> None:
             target_metadata=target_metadata,
             compare_type=True,
             include_object=include_object,
+            render_item=ga.render_item,
         )
         with context.begin_transaction():
             context.run_migrations()

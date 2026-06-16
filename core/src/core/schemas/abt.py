@@ -38,6 +38,7 @@ class AnalyticalBaseTableRow(BaseModel):
     snow_cover_area: float | None = None
     swe: float | None = None
     degree_day_melt: float | None = None
+    evaporation: float | None = None  # v3 (D6)
 
     # provenance, quality & target
     is_extrapolated: bool

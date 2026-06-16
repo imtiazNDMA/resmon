@@ -64,6 +64,7 @@ class AnalyticalBaseTable(Base):
     snow_cover_area: Mapped[float | None] = mapped_column(Double, nullable=True)  # 0–1
     swe: Mapped[float | None] = mapped_column(Double, nullable=True)  # mm
     degree_day_melt: Mapped[float | None] = mapped_column(Double, nullable=True)  # mm/day
+    evaporation: Mapped[float | None] = mapped_column(Double, nullable=True)  # mm/day (v3, D6)
 
     # --- provenance, quality & target ---
     is_extrapolated: Mapped[bool] = mapped_column(Boolean, nullable=False)

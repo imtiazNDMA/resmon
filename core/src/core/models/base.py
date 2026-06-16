@@ -11,7 +11,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 # The contract version this schema mirrors. Bumping a contract column requires
 # bumping this and the markdown in lockstep (ADR-0003).
-CONTRACT_VERSION = 2
+CONTRACT_VERSION = 3
 
 
 class Base(DeclarativeBase):

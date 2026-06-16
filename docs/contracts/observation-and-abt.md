@@ -2,9 +2,10 @@
 
 These two schemas are the seams between the three pipelines (see [ADR-0003](../adr/0003-frozen-pipeline-contracts.md)). Remote-Sensing **emits** `Observation`; Data-Engineering **consumes** `Observation` + bulletins and **emits** the ABT; ML **consumes** the ABT. Code all three tracks against these; do not change a column without bumping `contract_version` and notifying the other tracks.
 
-`contract_version: 2`
+`contract_version: 3`
 
 **Changelog**
+- **v3** — Added `evaporation` (mm/day, ERA5-Land open-water evaporation) to the ABT catchment-forcing block as the mass-balance outflow term (§8.3, decision D6). The physical `catchment_forcing` table mirrors it.
 - **v2** — Forecast forcing moved out of the wide ABT into a separate horizon-keyed `ForecastForcing` block (§3), because forecast forcing is inherently `(date × horizon)` and does not fit one row per `(reservoir_id, date)`. GFS forecast features are point-in-time reforecasts sourced from GEE `NOAA/GFS0P25` (archive back to 2015 covers the training window), so train and serve build them identically.
 - **v1** — Initial freeze of `Observation` and `AnalyticalBaseTable`.
 
@@ -86,6 +87,7 @@ One row per SAR acquisition over a reservoir AOI.
 | `snow_cover_area` | float | 0–1 | yes | catchment snow fraction (FR-DE-9) |
 | `swe` | float | mm | yes | snow water equivalent |
 | `degree_day_melt` | float | mm/day | yes | temperature-index melt |
+| `evaporation` | float | mm/day | yes | ERA5-Land open-water evaporation; mass-balance outflow term (§8.3, D6) |
 
 *(Forecast forcing — GFS precip/temperature-driven melt — lives in the `ForecastForcing` block, §3, because it is horizon-dependent.)*
 
