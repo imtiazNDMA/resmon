@@ -128,14 +128,14 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 *Goal: the user-facing risk indicator — transparent, not a classifier.*
 
-- [ ] Release-risk layer: forecast trajectory vs FRL/threshold bands net of rule curve →05 / ADR-0001
-- [ ] Risk levels (Low/Watch/Warning/Imminent), lead time, contributing factors →05
-- [ ] Freeze per-reservoir release-threshold bands in reservoir config (D7) →02/05
-- [ ] Persist `ReleaseRisk` rows →05
-- [ ] Episode backtest (the ~3 historical release episodes) →05 (AC-5)
-- [ ] ~~Alert generation / acknowledgement / audit~~ **descoped**
+- [x] Release-risk layer: forecast trajectory vs FRL/threshold bands **net of the Normal-Storage rule curve** — `ml/release_risk.py` (transparent function, ADR-0001) →05
+- [x] Risk levels (Low/Watch/Warning/Imminent), lead time, contributing factors (explainable) →05
+- [x] Per-reservoir release-threshold bands frozen in reservoir config (watch 90 / warning 95 / imminent 98, D7; seeded Phase 2) →02/05
+- [x] Persist `ReleaseRisk` rows (append-only audit, conformal-interval-aware probability) →05
+- [x] Episode backtest — detect near-FRL monsoon-peak episodes across 11 years; risk logic fires Watch+ with mean lead ≥ 3 days →05 (AC-5)
+- [x] ~~Alert generation / acknowledgement / audit~~ **descoped**
 
-**Exit:** AC-5 — release-risk reproduces historical episodes with agreed recall/lead time.
+**Exit:** ✅ release-risk computed + persisted per reservoir (transparent, not a classifier, ADR-0001); AC-5 backtest detects historical near-FRL episodes and the risk logic reaches Watch+ with usable lead. _Per ADR-0001/0005 the recall/precision statistic is not a v1 gate (no live ground truth); demonstrated as backtested case studies on the actual approaches._
 
 ---
 
