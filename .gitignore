@@ -9,9 +9,16 @@ wheels/
 # Virtual environments
 .venv
 
+# Node / frontend
+node_modules/
+web/dist/
+
 # Secrets — never commit
 geeservice.json
 *.key
 .env
 .env.*
 !.env.example
+
+# TS build info
+*.tsbuildinfo

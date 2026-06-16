@@ -1,0 +1,43 @@
+:root {
+  --bg: #f6f7f9;
+  --card: #fff;
+  --ink: #1c2733;
+  --muted: #6b7785;
+  --border: #e3e7eb;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+.app { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+header h1 { margin: 0 0 0.2rem; font-size: 1.4rem; }
+.muted { color: var(--muted); font-size: 0.85rem; margin: 0; }
+.error { background: #fde2e1; color: #8a1c13; padding: 0.6rem 0.8rem; border-radius: 6px; margin: 0.6rem 0; }
+
+.layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+@media (max-width: 880px) { .layout { grid-template-columns: 1fr; } }
+
+.map-pane { height: 520px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.detail-pane { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+
+.reservoir-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.reservoir-tabs button {
+  border: 1px solid var(--border); background: #fff; border-radius: 999px;
+  padding: 0.3rem 0.8rem; cursor: pointer; font-size: 0.85rem;
+}
+.reservoir-tabs button.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+.detail-head { display: flex; align-items: center; justify-content: space-between; }
+.detail-head h2 { margin: 0.2rem 0; font-size: 1.1rem; }
+.badge { color: #fff; padding: 0.2rem 0.7rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin: 0.8rem 0 0.4rem; }
+@media (max-width: 520px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+.kpi { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; }
+.kpi-value { font-size: 1.05rem; font-weight: 600; }
+.kpi-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+
+h3 { font-size: 0.9rem; margin: 1rem 0 0.3rem; }

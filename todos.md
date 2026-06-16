@@ -160,17 +160,19 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 *Goal: modern, responsive dashboard + real-time map.*
 
-- [ ] Scaffold `web/` (Vite+TS, Tailwind + shadcn/ui, Recharts, Vitest/Playwright/MSW) →07-T01
-- [ ] App shell + routing + AsyncBoundary (loading/empty/error/**stale**) primitives →07-T03
-- [ ] Typed API client (Axios + Zod) + TanStack Query + MSW fixtures →07-T04
-- [ ] Leaflet map: risk-coloured markers + AOI / water-extent / catchment overlays →07-T05
-- [ ] Overview + reservoir detail (KPI cards, trend chart cur/last/normal) →07
-- [ ] Forecast page (1–14 day band + FRL line + baseline) + release-risk outlook panel →07
-- [ ] Accuracy page (estimate-vs-truth, residuals, **labelled "historical backtest"**) →07
-- [ ] Admin/health page (pipeline runs, reservoir/AOI management) →07
-- [ ] Data-freshness/staleness indicators (14-day default, D8) →07
-- [ ] Lock 4-tier colour-blind-safe risk palette (icon + label) →07 (D11)
-- [ ] ~~Login / role routing / alerts inbox~~ **descoped**
+- [x] Scaffold `web/` (Vite + React + TS, **Recharts**, Leaflet) — lean stack (Tailwind/shadcn/Vitest/MSW deferred) →07-T01
+- [x] App shell + loading/empty/error + freshness states (typed components) →07-T03
+- [x] Typed API client (`fetch`) over the FR-API endpoints (Axios/Zod/TanStack deferred) →07-T04
+- [x] Leaflet map: **risk-coloured CircleMarkers** from `/geojson/reservoirs`; AOI/water-extent/catchment overlays deferred (need real geometry) →07-T05
+- [x] Reservoir detail: KPI cards (fill, level vs FRL, storage, release prob · lead) + **trend chart (fill vs seasonal normal)** →07
+- [x] Forecast panel (1–14 day predicted line + **conformal interval band**) + release-risk badge →07
+- [~] Accuracy page — `/accuracy` endpoint serves it (labelled "historical backtest"); dedicated page deferred →07
+- [ ] Admin/health page — deferred to Phase 9 →07
+- [x] Data-freshness indicator (`last_acquisition_date` in header; 14-day threshold, D8) →07
+- [x] 4-tier colour-blind-safe risk palette + label (`RISK_COLOR`, D11) →07
+- [x] ~~Login / role routing / alerts inbox~~ **descoped**
+
+**Exit:** ✅ React + Leaflet + Recharts dashboard **builds clean** (`tsc --noEmit` + `vite build`, 877 modules) — map with risk-coloured markers, reservoir tabs, KPI cards, trend chart (fill vs normal), 1–14 day forecast with conformal-interval band, risk badge, freshness. Multi-stage Dockerfile (node build → nginx). _Verified to compile/build with Node 24; not browser-rendered in this environment. Tailwind/shadcn/TanStack/MSW/Playwright + admin page deferred._
 
 **Exit:** AC-6 — dashboard renders map, risk indicators, KPIs, forecast/accuracy charts.
 

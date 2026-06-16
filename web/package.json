@@ -2,8 +2,26 @@
   "name": "reservoir-web",
   "private": true,
   "version": "0.1.0",
-  "description": "Phase 0 placeholder. Phase 8 adds Vite + React + TS + Leaflet (D12: shadcn/ui + Recharts).",
+  "type": "module",
+  "description": "Reservoir Monitoring & Analytics dashboard (React + Vite + TS + Leaflet + Recharts).",
   "scripts": {
-    "build": "echo 'Phase 8: real Vite build replaces the static placeholder'"
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.12",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2"
   }
 }

@@ -1,6 +1,12 @@
-# Phase 0 placeholder: static page served by nginx. Phase 7/8 replaces this with the
-# real Vite + React + TS build (multi-stage: node build -> nginx static).
+# Multi-stage: build the Vite app with Node, serve the static bundle with nginx.
+FROM node:24-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci || npm install
+COPY . .
+RUN npm run build
+
 FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY index.html /usr/share/nginx/html/index.html
+COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
