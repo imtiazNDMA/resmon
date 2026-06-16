@@ -3,7 +3,7 @@ name = "data-engineering"
 version = "0.1.0"
 description = "Data-engineering pipeline (bulletins + forcing → ABT)"
 requires-python = ">=3.13"
-dependencies = ["core", "pipelines-common"]
+dependencies = ["core", "pipelines-common", "pandas>=2.2", "pandera>=0.20"]
 
 [tool.uv.sources]
 core = { workspace = true }

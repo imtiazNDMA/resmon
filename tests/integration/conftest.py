@@ -7,6 +7,7 @@ from __future__ import annotations
 import pytest
 from core.db.session import make_engine
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 
 @pytest.fixture(scope="session")
@@ -29,6 +30,16 @@ def conn(engine):
             yield c
         finally:
             tx.rollback()
+
+
+@pytest.fixture
+def session(conn):
+    """An ORM Session bound to the rolled-back test connection."""
+    s = Session(bind=conn)
+    try:
+        yield s
+    finally:
+        s.close()
 
 
 @pytest.fixture

@@ -61,18 +61,18 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 *Goal: a populated, leakage-free ABT so ML + serving can start before real SAR.*
 
-- [ ] Promote `pipelines/build_unified_dataset.py` cleaning/dedup/quarantine to `de/cleaning.py` →04-T02
-- [ ] Bulletin bronze→silver ingest (`data/historical/reservoir_timeseries.csv`) →04-T02
-- [ ] Generate **stub `Observation`** rows (invert rough bulletin curve) →04 / contract stub rule
-- [ ] Fuse Observations ↔ ground-truth → `ground_truth_match` (nearest ±N, default ±5d) →04-T04
-- [ ] Catchment delineation (HydroBASINS, MERIT `upa` validation, `pyflwdir`) →04-T06
-- [ ] Hydromet ingest + catchment aggregation via `xee` (CHIRPS/IMERG/ERA5-Land/GLDAS/MODIS) incl. **evaporation** →04-T07
-- [ ] `ForecastForcing` ingest (GFS `NOAA/GFS0P25`, point-in-time reforecasts; verify 2015+ archive) →04
-- [ ] `build_abt` — point-in-time builder (IST/UTC alignment, `merge_asof`, versioned, quality/freshness flags) →04-T10 (AC-10)
-- [ ] Data-validation suite (pandera/Great Expectations) wired into CI gate →04 (AC-12)
-- [ ] Prefect flows + RS→DE→ML trigger chain →04
+- [x] Promote `pipelines/build_unified_dataset.py` cleaning/dedup/quarantine to `de/cleaning.py` →04-T02
+- [x] Bulletin bronze→silver ingest (`data/historical/reservoir_timeseries.csv`) →04-T02
+- [x] Generate **stub `Observation`** rows (invert rough bulletin curve) →04 / contract stub rule
+- [x] Fuse Observations ↔ ground-truth → `ground_truth_match` (nearest ±N, default ±5d) →04-T04
+- [~] Catchment delineation — **placeholder** geometry seeded; real MERIT `upa`/`pyflwdir`/HydroBASINS trace deferred to Phase 3 (needs GEE) →04-T06
+- [~] Hydromet ingest + catchment aggregation — **wired behind `DataAccessBackend`** (real §6.6 asset IDs, real antecedent-index/degree-day-melt logic) incl. `evaporation`; values are fixture-stubbed until GEE auth executes →04-T07
+- [~] `ForecastForcing` ingest — structure + point-in-time GFS run-selection logic built; values fixture-stubbed (real `NOAA/GFS0P25` pull behind backend) →04
+- [x] `build_abt` — point-in-time builder (IST spine, backward `merge_asof`, versioned, quality/freshness flags); **leakage probe = 0** →04-T10 (AC-10)
+- [x] Data-validation suite (**pandera** schemas: bulletins + ABT); GE checkpoint + CI wiring deferred →04 (AC-12)
+- [ ] Prefect flows + RS→DE→ML trigger chain — **deferred to Phase 9** (orchestration; logic lives in `de/pipeline.py:run_de_pipeline`) →04
 
-**Exit:** ABT v1 populated & leakage-tested; data-validation gate green.
+**Exit:** ✅ ABT v1 populated (~11.9k rows, 3 reservoirs × daily IST) & **leakage-tested** (AC-10 probe + recency ≥ 0); pandera validation green; pipeline idempotent. _GEE-dependent forcing values + Prefect orchestration wired but executed against the fixture backend / deferred — see [~] items._
 
 ---
 
