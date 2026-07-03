@@ -1,0 +1,22 @@
+/* web/src/styles/tokens.css — the entire design language in one file */
+:root {
+  --bg: #0d1117;
+  --panel: #151b23;
+  --panel-2: #1a222c;
+  --line: #2a333e;
+  --text: #dbe7f3;
+  --muted: #71818f;
+  --water: #59b7ff;
+  --water-deep: #1f6db3;
+  --warn: #e8b45a;
+  --danger: #e0654f;
+  --radius: 10px;
+  --sidebar-w: 240px;
+  --dock-h: 84px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-1: 200ms; /* micro */
+  --dur-2: 450ms; /* panel */
+  --dur-3: 1600ms; /* camera */
+  --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "Cascadia Code", monospace;
+}
