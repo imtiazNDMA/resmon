@@ -34,3 +34,11 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
 .dbtn.active { outline: 2px solid var(--text); }
 .stage { flex: 1; position: relative; min-width: 0; }
 .mapview, .dashview { position: absolute; inset: 0; }
+
+/* ---- Map view ---- */
+.leaflet-root { position: absolute; inset: 0; background: #05080a; }
+.imagery-chip {
+  position: absolute; top: 12px; right: 12px; z-index: 1100;
+  background: rgba(21,27,35,.9); border: 1px solid var(--warn); color: var(--warn);
+  font-size: 11px; padding: 6px 10px; border-radius: 16px;
+}
