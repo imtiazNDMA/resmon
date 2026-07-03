@@ -1,4 +1,5 @@
-"""End-to-end release-risk against the live DB: persist ReleaseRisk + the AC-5 backtest."""
+"""End-to-end release-risk against the live DB: persist ReleaseRisk + the AC-5
+replayed backtest (episodes scored against a hindsight-free forecaster replay)."""
 
 from __future__ import annotations
 
@@ -36,15 +37,18 @@ def test_release_risk_persists_per_reservoir(session):
     assert bad == 0
 
 
-def test_ac5_episode_backtest_fires_with_lead(session):
+def test_ac5_replayed_backtest_scores_observed_episodes(session):
+    """AC-5 (ADR-0001): replay the forecaster + risk logic through the held-out years
+    and score against observed near-FRL episodes. The old test asserted fired==True on
+    hindsight-derived episodes — a tautology. This one asserts the replayed metrics."""
     seed_reservoirs(session)
     ingest_bulletins(session, DEFAULT_CSV)
     conn = session.connection()
 
     df = pd.read_sql(
         text(
-            "SELECT reservoir_id, date, pct_filled FROM ground_truth "
-            "WHERE pct_filled IS NOT NULL ORDER BY reservoir_id, date"
+            "SELECT reservoir_id, date, pct_filled, normal_storage_pct, live_capacity_bcm "
+            "FROM ground_truth WHERE pct_filled IS NOT NULL ORDER BY reservoir_id, date"
         ),
         conn,
         parse_dates=["date"],
@@ -56,9 +60,30 @@ def test_ac5_episode_backtest_fires_with_lead(session):
         ).all()
     }
 
-    results = backtest_release_risk(df, thresholds, near_frl_pct=95.0)
-    assert len(results) > 0  # multiple near-FRL monsoon peaks across 11 years
-    assert all(r["fired"] for r in results)
-    mean_lead = sum(r["lead_time_days"] for r in results) / len(results)
-    # AC-5: the transparent risk logic reaches Watch+ with usable lead before the peak.
-    assert mean_lead >= 3.0
+    report = backtest_release_risk(df, thresholds, near_frl_pct=95.0)
+
+    assert report["evaluated"] is True
+    assert report["n_assessments"] > 0  # weekly replay across the held-out years
+    # The 11-year record has post-cutoff near-FRL monsoon peaks (2023/2025) to score.
+    assert report["n_episodes"] >= 1
+    assert report["hits"] + report["misses"] == report["n_episodes"]
+    assert report["false_alarms"] >= 0 and report["unresolved_alerts"] >= 0
+
+    for ep in report["episodes"]:
+        assert "fired" not in ep  # no hard-coded outcome — hits are earned, not asserted
+        if ep["hit"]:
+            assert ep["lead_time_days"] is not None and ep["lead_time_days"] >= 0
+        else:
+            assert ep["lead_time_days"] is None
+    if report["hits"]:
+        assert report["mean_lead_days"] is not None and report["mean_lead_days"] >= 0
+
+    for a in report["assessments"]:
+        assert a["risk_level"] in RISK_LEVELS
+        assert 0.0 <= a["release_probability"] <= 1.0
+
+    # NOTE: we deliberately do NOT assert mean lead ≥ 3 days (the AC-5 skill target).
+    # Without real inflow forcing the Δ-fill model adds little beyond current state
+    # (e.g. the Aug-2023 Pong flood filled 75→100% inside one bulletin week — an honest
+    # miss for any storage-only model). The skill claim awaits real forcing data; this
+    # test verifies the replayed-backtest machinery and metric semantics.

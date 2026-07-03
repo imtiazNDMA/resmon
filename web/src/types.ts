@@ -1,6 +1,18 @@
-import type { FeatureCollection as GeoJSONFeatureCollection } from "geojson";
+import type {
+  FeatureCollection as GeoJSONFeatureCollection,
+  GeoJsonProperties,
+  Geometry,
+} from "geojson";
 
-export type GeoFC = GeoJSONFeatureCollection;
+export type GeoFC<P = GeoJsonProperties> = GeoJSONFeatureCollection<Geometry, P>;
+
+/** Properties on `/geojson/water-extent` features (latest Sentinel-1 mask per reservoir). */
+export interface WaterExtentProperties {
+  reservoir_id: string;
+  name: string;
+  surface_area_km2: number;
+  acquisition_date: string;
+}
 
 export type RiskLevel = "Low" | "Watch" | "Warning" | "Imminent";
 
@@ -56,16 +68,19 @@ export interface FleetRisk {
   run_timestamp: string;
 }
 
+/** Properties on `/geojson/reservoirs` marker features. */
+export interface ReservoirMarkerProperties {
+  reservoir_id: string;
+  name: string;
+  frl_m: number;
+  risk_level: RiskLevel | null;
+  release_probability: number | null;
+}
+
 export interface ReservoirFeature {
   type: "Feature";
   geometry: { type: "Point"; coordinates: [number, number] } | null;
-  properties: {
-    reservoir_id: string;
-    name: string;
-    frl_m: number;
-    risk_level: RiskLevel | null;
-    release_probability: number | null;
-  };
+  properties: ReservoirMarkerProperties;
 }
 
 export interface FeatureCollection {
@@ -79,3 +94,15 @@ export const RISK_COLOR: Record<RiskLevel, string> = {
   Warning: "#fe9929",
   Imminent: "#d7301f",
 };
+
+// Dark text on the light tiers (Watch/Warning): white fails WCAG contrast there.
+export const RISK_TEXT_COLOR: Record<RiskLevel, string> = {
+  Low: "#ffffff",
+  Watch: "#1a1a1a",
+  Warning: "#1a1a1a",
+  Imminent: "#ffffff",
+};
+
+/** Neutral grey for unknown risk — must never reuse the calm Low blue. */
+export const UNKNOWN_RISK_COLOR = "#94a3b8";
+export const UNKNOWN_RISK_TEXT_COLOR = "#1a1a1a";

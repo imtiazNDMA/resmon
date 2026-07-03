@@ -1,5 +1,10 @@
 # Dev reverse proxy (plan 01 T-09). Caddy terminates TLS in prod; dev runs plain :80.
-# Routes: /api -> api, /mlflow -> mlflow, /prefect -> prefect-server, / -> web.
+# Routes: /api -> api, / -> web.
+#
+# MLflow and Prefect are write-capable, unauthenticated admin planes and are
+# deliberately NOT proxied here (D1). Operators reach them over the compose
+# network (http://mlflow:5000, http://prefect-server:4200) or via a local
+# port-forward / the dev compose override's published ports.
 {
 	auto_https off
 }
@@ -7,12 +12,6 @@
 :80 {
 	handle_path /api/* {
 		reverse_proxy api:8000
-	}
-	handle_path /mlflow/* {
-		reverse_proxy mlflow:5000
-	}
-	handle_path /prefect/* {
-		reverse_proxy prefect-server:4200
 	}
 	handle {
 		reverse_proxy web:80

@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { api } from "./api";
+import { api, isAbortError } from "./api";
 import { ForecastChart } from "./components/ForecastChart";
 import { ReservoirMap } from "./components/ReservoirMap";
 import { TrendChart } from "./components/TrendChart";
 import {
   RISK_COLOR,
+  RISK_TEXT_COLOR,
+  UNKNOWN_RISK_COLOR,
+  UNKNOWN_RISK_TEXT_COLOR,
   type FeatureCollection,
   type FleetRisk,
   type Forecast,
@@ -14,17 +17,34 @@ import {
   type RiskLevel,
   type Status,
   type TimeseriesPoint,
+  type WaterExtentProperties,
 } from "./types";
+
+const REFRESH_INTERVAL_MS = 90_000;
+
+type SourceKey = "reservoirs" | "markers" | "aoi" | "catchment" | "water" | "fleet" | "detail";
+
+const SOURCE_LABEL: Record<SourceKey, string> = {
+  reservoirs: "Reservoir list",
+  markers: "Risk markers",
+  aoi: "AOI overlay",
+  catchment: "Catchment overlay",
+  water: "Water-extent overlay",
+  fleet: "Fleet risk",
+  detail: "Reservoir detail",
+};
 
 // Coerce defensively: Postgres `numeric` may arrive as a string ("512.000").
 const fx = (v: number | string | null | undefined, digits = 1): string =>
   v == null || Number.isNaN(Number(v)) ? "—" : Number(v).toFixed(digits);
 
 function RiskBadge({ level }: { level: RiskLevel | null }) {
-  const lvl = level ?? "Low";
+  // Unknown is grey, never the calm Low blue.
+  const background = level ? RISK_COLOR[level] : UNKNOWN_RISK_COLOR;
+  const color = level ? RISK_TEXT_COLOR[level] : UNKNOWN_RISK_TEXT_COLOR;
   return (
-    <span className="badge" style={{ background: RISK_COLOR[lvl] }}>
-      {level ?? "—"}
+    <span className="badge" style={{ background, color }}>
+      {level ?? "Unknown"}
     </span>
   );
 }
@@ -43,58 +63,144 @@ export default function App() {
   const [markers, setMarkers] = useState<FeatureCollection | null>(null);
   const [aoi, setAoi] = useState<GeoFC | null>(null);
   const [catchment, setCatchment] = useState<GeoFC | null>(null);
-  const [water, setWater] = useState<GeoFC | null>(null);
+  const [water, setWater] = useState<GeoFC<WaterExtentProperties> | null>(null);
   const [fleet, setFleet] = useState<FleetRisk[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
   const [series, setSeries] = useState<TimeseriesPoint[]>([]);
   const [forecast, setForecast] = useState<Forecast | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<SourceKey, string>>>({});
+  const [refreshTick, setRefreshTick] = useState(0);
 
-  useEffect(() => {
-    Promise.all([
-      api.reservoirs(),
-      api.geojson(),
-      api.aoi(),
-      api.catchment(),
-      api.waterExtent(),
-      api.fleetRisk(),
-    ])
-      .then(([rs, gj, a, c, w, fr]) => {
+  const clearError = useCallback((key: SourceKey) => {
+    setErrors((prev) => {
+      if (prev[key] == null) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
+
+  const reportError = useCallback((key: SourceKey, e: unknown) => {
+    if (isAbortError(e)) return;
+    setErrors((prev) => ({ ...prev, [key]: e instanceof Error ? e.message : String(e) }));
+  }, []);
+
+  const staticLoaders = useMemo(
+    () => ({
+      reservoirs: async (signal?: AbortSignal) => {
+        const rs = await api.reservoirs(signal);
         setReservoirs(rs);
-        setMarkers(gj);
-        setAoi(a);
-        setCatchment(c);
-        setWater(w);
-        setFleet(fr);
-        if (rs.length > 0) setSelected(rs[0].reservoir_id);
-      })
-      .catch((e: unknown) => setError(String(e)));
+        setSelected((cur) => cur ?? rs[0]?.reservoir_id ?? null);
+      },
+      markers: async (signal?: AbortSignal) => setMarkers(await api.geojson(signal)),
+      aoi: async (signal?: AbortSignal) => setAoi(await api.aoi(signal)),
+      catchment: async (signal?: AbortSignal) => setCatchment(await api.catchment(signal)),
+      water: async (signal?: AbortSignal) => setWater(await api.waterExtent(signal)),
+      fleet: async (signal?: AbortSignal) => setFleet(await api.fleetRisk(signal)),
+    }),
+    [],
+  );
+
+  const loadSource = useCallback(
+    async (key: Exclude<SourceKey, "detail">, signal?: AbortSignal) => {
+      try {
+        await staticLoaders[key](signal);
+        clearError(key);
+      } catch (e) {
+        reportError(key, e);
+      }
+    },
+    [staticLoaders, clearError, reportError],
+  );
+
+  // Initial load: each source settles independently — one flaky GEE overlay must
+  // never blank the risk markers/KPIs.
+  useEffect(() => {
+    const ctrl = new AbortController();
+    const keys = Object.keys(staticLoaders) as Exclude<SourceKey, "detail">[];
+    void Promise.allSettled(keys.map((k) => loadSource(k, ctrl.signal)));
+    return () => ctrl.abort();
+  }, [staticLoaders, loadSource]);
+
+  // Poll every 90 s + refetch on window focus (dynamic sources only; the
+  // geometry overlays are static).
+  useEffect(() => {
+    const bump = () => setRefreshTick((t) => t + 1);
+    const id = window.setInterval(bump, REFRESH_INTERVAL_MS);
+    window.addEventListener("focus", bump);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("focus", bump);
+    };
   }, []);
 
   useEffect(() => {
+    if (refreshTick === 0) return; // initial load already fetched fleet risk
+    const ctrl = new AbortController();
+    void loadSource("fleet", ctrl.signal);
+    return () => ctrl.abort();
+  }, [refreshTick, loadSource]);
+
+  // Tracks which reservoir the detail pane currently shows, so polling refreshes
+  // in place while a genuine switch clears stale data first.
+  const detailIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
     if (!selected) return;
-    setStatus(null);
-    Promise.all([api.status(selected), api.timeseries(selected, 200), api.forecast(selected)])
-      .then(([st, ts, fc]) => {
-        setStatus(st);
-        setSeries(ts);
-        setForecast(fc);
-      })
-      .catch((e: unknown) => setError(String(e)));
-  }, [selected]);
+    if (detailIdRef.current !== selected) {
+      // Switching reservoirs: drop the previous reservoir's status AND
+      // series/forecast immediately so they never render under the new header.
+      detailIdRef.current = selected;
+      setStatus(null);
+      setSeries([]);
+      setForecast(null);
+    }
+    const ctrl = new AbortController();
+    const { signal } = ctrl;
+    // Aborting rejects in-flight fetches, but a fetch that already resolved can
+    // still have its .then queued — the signal check closes that race window.
+    const guard =
+      <T,>(apply: (v: T) => void) =>
+      (v: T) => {
+        if (!signal.aborted) apply(v);
+      };
+    void Promise.allSettled([
+      api.status(selected, signal).then(guard(setStatus)),
+      api.timeseries(selected, 200, signal).then(guard(setSeries)),
+      api.forecast(selected, signal).then(guard(setForecast)),
+    ]).then((results) => {
+      const failure = results.find(
+        (r): r is PromiseRejectedResult => r.status === "rejected" && !isAbortError(r.reason),
+      );
+      if (failure) reportError("detail", failure.reason);
+      else if (!signal.aborted) clearError("detail");
+    });
+    return () => ctrl.abort();
+  }, [selected, refreshTick, reportError, clearError]);
+
+  const retrySource = useCallback(
+    (key: SourceKey) => {
+      if (key === "detail") setRefreshTick((t) => t + 1);
+      else void loadSource(key);
+    },
+    [loadSource],
+  );
+
+  const errorEntries = useMemo(
+    () => Object.entries(errors) as [SourceKey, string][],
+    [errors],
+  );
 
   const selectedReservoir = useMemo(
     () => reservoirs.find((r) => r.reservoir_id === selected) ?? null,
     [reservoirs, selected],
   );
 
-  const waterInfo = useMemo(() => {
-    const f = water?.features.find((x) => x.properties?.reservoir_id === selected);
-    return f?.properties as
-      | { surface_area_km2?: number; acquisition_date?: string }
-      | undefined;
-  }, [water, selected]);
+  const waterInfo = useMemo<WaterExtentProperties | undefined>(
+    () => water?.features.find((x) => x.properties.reservoir_id === selected)?.properties,
+    [water, selected],
+  );
 
   return (
     <div className="gis">
@@ -122,7 +228,20 @@ export default function App() {
         </div>
       </header>
 
-      {error && <div className="error">⚠ {error}</div>}
+      {errorEntries.length > 0 && (
+        <div className="error-stack">
+          {errorEntries.map(([key, msg]) => (
+            <div key={key} className="error">
+              <span>
+                ⚠ {SOURCE_LABEL[key]}: {msg}
+              </span>
+              <button className="retry" onClick={() => retrySource(key)}>
+                Retry
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="gis-body">
         <section className="map-pane">
@@ -149,7 +268,11 @@ export default function App() {
 
               {status?.stale && (
                 <div className="stale-banner">
-                  ⏳ Data {status.data_age_days}d old · serving last-known forecast-based risk
+                  ⏳{" "}
+                  {status.data_age_days != null
+                    ? `Data ${status.data_age_days}d old`
+                    : "Data age unknown"}{" "}
+                  · serving last-known forecast-based risk
                 </div>
               )}
 

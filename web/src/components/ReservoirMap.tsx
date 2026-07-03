@@ -1,22 +1,73 @@
-import { CircleMarker, GeoJSON, LayersControl, MapContainer, Popup, TileLayer } from "react-leaflet";
+import { useEffect, useMemo } from "react";
+import {
+  CircleMarker,
+  GeoJSON,
+  LayersControl,
+  MapContainer,
+  Popup,
+  TileLayer,
+  useMap,
+} from "react-leaflet";
 
-import { RISK_COLOR, type FeatureCollection, type GeoFC, type RiskLevel } from "../types";
+import {
+  RISK_COLOR,
+  type FeatureCollection,
+  type GeoFC,
+  type RiskLevel,
+  type WaterExtentProperties,
+} from "../types";
 
 const { BaseLayer, Overlay } = LayersControl;
+
+// react-leaflet's GeoJSON reads `data` only on mount, so key each layer by a
+// cheap data-identity fingerprint (feature count + boundary properties) to
+// remount it whenever a refresh delivers new geometry.
+function geoKey(fc: GeoFC<unknown> | null): string {
+  if (!fc) return "empty";
+  const first = fc.features[0];
+  const last = fc.features[fc.features.length - 1];
+  return `${fc.features.length}:${JSON.stringify(first?.properties ?? null)}:${JSON.stringify(
+    last?.properties ?? null,
+  )}`;
+}
+
+/** Pans/zooms the map to the selected reservoir when it changes. */
+function FlyToSelected({
+  markers,
+  selectedId,
+}: {
+  markers: FeatureCollection | null;
+  selectedId: string | null;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    const f = markers?.features.find((x) => x.properties.reservoir_id === selectedId);
+    if (f?.geometry) {
+      const [lon, lat] = f.geometry.coordinates;
+      map.flyTo([lat, lon], map.getZoom(), { duration: 0.8 });
+    }
+  }, [map, markers, selectedId]);
+  return null;
+}
 
 interface Props {
   markers: FeatureCollection | null;
   aoi: GeoFC | null;
   catchment: GeoFC | null;
-  water: GeoFC | null;
+  water: GeoFC<WaterExtentProperties> | null;
   selectedId: string | null;
   onSelect: (id: string) => void;
 }
 
 export function ReservoirMap({ markers, aoi, catchment, water, selectedId, onSelect }: Props) {
+  const catchmentKey = useMemo(() => geoKey(catchment), [catchment]);
+  const aoiKey = useMemo(() => geoKey(aoi), [aoi]);
+  const waterKey = useMemo(() => geoKey(water), [water]);
+
   return (
     <div className="map-wrap">
       <MapContainer center={[31.9, 76.0]} zoom={8} style={{ height: "100%", width: "100%" }}>
+        <FlyToSelected markers={markers} selectedId={selectedId} />
         <LayersControl position="topright">
           <BaseLayer checked name="Satellite">
             <TileLayer
@@ -34,6 +85,7 @@ export function ReservoirMap({ markers, aoi, catchment, water, selectedId, onSel
           {catchment && (
             <Overlay name="Catchment (HydroBASINS)">
               <GeoJSON
+                key={catchmentKey}
                 data={catchment}
                 style={() => ({ color: "#f59e0b", weight: 1.5, fillOpacity: 0.05, dashArray: "5 5" })}
               />
@@ -41,12 +93,17 @@ export function ReservoirMap({ markers, aoi, catchment, water, selectedId, onSel
           )}
           {aoi && (
             <Overlay checked name="Reservoir AOI (JRC GSW)">
-              <GeoJSON data={aoi} style={() => ({ color: "#38bdf8", weight: 2, fillOpacity: 0.08 })} />
+              <GeoJSON
+                key={aoiKey}
+                data={aoi}
+                style={() => ({ color: "#38bdf8", weight: 2, fillOpacity: 0.08 })}
+              />
             </Overlay>
           )}
           {water && (
             <Overlay checked name="Water extent (Sentinel-1)">
               <GeoJSON
+                key={waterKey}
                 data={water}
                 style={() => ({ color: "#0ea5e9", weight: 1, fillColor: "#22d3ee", fillOpacity: 0.55 })}
               />

@@ -5,6 +5,7 @@ into a persisted `ReleaseRisk` row (ADR-0001). Append-only (audit trail, NFR-REL
 from __future__ import annotations
 
 import json
+from collections import Counter
 from datetime import UTC, datetime
 
 from sqlalchemy import text
@@ -39,32 +40,47 @@ def run_release_risk(
         ).scalar()
         if latest is None:
             continue
-        preds = conn.execute(
-            text(
-                "SELECT predicted_pct_filled, interval_high, model_version_id FROM prediction "
-                "WHERE reservoir_id = :r AND run_timestamp = :t ORDER BY horizon_date"
-            ),
-            {"r": rid, "t": latest},
-        ).all()
-        pred_pct = [float(p[0]) for p in preds]
-        interval_high = [float(p[1]) if p[1] is not None else float(p[0]) for p in preds]
-        horizons = list(range(1, len(preds) + 1))
-        mv_id = preds[0][2]
-
         gt = conn.execute(
             text(
-                "SELECT pct_filled, normal_storage_pct FROM ground_truth "
+                "SELECT date, pct_filled, normal_storage_pct FROM ground_truth "
                 "WHERE reservoir_id = :r AND pct_filled IS NOT NULL ORDER BY date DESC LIMIT 1"
             ),
             {"r": rid},
         ).first()
         if gt is None:
             continue
-        current_pct = float(gt[0])
-        normal_pct = float(gt[1]) if gt[1] is not None else current_pct
+        base_date = gt[0]  # the forecast base: predictions target base_date + horizon
+        current_pct = float(gt[1])
+        normal_pct = float(gt[2]) if gt[2] is not None else current_pct
+
+        preds = conn.execute(
+            text(
+                "SELECT horizon_date, predicted_pct_filled, interval_low, interval_high, "
+                "model_version_id FROM prediction "
+                "WHERE reservoir_id = :r AND run_timestamp = :t"
+            ),
+            {"r": rid, "t": latest},
+        ).all()
+        # Key horizons by the horizon_date column relative to the forecast base —
+        # never by row order (C7); rows are not guaranteed contiguous or ordered.
+        traj = sorted(
+            (((p[0] - base_date).days, p) for p in preds if (p[0] - base_date).days >= 1),
+            key=lambda hp: hp[0],
+        )
+        if not traj:
+            continue
+        horizons = [h for h, _ in traj]
+        pred_pct = [float(p[1]) for _, p in traj]
+        # NULL bounds stay None: assess_release_risk treats a missing interval as
+        # missing uncertainty (widest-known / fallback), never as zero width (C7).
+        interval_low = [float(p[2]) if p[2] is not None else None for _, p in traj]
+        interval_high = [float(p[3]) if p[3] is not None else None for _, p in traj]
+        # Rows could carry mixed model versions; take the modal one, deterministically,
+        # rather than assuming row 0 speaks for the whole trajectory (C7).
+        mv_id = Counter(p[4] for _, p in traj).most_common(1)[0][0]
 
         risk = assess_release_risk(
-            horizons, pred_pct, interval_high, thresholds, normal_pct, current_pct
+            horizons, pred_pct, interval_low, interval_high, thresholds, normal_pct, current_pct
         )
         session.execute(
             _RR_INSERT,

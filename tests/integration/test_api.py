@@ -89,3 +89,6 @@ def test_openapi_published(client):
     schema = client.get("/openapi.json").json()
     assert schema["info"]["title"] == "Reservoir Monitoring & Analytics API"
     assert "/reservoirs" in schema["paths"]
+    # D5: routes declare typed response models — the contract is no longer `{}`.
+    ok = schema["paths"]["/reservoirs"]["get"]["responses"]["200"]
+    assert ok["content"]["application/json"]["schema"]["items"]["$ref"].endswith("ReservoirSummary")

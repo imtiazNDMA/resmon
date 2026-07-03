@@ -1,3 +1,7 @@
+> **STATUS: PROPOSAL (2026-06-30) — not adopted.** Captured from a stray temp file during
+> the 2026-07-03 remediation; contradicts the current ADR-0004 blended-rating-curve decision
+> and must be explicitly accepted or rejected.
+
 # Replan — Phase 1: State Estimation from Imagery + Catchment Forcings
 
 **Status:** Proposed · **Date:** 2026-06-30 · **Author:** RS engineering

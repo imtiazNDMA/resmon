@@ -12,6 +12,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from data_engineering.cleaning import clean_bulletins
+from data_engineering.validation import validate_bulletins
 
 _UPSERT = text(
     """
@@ -25,8 +26,12 @@ _UPSERT = text(
        :source_pdf, :row_quality)
     ON CONFLICT (reservoir_id, date) DO UPDATE SET
        level_m = EXCLUDED.level_m, live_storage_bcm = EXCLUDED.live_storage_bcm,
-       pct_filled = EXCLUDED.pct_filled, normal_storage_pct = EXCLUDED.normal_storage_pct,
-       row_quality = EXCLUDED.row_quality
+       pct_filled = EXCLUDED.pct_filled, frl_m = EXCLUDED.frl_m,
+       live_capacity_bcm = EXCLUDED.live_capacity_bcm,
+       normal_storage_pct = EXCLUDED.normal_storage_pct,
+       benefits_irr_cca = EXCLUDED.benefits_irr_cca,
+       benefits_hydel_mw = EXCLUDED.benefits_hydel_mw,
+       source_pdf = EXCLUDED.source_pdf, row_quality = EXCLUDED.row_quality
     """
 )
 
@@ -67,6 +72,9 @@ def ingest_bulletins(session: Session, csv_path: str | Path) -> dict:
     """Load + clean + upsert bulletins. Returns row counts (loaded/inserted/quarantined)."""
     raw = pd.read_csv(csv_path)
     cleaned = clean_bulletins(raw)
+    # Silver-boundary validation (AC-12): fail loudly if any 'ok' row violates the
+    # bulletin schema — flagged (low_confidence/quarantine) rows are carried, not gated.
+    validate_bulletins(cleaned)
     keyable = cleaned[cleaned["reservoir_id"].notna() & cleaned["date"].notna()]
     dropped = len(cleaned) - len(keyable)
     records = _records(keyable)

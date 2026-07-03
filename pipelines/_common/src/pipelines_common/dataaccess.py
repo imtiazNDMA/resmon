@@ -131,8 +131,29 @@ class FixtureBackend(DataAccessBackend):
         )
 
     def get_s1_grd(self, aoi, start, end, orbit, pass_dir):
-        ds = self._grid(start, end, "VH")
-        ds["VV"] = ds["VH"]
+        """Physically plausible S1 IW dB scene stack (not 0 dB everywhere): a specular
+        water block (VH ≈ −22 dB) inside land clutter (VH ≈ −12 dB), VV ≈ VH + 5 dB,
+        with mild noise. Deterministic so extractor tests are reproducible."""
+        import numpy as np
+        import pandas as pd
+        import xarray as xr
+
+        times = pd.date_range(start, end, freq="D")
+        lats = np.linspace(31.0, 32.0, 16)
+        lons = np.linspace(76.0, 77.0, 16)
+        water = np.zeros((len(lats), len(lons)), dtype=bool)
+        water[5:11, 4:12] = True  # reservoir pool near the grid centre
+        rng = np.random.default_rng(42)
+        shape = (len(times), len(lats), len(lons))
+        vh = np.where(water, -22.0, -12.0) + rng.normal(0.0, 1.0, shape)
+        vv = np.where(water, -17.0, -7.0) + rng.normal(0.0, 1.0, shape)
+        ds = xr.Dataset(
+            {
+                "VH": (("time", "lat", "lon"), vh.astype("float32")),
+                "VV": (("time", "lat", "lon"), vv.astype("float32")),
+            },
+            coords={"time": times, "lat": lats, "lon": lons},
+        )
         ds.attrs.update(orbit_relative=orbit, pass_direction=pass_dir)
         return ds
 

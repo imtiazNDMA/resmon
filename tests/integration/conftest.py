@@ -21,17 +21,43 @@ def engine():
     return eng
 
 
+# Children before parents (FK dependency order). prediction/release_risk are append-only
+# (UPDATE/DELETE row triggers + BEFORE TRUNCATE statement triggers), so the cleanup
+# briefly disables their user triggers inside the rolled-back transaction.
+_CLEAN_TABLES = (
+    "ground_truth_match",
+    "prediction",
+    "release_risk",
+    "observation",
+    "analytical_base_table",
+    "forecast_forcing",
+    "catchment_forcing",
+    "ground_truth",
+    "rating_curve",
+    "reservoir_capacity_history",
+    "pipeline_run",
+    "model_version",
+    "reservoir",
+)
+
+
 @pytest.fixture
 def conn(engine):
     """A connection in a transaction rolled back after each test (no persisted data).
 
-    Truncates the app tables at the start of the transaction so each test sees a clean
+    Clears the app tables at the start of the transaction so each test sees a clean
     slate even if the database already holds committed data (e.g. from the demo
-    bootstrap). The TRUNCATE rolls back with everything else, leaving that data intact.
+    bootstrap). DELETE (not TRUNCATE — forbidden on the append-only tables since
+    migration 7c4e9a1d2b6f) rolls back with everything else, leaving that data intact.
     """
     with engine.connect() as c:
         tx = c.begin()
-        c.execute(text("TRUNCATE reservoir, model_version CASCADE"))
+        c.execute(text("ALTER TABLE prediction DISABLE TRIGGER USER"))
+        c.execute(text("ALTER TABLE release_risk DISABLE TRIGGER USER"))
+        for table in _CLEAN_TABLES:
+            c.execute(text(f"DELETE FROM {table}"))
+        c.execute(text("ALTER TABLE prediction ENABLE TRIGGER USER"))
+        c.execute(text("ALTER TABLE release_risk ENABLE TRIGGER USER"))
         try:
             yield c
         finally:

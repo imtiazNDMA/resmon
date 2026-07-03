@@ -14,6 +14,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from remote_sensing.area import area_confidence, compactness, surface_area_km2
+from remote_sensing.calibrate import mask_border_noise
 from remote_sensing.extractors import get_extractor
 
 # Synthetic-scene constants (test/framework only).
@@ -46,7 +47,9 @@ def synth_scene(pct_filled: float, *, seed: int = 0) -> tuple[np.ndarray, np.nda
     """A deterministic VV/VH (dB) scene with a water block covering ``pct_filled`` % of the
     grid. Returns (vv, vh, valid_mask)."""
     rng = np.random.default_rng(seed)
-    frac = min(max(pct_filled / 100.0, 0.0), 1.0)
+    # Clamp away from 0/100 % so both modes are always present: a fully dry or fully
+    # flooded synthetic grid is unimodal and the extractor would (correctly) abstain.
+    frac = min(max(pct_filled / 100.0, 0.02), 0.98)
     n_water = int(round(frac * _GRID * _GRID))
     flat_idx = np.arange(_GRID * _GRID)
     water_flat = np.zeros(_GRID * _GRID, dtype=bool)
@@ -69,6 +72,7 @@ def run_rs_pipeline(session: Session, extractor_name: str = "otsu_vh") -> dict:
 
     rows: list[dict] = []
     confidences: list[float] = []
+    skipped = 0
     for rid, orbit, pass_dir, aoi_version in reservoirs:
         gt = conn.execute(
             text(
@@ -79,7 +83,14 @@ def run_rs_pipeline(session: Session, extractor_name: str = "otsu_vh") -> dict:
         ).all()
         for i, (gdate, pct) in enumerate(gt):
             vv, vh, valid = synth_scene(float(pct), seed=i)
+            # Border/thermal-noise floor: extreme low-dB artifacts leave the valid mask
+            # before extraction (FR-RS-2 calibration step).
+            valid = valid & mask_border_noise(vh) & mask_border_noise(vv)
             res = extractor.extract(vv, vh, valid, context={"reservoir_id": rid})
+            if res.abstained:
+                # No confident water/land partition (ADR-0007 gate) → no Observation row.
+                skipped += 1
+                continue
             area = surface_area_km2(res.water_mask, _SYNTH_PIXEL_AREA_M2)
             conf = area_confidence(res.separability, compactness(res.water_mask), 0.0)
             confidences.append(conf)
@@ -104,6 +115,7 @@ def run_rs_pipeline(session: Session, extractor_name: str = "otsu_vh") -> dict:
     mean_conf = float(np.mean(confidences)) if confidences else 0.0
     return {
         "observations_written": len(rows),
+        "observations_skipped": skipped,  # abstained scenes (no confident partition)
         "extraction_method": extractor.name,
         "mean_confidence": mean_conf,
     }

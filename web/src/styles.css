@@ -38,7 +38,17 @@ body {
 .chip-dot { width: 9px; height: 9px; border-radius: 50%; }
 .chip-risk { font-size: 0.68rem; color: #9fb0c8; text-transform: uppercase; letter-spacing: 0.04em; }
 
-.error { background: #fde2e1; color: #8a1c13; padding: 0.5rem 0.9rem; font-size: 0.85rem; }
+.error-stack { display: flex; flex-direction: column; gap: 2px; }
+.error {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  background: #fde2e1; color: #8a1c13; padding: 0.4rem 0.9rem; font-size: 0.85rem;
+}
+.error .retry {
+  flex-shrink: 0; cursor: pointer; background: #fff; color: #8a1c13;
+  border: 1px solid #f5b5b1; border-radius: 6px; padding: 0.15rem 0.6rem;
+  font-size: 0.78rem; font-weight: 600;
+}
+.error .retry:hover { background: #fff5f5; }
 
 /* ---- Body: map + side panel ---- */
 .gis-body { display: flex; flex: 1; min-height: 0; }
@@ -56,7 +66,8 @@ body {
 .detail-head { display: flex; align-items: flex-start; justify-content: space-between; }
 .detail-head h2 { margin: 0; font-size: 1.15rem; }
 .muted { color: var(--muted); font-size: 0.78rem; }
-.badge { color: #fff; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
+/* Text colour is set inline per risk tier (dark on light tiers for WCAG contrast). */
+.badge { padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
 
 .stale-banner {
   margin: 0.7rem 0 0; background: #fff7ed; color: #9a3412;

@@ -26,11 +26,22 @@ def test_ground_truthing_passes_ac2_and_backfills(session):
     # Synthetic SAR → area tracks fill → the curve clears AC-2 comfortably (machinery check).
     assert result["ac2_passed"] is True
     assert result["ac2_worst_mae"] < 10.0
+    # C5: the pass is stamped with its provenance — these observations are synthetic
+    # (scene_ids=['synthetic'] from the RS pipeline), so AC-2 is a machinery pass.
+    assert result["on_synthetic_data"] is True
 
     conn = session.connection()
     # Exactly one active curve per reservoir (partial-unique holds).
     n_active = conn.execute(text("SELECT count(*) FROM rating_curve WHERE is_active")).scalar_one()
     assert n_active == 3
+    # The provenance flag is persisted into every curve's fit_metrics JSON (C5).
+    n_flagged = conn.execute(
+        text(
+            "SELECT count(*) FROM rating_curve "
+            "WHERE is_active AND fit_metrics->>'on_synthetic_data' = 'true'"
+        )
+    ).scalar_one()
+    assert n_flagged == 3
 
     # Pass-2 backfill landed on both the match table and observations.
     n_match_derived = conn.execute(

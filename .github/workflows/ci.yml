@@ -59,3 +59,19 @@ jobs:
         # checks (test_de_pipeline), the AC-10 ABT leakage probe, the AC-2 rating-curve
         # gate (test_groundtruthing), and the AC-5 release-episode backtest (test_release).
         run: uv run pytest -q
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Typecheck + build (tsc --noEmit && vite build)
+        run: npm run build

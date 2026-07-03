@@ -13,7 +13,25 @@ import pandas as pd
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from data_engineering.forcing import ERA5_LAND_LAG_DAYS
+
 _STALE = 9999  # days_since_* sentinel when no prior observation exists yet
+
+
+def _shift_to_available(forcing: pd.DataFrame, lag_days: int = ERA5_LAND_LAG_DAYS) -> pd.DataFrame:
+    """Re-key the forcing frame from event time to information-set time (A4).
+
+    ERA5-Land daily aggregates publish ~``lag_days`` behind real time, so the forcing
+    measured on event date ``d`` is only knowable from ``d + lag_days``. The ABT is
+    point-in-time ("every column holds only what was knowable at date"), so the join
+    key is shifted forward by the lag: the ABT row at date ``t`` carries the most
+    recent *published* forcing (event date ``t - lag_days``). This also keeps
+    ``antecedent_precip_index`` honest — its EWM window never includes precipitation
+    that was not yet published at ``t``.
+    """
+    shifted = forcing.copy()
+    shifted["date"] = shifted["date"] + pd.Timedelta(days=lag_days)
+    return shifted
 
 
 def _na_to_none(v):
@@ -42,10 +60,30 @@ _ABT_UPSERT = text(
         CAST(:source_versions AS jsonb), CAST(:freshness_flags AS jsonb), :row_quality
     )
     ON CONFLICT (reservoir_id, date, abt_version) DO UPDATE SET
-        gt_pct_filled = EXCLUDED.gt_pct_filled,
-        surface_area = EXCLUDED.surface_area,
         days_since_bulletin = EXCLUDED.days_since_bulletin,
-        days_since_acquisition = EXCLUDED.days_since_acquisition
+        days_since_acquisition = EXCLUDED.days_since_acquisition,
+        gt_level = EXCLUDED.gt_level,
+        gt_live_storage_bcm = EXCLUDED.gt_live_storage_bcm,
+        gt_pct_filled = EXCLUDED.gt_pct_filled,
+        frl = EXCLUDED.frl,
+        live_capacity_bcm = EXCLUDED.live_capacity_bcm,
+        normal_storage_pct = EXCLUDED.normal_storage_pct,
+        surface_area = EXCLUDED.surface_area,
+        area_confidence = EXCLUDED.area_confidence,
+        derived_volume = EXCLUDED.derived_volume,
+        derived_level = EXCLUDED.derived_level,
+        extraction_method = EXCLUDED.extraction_method,
+        catchment_precip = EXCLUDED.catchment_precip,
+        antecedent_precip_index = EXCLUDED.antecedent_precip_index,
+        snow_cover_area = EXCLUDED.snow_cover_area,
+        swe = EXCLUDED.swe,
+        degree_day_melt = EXCLUDED.degree_day_melt,
+        evaporation = EXCLUDED.evaporation,
+        is_extrapolated = EXCLUDED.is_extrapolated,
+        residual_vs_ground_truth = EXCLUDED.residual_vs_ground_truth,
+        source_versions = EXCLUDED.source_versions,
+        freshness_flags = EXCLUDED.freshness_flags,
+        row_quality = EXCLUDED.row_quality
     """
 )
 
@@ -99,6 +137,9 @@ def build_abt_for_reservoir(session: Session, reservoir_id: str, abt_version: st
         params={"r": reservoir_id},
         parse_dates=["date"],
     )
+    # ERA5 publication latency: join forcing at the date it became knowable, not the
+    # event date (see _shift_to_available).
+    forcing = _shift_to_available(forcing)
 
     anchors = pd.concat([gt["date"], obs["date"], forcing["date"]])
     if anchors.empty:

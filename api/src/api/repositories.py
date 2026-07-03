@@ -1,19 +1,25 @@
 """Read repositories — SQL queries behind the API (FR-API-1/2). Read-only; the serving
-layer never writes (NFR-SEC-3). All return plain dicts/rows for the routers to shape.
+layer never writes (NFR-SEC-3). All return plain dicts/rows; the routes' Pydantic
+response models (D5) handle type coercion (e.g. Postgres ``numeric`` → JSON number).
 """
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from core.config import get_settings
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+# The data is on an IST calendar (bulletin dates, SAR acquisition dates); staleness
+# must be measured against the IST "today", not the server's local clock (D9).
+_IST = ZoneInfo("Asia/Kolkata")
 
-def _f(v: object) -> float | None:
-    """Postgres ``numeric`` arrives as ``Decimal`` (→ JSON string); coerce to a JSON number."""
-    return float(v) if v is not None else None  # type: ignore[arg-type]
+# Bound the public GeoJSON surface (D4): simplify to ~10 m tolerance and cap
+# coordinate precision at 5 decimal digits (~1 m) so payloads stay small.
+_SIMPLIFY_TOLERANCE_DEG = 0.0001
+_MAX_DECIMAL_DIGITS = 5
 
 
 def list_reservoirs(s: Session) -> list[dict]:
@@ -27,10 +33,7 @@ def list_reservoirs(s: Session) -> list[dict]:
         .mappings()
         .all()
     )
-    return [
-        {**dict(r), "frl_m": _f(r["frl_m"]), "live_capacity_bcm": _f(r["live_capacity_bcm"])}
-        for r in rows
-    ]
+    return [dict(r) for r in rows]
 
 
 def get_reservoir(s: Session, rid: str) -> dict | None:
@@ -45,13 +48,7 @@ def get_reservoir(s: Session, rid: str) -> dict | None:
         .mappings()
         .first()
     )
-    if not row:
-        return None
-    return {
-        **dict(row),
-        "frl_m": _f(row["frl_m"]),
-        "live_capacity_bcm": _f(row["live_capacity_bcm"]),
-    }
+    return dict(row) if row else None
 
 
 def latest_status(s: Session, rid: str) -> dict | None:
@@ -87,23 +84,20 @@ def latest_status(s: Session, rid: str) -> dict | None:
         {"r": rid},
     ).scalar()
     # Graceful-degradation / staleness (NFR-REL-6, D8): age from the freshest signal
-    # (SAR acquisition if any, else the latest bulletin).
+    # (SAR acquisition if any, else the latest bulletin), measured on the IST calendar.
     threshold = get_settings().data_staleness_threshold_days
     ref = last_acq or gt["date"]
-    age_days = (date.today() - ref).days if ref is not None else None
+    age_days = (datetime.now(_IST).date() - ref).days if ref is not None else None
+    # Unknown age is still a well-formed payload: stale=true, age null (D9).
     return {
         "reservoir_id": rid,
         "as_of": gt["date"],
-        "pct_filled": float(gt["pct_filled"]),
-        "level_m": float(gt["level_m"]) if gt["level_m"] is not None else None,
-        "live_storage_bcm": float(gt["live_storage_bcm"])
-        if gt["live_storage_bcm"] is not None
-        else None,
+        "pct_filled": gt["pct_filled"],
+        "level_m": gt["level_m"],
+        "live_storage_bcm": gt["live_storage_bcm"],
         "risk_level": risk["risk_level"] if risk else None,
-        "release_probability": float(risk["release_probability"]) if risk else None,
-        "estimated_lead_time_days": float(risk["estimated_lead_time_days"])
-        if risk and risk["estimated_lead_time_days"] is not None
-        else None,
+        "release_probability": risk["release_probability"] if risk else None,
+        "estimated_lead_time_days": risk["estimated_lead_time_days"] if risk else None,
         "last_acquisition_date": last_acq,
         "data_age_days": age_days,
         "stale": age_days is None or age_days > threshold,
@@ -123,16 +117,7 @@ def timeseries(s: Session, rid: str, limit: int) -> list[dict]:
         .mappings()
         .all()
     )
-    return [
-        {
-            "date": r["date"],
-            "pct_filled": _f(r["pct_filled"]),
-            "level_m": _f(r["level_m"]),
-            "live_storage_bcm": _f(r["live_storage_bcm"]),
-            "normal_storage_pct": _f(r["normal_storage_pct"]),
-        }
-        for r in reversed(rows)
-    ]
+    return [dict(r) for r in reversed(rows)]
 
 
 def latest_forecast(s: Session, rid: str) -> list[dict]:
@@ -205,11 +190,19 @@ def accuracy(s: Session) -> dict:
     }
 
 
+def _bounded_geojson(geom_expr: str) -> str:
+    """SQL for topology-preserving simplification + capped precision (D4)."""
+    return (
+        f"ST_AsGeoJSON(ST_SimplifyPreserveTopology({geom_expr}, {_SIMPLIFY_TOLERANCE_DEG}), "
+        f"{_MAX_DECIMAL_DIGITS})"
+    )
+
+
 def aoi_features(s: Session) -> list[dict]:
     rows = (
         s.execute(
             text(
-                "SELECT reservoir_id, name, aoi_version, ST_AsGeoJSON(aoi_geom) AS g "
+                f"SELECT reservoir_id, name, aoi_version, {_bounded_geojson('aoi_geom')} AS g "
                 "FROM reservoir WHERE aoi_geom IS NOT NULL ORDER BY reservoir_id"
             )
         )
@@ -223,7 +216,8 @@ def catchment_features(s: Session) -> list[dict]:
     rows = (
         s.execute(
             text(
-                "SELECT reservoir_id, name, catchment_version, ST_AsGeoJSON(catchment_geom) AS g "
+                "SELECT reservoir_id, name, catchment_version, "
+                f"{_bounded_geojson('catchment_geom')} AS g "
                 "FROM reservoir WHERE catchment_geom IS NOT NULL ORDER BY reservoir_id"
             )
         )
@@ -237,10 +231,10 @@ def water_extent_features(s: Session) -> list[dict]:
     rows = (
         s.execute(
             text(
-                """
+                f"""
             SELECT DISTINCT ON (o.reservoir_id)
                 o.reservoir_id, r.name, o.surface_area, o.acquisition_date,
-                ST_AsGeoJSON(o.water_mask_geom) AS g
+                {_bounded_geojson("o.water_mask_geom")} AS g
             FROM observation o
             JOIN reservoir r ON r.reservoir_id = o.reservoir_id
             WHERE o.water_mask_geom IS NOT NULL
@@ -258,9 +252,9 @@ def reservoir_features(s: Session) -> list[dict]:
     rows = (
         s.execute(
             text(
-                """
+                f"""
             SELECT r.reservoir_id, r.name, r.frl_m,
-                   ST_AsGeoJSON(r.dam_point) AS dam_point_geojson,
+                   ST_AsGeoJSON(r.dam_point, {_MAX_DECIMAL_DIGITS}) AS dam_point_geojson,
                    rr.risk_level, rr.release_probability
             FROM reservoir r
             LEFT JOIN LATERAL (

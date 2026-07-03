@@ -21,18 +21,36 @@ class GateResult:
     per_reservoir_mae: dict[str, float]
     worst_reservoir: str | None
     worst_mae: float
+    # C5 provenance: True when the observations behind the gate are synthetic/stub —
+    # a pass then validates the machinery, not real extraction accuracy.
+    on_synthetic_data: bool = False
 
 
 def fill_pct_mae(derived_pct: np.ndarray, bulletin_pct: np.ndarray) -> float:
     return float(np.abs(np.asarray(derived_pct) - np.asarray(bulletin_pct)).mean())
 
 
+def synthetic_provenance(scene_id_lists, extraction_methods) -> bool:
+    """C5: True when any observation used carries synthetic provenance — scene_ids
+    containing 'synthetic' or 'stub', or extraction_method == 'stub'."""
+    for scenes in scene_id_lists:
+        if scenes is None:
+            continue
+        for scene in scenes:
+            if scene in ("synthetic", "stub"):
+                return True
+    return any(method == "stub" for method in extraction_methods)
+
+
 def ac2_gate(
-    per_reservoir_mae: dict[str, float], tolerance: float = AC2_TOLERANCE_PCT
+    per_reservoir_mae: dict[str, float],
+    tolerance: float = AC2_TOLERANCE_PCT,
+    on_synthetic_data: bool = False,
 ) -> GateResult:
-    """Pass only if EVERY reservoir's held-out fill-% MAE is within tolerance."""
+    """Pass only if EVERY reservoir's held-out fill-% MAE is within tolerance. The
+    result carries the caller-detected data-provenance flag (see GateResult)."""
     if not per_reservoir_mae:
-        return GateResult(False, tolerance, {}, None, float("inf"))
+        return GateResult(False, tolerance, {}, None, float("inf"), on_synthetic_data)
     worst = max(per_reservoir_mae, key=lambda r: per_reservoir_mae[r])
     worst_mae = per_reservoir_mae[worst]
     return GateResult(
@@ -41,4 +59,5 @@ def ac2_gate(
         per_reservoir_mae=per_reservoir_mae,
         worst_reservoir=worst,
         worst_mae=worst_mae,
+        on_synthetic_data=on_synthetic_data,
     )

@@ -1,7 +1,20 @@
-# Dev override (auto-merged by `docker compose`): hot reload + source bind-mounts.
+# Dev override (merged via the Taskfile's compose invocation): hot reload, source
+# bind-mounts, host port publishes, and DEV-ONLY credential defaults.
 # uv installs workspace members editable, so mounting src/ over the image reflects edits.
 
 services:
+  postgres:
+    # Host publish is dev-only (D2); POSTGRES_HOST_PORT avoids clashes with a local Postgres.
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    environment:
+      # Dev defaults for the roles created by infra/docker/postgres/init/01-init.sh.
+      # Prod runs without this override and MUST set real values in the environment.
+      APP_RW_PASSWORD: ${APP_RW_PASSWORD:-app_rw}
+      APP_RO_PASSWORD: ${APP_RO_PASSWORD:-app_ro}
+      MLFLOW_DB_PASSWORD: ${MLFLOW_DB_PASSWORD:-mlflow}
+      PREFECT_DB_PASSWORD: ${PREFECT_DB_PASSWORD:-prefect}
+
   api:
     command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
@@ -19,7 +32,11 @@ services:
   mlflow:
     ports:
       - "5000:5000"
+    environment:
+      MLFLOW_BACKEND_STORE_URI: ${MLFLOW_BACKEND_STORE_URI:-postgresql+psycopg2://mlflow:mlflow@postgres:5432/mlflow_db}
 
   prefect-server:
     ports:
       - "4200:4200"
+    environment:
+      PREFECT_API_DATABASE_CONNECTION_URL: ${PREFECT_API_DATABASE_CONNECTION_URL:-postgresql+asyncpg://prefect:prefect@postgres:5432/prefect_db}

@@ -19,12 +19,18 @@ x-app-env: &app-env
 services:
   postgres:
     image: postgis/postgis:16-3.4
+    # No host port publish here (D2): dev gets it from docker-compose.override.yml;
+    # prod keeps Postgres reachable only on the compose network.
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-reservoir}
       POSTGRES_USER: ${POSTGRES_SUPERUSER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_SUPERPASSWORD:-postgres}
-    ports:
-      - "${POSTGRES_HOST_PORT:-5432}:5432"
+      # Role passwords consumed by the first-boot init script. No defaults in the
+      # base file (D2): the dev override supplies dev defaults; prod must set them.
+      APP_RW_PASSWORD: ${APP_RW_PASSWORD:-}
+      APP_RO_PASSWORD: ${APP_RO_PASSWORD:-}
+      MLFLOW_DB_PASSWORD: ${MLFLOW_DB_PASSWORD:-}
+      PREFECT_DB_PASSWORD: ${PREFECT_DB_PASSWORD:-}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ../docker/postgres/init:/docker-entrypoint-initdb.d:ro
@@ -43,7 +49,9 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      MLFLOW_BACKEND_STORE_URI: postgresql+psycopg2://mlflow:mlflow@postgres:5432/reservoir
+      # Dedicated database (D11) so MLflow tables never pollute `alembic check`
+      # against the app database. Dev default lives in the compose override.
+      MLFLOW_BACKEND_STORE_URI: ${MLFLOW_BACKEND_STORE_URI:-}
       MLFLOW_ARTIFACT_ROOT: /artifacts
     volumes:
       - mlflow-artifacts:/artifacts
@@ -57,7 +65,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      PREFECT_API_DATABASE_CONNECTION_URL: postgresql+asyncpg://app_rw:app_rw@postgres:5432/reservoir
+      # Dedicated database (D11); dev default lives in the compose override.
+      PREFECT_API_DATABASE_CONNECTION_URL: ${PREFECT_API_DATABASE_CONNECTION_URL:-}
       PREFECT_SERVER_API_HOST: 0.0.0.0
     expose:
       - "4200"

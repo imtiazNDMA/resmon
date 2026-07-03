@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from contextlib import contextmanager
+from functools import lru_cache
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
@@ -13,9 +14,26 @@ from core.config import get_settings
 
 
 def make_engine(readonly: bool = False) -> Engine:
+    """Build a new engine with an explicitly bounded pool (D4).
+
+    Prefer :func:`get_engine` — one shared engine (and pool) per role per process.
+    """
     settings = get_settings()
     url = settings.database_url_ro if readonly else settings.database_url_rw
-    return create_engine(url, pool_pre_ping=True, future=True)
+    return create_engine(
+        url,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=5,
+        pool_timeout=30,
+        future=True,
+    )
+
+
+@lru_cache(maxsize=2)
+def get_engine(readonly: bool = False) -> Engine:
+    """Cached per-role engine — callers share one pool instead of leaking engines (D3)."""
+    return make_engine(readonly=readonly)
 
 
 _rw_factory: sessionmaker[Session] | None = None
@@ -26,10 +44,10 @@ def _factory(readonly: bool) -> sessionmaker[Session]:
     global _rw_factory, _ro_factory
     if readonly:
         if _ro_factory is None:
-            _ro_factory = sessionmaker(bind=make_engine(readonly=True), expire_on_commit=False)
+            _ro_factory = sessionmaker(bind=get_engine(readonly=True), expire_on_commit=False)
         return _ro_factory
     if _rw_factory is None:
-        _rw_factory = sessionmaker(bind=make_engine(readonly=False), expire_on_commit=False)
+        _rw_factory = sessionmaker(bind=get_engine(readonly=False), expire_on_commit=False)
     return _rw_factory
 
 

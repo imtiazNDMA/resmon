@@ -19,6 +19,8 @@ def test_rs_emits_real_observations_replacing_stubs(session):
     assert summary["observations_written"] > 100
     assert summary["extraction_method"] == "otsu_vh"
     assert summary["mean_confidence"] > 0.5
+    # clean synthetic scenes are always bimodal → the abstain gate never fires here
+    assert summary["observations_skipped"] == 0
 
     conn = session.connection()
     n_real = conn.execute(

@@ -28,6 +28,12 @@ def include_object(obj, name, type_, reflected, compare_to):  # noqa: ANN001
     schema = getattr(obj, "schema", None)
     if schema in _POSTGIS_SCHEMAS:
         return False
+    # PostGIS/tiger tables can reflect with schema=None (e.g. postgis/postgis:16-3.4 in
+    # CI), dodging the schema filter above and failing `alembic check` (D7). Any
+    # reflected table with no metadata counterpart is not ours to manage — skip it
+    # rather than proposing a DROP.
+    if type_ == "table" and reflected and compare_to is None and name not in target_metadata.tables:
+        return False
     return True
 
 

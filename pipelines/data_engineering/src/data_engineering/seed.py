@@ -24,8 +24,17 @@ _UPSERT = text(
        CAST(:thresholds AS jsonb)
     )
     ON CONFLICT (reservoir_id) DO UPDATE SET
-       name = EXCLUDED.name, basin = EXCLUDED.basin, frl_m = EXCLUDED.frl_m,
-       live_capacity_bcm = EXCLUDED.live_capacity_bcm, updated_at = now()
+       name = EXCLUDED.name, basin = EXCLUDED.basin, dam_point = EXCLUDED.dam_point,
+       frl_m = EXCLUDED.frl_m, live_capacity_bcm = EXCLUDED.live_capacity_bcm,
+       orbit_relative = EXCLUDED.orbit_relative, pass_direction = EXCLUDED.pass_direction,
+       release_thresholds = EXCLUDED.release_thresholds, updated_at = now(),
+       -- aoi_geom/aoi_version are only refreshed while still the placeholder: the real
+       -- AOI (jrc_gsw_v1, scripts/populate_geometry.py) must never be clobbered by a
+       -- seed rerun.
+       aoi_geom = CASE WHEN reservoir.aoi_version = 'placeholder_v0'
+                       THEN EXCLUDED.aoi_geom ELSE reservoir.aoi_geom END,
+       aoi_version = CASE WHEN reservoir.aoi_version = 'placeholder_v0'
+                          THEN EXCLUDED.aoi_version ELSE reservoir.aoi_version END
     """
 )
 

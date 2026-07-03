@@ -1,24 +1,43 @@
-"""Public REST/JSON + GeoJSON endpoints (FR-API-1/2). All read-only; no auth in v1."""
+"""Public REST/JSON + GeoJSON endpoints (FR-API-1/2). All read-only; no auth in v1.
+
+Every route declares a typed ``response_model`` (D5): the Pydantic models coerce
+Postgres ``Decimal`` to JSON numbers and publish a real OpenAPI contract.
+"""
 
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 import api.repositories as repo
 from api.db import get_db
+from api.schemas import (
+    AccuracyReport,
+    AoiProperties,
+    CatchmentProperties,
+    FeatureCollection,
+    ForecastResponse,
+    ReleaseRiskEntry,
+    ReservoirDetail,
+    ReservoirMarkerProperties,
+    ReservoirStatus,
+    ReservoirSummary,
+    TimeseriesPoint,
+    WaterExtentProperties,
+)
 
 router = APIRouter()
 
 
-@router.get("/reservoirs", tags=["reservoirs"])
+@router.get("/reservoirs", tags=["reservoirs"], response_model=list[ReservoirSummary])
 def list_reservoirs(db: Session = Depends(get_db)) -> list[dict]:
     return repo.list_reservoirs(db)
 
 
-@router.get("/reservoirs/{rid}", tags=["reservoirs"])
+@router.get("/reservoirs/{rid}", tags=["reservoirs"], response_model=ReservoirDetail)
 def get_reservoir(rid: str, db: Session = Depends(get_db)) -> dict:
     res = repo.get_reservoir(db, rid)
     if res is None:
@@ -26,7 +45,7 @@ def get_reservoir(rid: str, db: Session = Depends(get_db)) -> dict:
     return res
 
 
-@router.get("/reservoirs/{rid}/status", tags=["reservoirs"])
+@router.get("/reservoirs/{rid}/status", tags=["reservoirs"], response_model=ReservoirStatus)
 def reservoir_status(rid: str, db: Session = Depends(get_db)) -> dict:
     status = repo.latest_status(db, rid)
     if status is None:
@@ -34,30 +53,32 @@ def reservoir_status(rid: str, db: Session = Depends(get_db)) -> dict:
     return status
 
 
-@router.get("/reservoirs/{rid}/timeseries", tags=["reservoirs"])
+@router.get(
+    "/reservoirs/{rid}/timeseries", tags=["reservoirs"], response_model=list[TimeseriesPoint]
+)
 def reservoir_timeseries(
     rid: str, limit: int = Query(default=200, ge=1, le=2000), db: Session = Depends(get_db)
 ) -> list[dict]:
     return repo.timeseries(db, rid, limit)
 
 
-@router.get("/reservoirs/{rid}/forecast", tags=["forecast"])
+@router.get("/reservoirs/{rid}/forecast", tags=["forecast"], response_model=ForecastResponse)
 def reservoir_forecast(rid: str, db: Session = Depends(get_db)) -> dict:
     points = repo.latest_forecast(db, rid)
     return {"reservoir_id": rid, "horizon": len(points), "points": points}
 
 
-@router.get("/release-risk", tags=["release-risk"])
+@router.get("/release-risk", tags=["release-risk"], response_model=list[ReleaseRiskEntry])
 def fleet_release_risk(db: Session = Depends(get_db)) -> list[dict]:
     return repo.fleet_release_risk(db)
 
 
-@router.get("/accuracy", tags=["accuracy"])
+@router.get("/accuracy", tags=["accuracy"], response_model=AccuracyReport)
 def accuracy(db: Session = Depends(get_db)) -> dict:
     return repo.accuracy(db)
 
 
-def _feature_collection(rows: list[dict], props) -> dict:
+def _feature_collection(rows: list[dict], props: Callable[[dict], dict]) -> dict:
     feats = []
     for r in rows:
         if not r.get("g"):
@@ -66,7 +87,7 @@ def _feature_collection(rows: list[dict], props) -> dict:
     return {"type": "FeatureCollection", "features": feats}
 
 
-@router.get("/geojson/aoi", tags=["geojson"])
+@router.get("/geojson/aoi", tags=["geojson"], response_model=FeatureCollection[AoiProperties])
 def geojson_aoi(db: Session = Depends(get_db)) -> dict:
     """Reservoir AOI polygons (JRC Global Surface Water footprint)."""
     return _feature_collection(
@@ -79,7 +100,9 @@ def geojson_aoi(db: Session = Depends(get_db)) -> dict:
     )
 
 
-@router.get("/geojson/catchment", tags=["geojson"])
+@router.get(
+    "/geojson/catchment", tags=["geojson"], response_model=FeatureCollection[CatchmentProperties]
+)
 def geojson_catchment(db: Session = Depends(get_db)) -> dict:
     """Upstream catchment polygons (HydroSHEDS HydroBASINS)."""
     return _feature_collection(
@@ -92,7 +115,11 @@ def geojson_catchment(db: Session = Depends(get_db)) -> dict:
     )
 
 
-@router.get("/geojson/water-extent", tags=["geojson"])
+@router.get(
+    "/geojson/water-extent",
+    tags=["geojson"],
+    response_model=FeatureCollection[WaterExtentProperties],
+)
 def geojson_water_extent(db: Session = Depends(get_db)) -> dict:
     """Latest Sentinel-1 water extent per reservoir (with true area + acquisition date)."""
     return _feature_collection(
@@ -100,13 +127,17 @@ def geojson_water_extent(db: Session = Depends(get_db)) -> dict:
         lambda r: {
             "reservoir_id": r["reservoir_id"],
             "name": r["name"],
-            "surface_area_km2": float(r["surface_area"]),
-            "acquisition_date": str(r["acquisition_date"]),
+            "surface_area_km2": r["surface_area"],
+            "acquisition_date": r["acquisition_date"],
         },
     )
 
 
-@router.get("/geojson/reservoirs", tags=["geojson"])
+@router.get(
+    "/geojson/reservoirs",
+    tags=["geojson"],
+    response_model=FeatureCollection[ReservoirMarkerProperties],
+)
 def reservoir_geojson(db: Session = Depends(get_db)) -> dict:
     """Leaflet-ready FeatureCollection of reservoir markers, coloured by risk_level."""
     features = []
@@ -119,13 +150,9 @@ def reservoir_geojson(db: Session = Depends(get_db)) -> dict:
                 "properties": {
                     "reservoir_id": r["reservoir_id"],
                     "name": r["name"],
-                    "frl_m": float(r["frl_m"]),
+                    "frl_m": r["frl_m"],
                     "risk_level": r["risk_level"],
-                    "release_probability": (
-                        float(r["release_probability"])
-                        if r["release_probability"] is not None
-                        else None
-                    ),
+                    "release_probability": r["release_probability"],
                 },
             }
         )

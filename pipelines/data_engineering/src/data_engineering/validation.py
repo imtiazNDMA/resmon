@@ -25,15 +25,25 @@ BULLETIN_SCHEMA = DataFrameSchema(
 )
 
 # Gold ABT: static FRL/capacity non-null; derived/observed within physical bounds.
+# The [0, 110] fill band is conditional on row_quality: cleaning.py deliberately keeps
+# pct_filled > 110 rows as 'low_confidence' (FR-DE-4), so only 'ok' rows are held to the
+# band — a blanket in_range would contradict the cleaning policy.
 ABT_SCHEMA = DataFrameSchema(
     {
         "reservoir_id": Column(str, nullable=False),
         "frl": Column(float, nullable=False),
         "live_capacity_bcm": Column(float, nullable=False),
-        "gt_pct_filled": Column(float, Check.in_range(0, 110), nullable=True),
+        "gt_pct_filled": Column(float, Check.ge(0), nullable=True),
         "surface_area": Column(float, Check.ge(0), nullable=True),
         "row_quality": Column(str, Check.isin(["ok", "low_confidence", "quarantine"])),
     },
+    checks=Check(
+        lambda df: (
+            (df["row_quality"] != "ok") | df["gt_pct_filled"].isna() | df["gt_pct_filled"].le(110)
+        ),
+        name="gt_pct_filled_in_band_for_ok_rows",
+        error="gt_pct_filled must be <= 110 on row_quality == 'ok' rows",
+    ),
     strict=False,
     coerce=True,
     unique=["reservoir_id", "date"],

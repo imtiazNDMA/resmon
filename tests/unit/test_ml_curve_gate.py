@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 from ml.curve import fit_empirical
-from ml.gate import ac2_gate, fill_pct_mae
+from ml.gate import ac2_gate, fill_pct_mae, synthetic_provenance
 
 
 def test_curve_fit_recovers_linear():
@@ -29,9 +29,23 @@ def test_curve_needs_enough_pairs():
 def test_ac2_gate_pass_and_fail():
     ok = ac2_gate({"a": 5.0, "b": 9.0}, tolerance=10.0)
     assert ok.passed and ok.worst_mae == 9.0
+    assert ok.on_synthetic_data is False  # C5: provenance always stamped
     bad = ac2_gate({"a": 5.0, "b": 12.0}, tolerance=10.0)
     assert not bad.passed and bad.worst_reservoir == "b"
     assert not ac2_gate({}, tolerance=10.0).passed
+
+
+def test_ac2_gate_carries_synthetic_provenance():
+    res = ac2_gate({"a": 5.0}, tolerance=10.0, on_synthetic_data=True)
+    assert res.passed and res.on_synthetic_data is True
+
+
+def test_synthetic_provenance_detection():
+    assert synthetic_provenance([["synthetic"]], ["otsu_vh"]) is True
+    assert synthetic_provenance([["stub"]], ["otsu_vh"]) is True
+    assert synthetic_provenance([["S1A_IW_GRDH_..."]], ["stub"]) is True
+    assert synthetic_provenance([["S1A_IW_GRDH_..."], None], ["otsu_vh", "otsu_vh"]) is False
+    assert synthetic_provenance([], []) is False
 
 
 def test_fill_pct_mae():

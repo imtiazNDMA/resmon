@@ -18,7 +18,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ml.curve import RatingCurveFit, fit_empirical
-from ml.gate import ac2_gate, fill_pct_mae
+from ml.gate import ac2_gate, fill_pct_mae, synthetic_provenance
 
 MIN_PAIRS = 5
 TRAIN_FRACTION = 0.8
@@ -29,6 +29,7 @@ def _read_pairs(conn, reservoir_id: str, extraction_method: str) -> pd.DataFrame
         text(
             """
             SELECT m.gt_date, m.acquisition_date, m.extraction_version, m.extracted_area,
+                   m.scene_ids, m.extraction_method,
                    g.pct_filled, g.live_storage_bcm, g.level_m, g.live_capacity_bcm
             FROM ground_truth_match m
             JOIN ground_truth g
@@ -46,7 +47,13 @@ def _read_pairs(conn, reservoir_id: str, extraction_method: str) -> pd.DataFrame
 
 
 def _persist_curve(
-    session: Session, fit: RatingCurveFit, frl_m: float, mae: float, n_train: int, n_test: int
+    session: Session,
+    fit: RatingCurveFit,
+    frl_m: float,
+    mae: float,
+    n_train: int,
+    n_test: int,
+    on_synthetic_data: bool,
 ) -> None:
     session.execute(
         text("UPDATE rating_curve SET is_active = false WHERE reservoir_id = :r AND is_active"),
@@ -75,7 +82,12 @@ def _persist_curve(
             "anchor": json.dumps({"frl_m": frl_m, "capacity_bcm": fit.capacity_bcm}),
             "obs": json.dumps(fit.observed_range),
             "metrics": json.dumps(
-                {"fill_pct_mae_holdout": mae, "n_train": n_train, "n_test": n_test}
+                {
+                    "fill_pct_mae_holdout": mae,
+                    "n_train": n_train,
+                    "n_test": n_test,
+                    "on_synthetic_data": on_synthetic_data,
+                }
             ),
         },
     )
@@ -141,11 +153,15 @@ def run_ground_truthing(
     maes: dict[str, float] = {}
     skipped: list[str] = []
     curves = 0
+    on_synthetic = False
     for rid, frl_m in reservoirs:
         df = _read_pairs(conn, rid, extraction_method)
         if len(df) < MIN_PAIRS:
             skipped.append(rid)
             continue
+        # C5 provenance: does any pair used for this fit come from synthetic/stub obs?
+        rid_synthetic = synthetic_provenance(df["scene_ids"], df["extraction_method"])
+        on_synthetic = on_synthetic or rid_synthetic
         n_train = int(len(df) * TRAIN_FRACTION)
         train, test = df.iloc[:n_train], df.iloc[n_train:]
         cap = float(df["live_capacity_bcm"].iloc[0])
@@ -160,11 +176,11 @@ def run_ground_truthing(
         derived_pct = fit.pct_filled_for_area(test["extracted_area"].to_numpy())
         mae = fill_pct_mae(derived_pct, test["pct_filled"].to_numpy())
         maes[rid] = mae
-        _persist_curve(session, fit, float(frl_m), mae, len(train), len(test))
+        _persist_curve(session, fit, float(frl_m), mae, len(train), len(test), rid_synthetic)
         _backfill(session, fit, df)
         curves += 1
 
-    gate = ac2_gate(maes, tolerance)
+    gate = ac2_gate(maes, tolerance, on_synthetic_data=on_synthetic)
     return {
         "per_reservoir_mae": maes,
         "skipped": skipped,
@@ -172,4 +188,5 @@ def run_ground_truthing(
         "ac2_passed": gate.passed,
         "ac2_worst_mae": gate.worst_mae,
         "ac2_tolerance": gate.tolerance_pct,
+        "on_synthetic_data": gate.on_synthetic_data,
     }

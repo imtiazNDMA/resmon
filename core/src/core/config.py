@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO")
     log_format: str = Field(default="json")
     data_staleness_threshold_days: int = Field(default=14)  # NFR-REL-6 (D8)
+    # Path prefix the reverse proxy strips before the app sees requests (Caddy
+    # handle_path /api/*). Set empty ("") for bare local uvicorn without a proxy.
+    api_root_path: str = Field(default="/api")
 
     # --- Database ---
     database_url_rw: str = Field(

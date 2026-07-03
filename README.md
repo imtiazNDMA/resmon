@@ -41,4 +41,15 @@ If a local PostgreSQL already owns port 5432, publish the container elsewhere:
 
 ## Status
 
-Phase 0 (foundations) — see [`todos.md`](todos.md) for the phased build checklist.
+Phases 0–9 machinery is built end-to-end (DB → pipelines → API → dashboard); see
+[`todos.md`](todos.md) for the phased checklist. Validation so far is **synthetic**
+(fixture backend) — the GEE-dependent science pass is still pending, so accuracy figures
+are machinery checks, not real skill. An active remediation effort from the 2026-07-03
+critical review is underway: [`remediation-todos.md`](remediation-todos.md).
+
+## Secrets
+
+`geeservice.json` is a **live GEE service-account key** — it is git-ignored, but it should
+live *outside* the repo entirely and be file-mounted per the `/run/secrets/gee_sa.json`
+convention in [`.env.example`](.env.example) (`GEE_SA_KEY_FILE`). Never commit it or bake
+it into images.
