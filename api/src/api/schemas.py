@@ -58,6 +58,11 @@ class AcquisitionOut(BaseModel):
     confidence: float
 
 
+class SarTileOut(BaseModel):
+    tile_url: str
+    expires_at: str
+
+
 # --- Forecast / risk --------------------------------------------------------------
 
 

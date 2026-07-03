@@ -12,6 +12,7 @@ from collections.abc import Callable
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+import api.gee_tiles as gee_tiles
 import api.repositories as repo
 from api.db import get_db
 from api.schemas import (
@@ -26,6 +27,7 @@ from api.schemas import (
     ReservoirMarkerProperties,
     ReservoirStatus,
     ReservoirSummary,
+    SarTileOut,
     TimeseriesPoint,
     WaterExtentProperties,
 )
@@ -76,6 +78,20 @@ def reservoir_acquisitions(rid: str, db: Session = Depends(get_db)) -> list[dict
     """Real (non-stub) SAR acquisition series for the dashboard timeline."""
     _ensure_reservoir(db, rid)
     return repo.acquisitions(db, rid)
+
+
+@router.get("/reservoirs/{rid}/sar-tiles", tags=["reservoirs"], response_model=SarTileOut)
+def reservoir_sar_tiles(rid: str, date: str, db: Session = Depends(get_db)) -> dict:
+    """Live Sentinel-1 tile URL for the acquisition on ``date`` (503 when GEE is down)."""
+    _ensure_reservoir(db, rid)
+    scene_id = repo.scene_id_for_date(db, rid, date)
+    if scene_id is None:
+        raise HTTPException(status_code=404, detail=f"no acquisition on {date}")
+    try:
+        url, expires = gee_tiles.get_cached_tile(rid, date, scene_id)
+    except gee_tiles.GeeUnavailable as exc:
+        raise HTTPException(status_code=503, detail=f"live imagery unavailable: {exc}") from exc
+    return {"tile_url": url, "expires_at": expires.isoformat()}
 
 
 @router.get("/reservoirs/{rid}/forecast", tags=["forecast"], response_model=ForecastResponse)

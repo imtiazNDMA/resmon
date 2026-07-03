@@ -211,6 +211,19 @@ def acquisitions(s: Session, rid: str) -> list[dict]:
     ]
 
 
+def scene_id_for_date(s: Session, rid: str, date: str) -> str | None:
+    """First scene id behind the (reservoir, date) observation, for tile minting."""
+    row = s.execute(
+        text(
+            "SELECT scene_ids FROM observation "
+            "WHERE reservoir_id = :r AND acquisition_date = :d "
+            "AND extraction_method <> 'stub'"
+        ),
+        {"r": rid, "d": date},
+    ).fetchone()
+    return row.scene_ids[0] if row and row.scene_ids else None
+
+
 def _bounded_geojson(geom_expr: str) -> str:
     """SQL for topology-preserving simplification + capped precision (D4)."""
     return (
