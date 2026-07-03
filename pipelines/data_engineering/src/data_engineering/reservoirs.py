@@ -31,8 +31,11 @@ REGISTRY: dict[str, ReservoirMeta] = {
     "PONG DAM": ReservoirMeta(
         "pong", "Pong Dam", "Beas", 423.67, 6.157, 76.0913, 31.9669, 1, "ASC"
     ),
+    # Dam-wall coordinates verified against JRC GSW max-extent (2026-07-03 recon):
+    # the previous placeholder (75.65, 32.42) sat ~8 km SW of the dam with no water
+    # within 1 km, so AOI derivation (dam-connected component) correctly failed.
     "THEIN DAM": ReservoirMeta(
-        "thein", "Thein Dam", "Ravi", 527.91, 2.344, 75.6500, 32.4200, 1, "ASC"
+        "thein", "Thein Dam", "Ravi", 527.91, 2.344, 75.7303, 32.4431, 1, "ASC"
     ),
 }
 
