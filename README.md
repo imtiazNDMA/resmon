@@ -22,7 +22,9 @@ on SAR + DEM + forcing with no live ground truth. The frozen inter-pipeline cont
 
 `core/` shared config + SQLAlchemy models + Pydantic schemas · `db/` Alembic migrations ·
 `pipelines/` remote-sensing / data-engineering / ml (+ `_common` `DataAccessBackend`) ·
-`orchestration/` Prefect flows · `api/` FastAPI · `web/` dashboard · `infra/` Docker topology.
+`orchestration/` Prefect flows · `api/` FastAPI · `web/` dashboard (fullscreen SAR-timeline
+map console; smoke script in [`docs/runbooks/dashboard-smoke.md`](docs/runbooks/dashboard-smoke.md)) ·
+`infra/` Docker topology.
 
 ## Quickstart (dev)
 
