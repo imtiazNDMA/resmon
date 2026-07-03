@@ -22,3 +22,4 @@ geeservice.json
 
 # TS build info
 *.tsbuildinfo
+.superpowers/
