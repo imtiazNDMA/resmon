@@ -92,9 +92,14 @@ def _backward_recency(spine: pd.DataFrame, event_dates: pd.Series) -> pd.Series:
     """Days since the most-recent event date ≤ each spine date (backward as-of)."""
     if event_dates.empty:
         return pd.Series([_STALE] * len(spine), index=spine.index)
-    ev = pd.DataFrame({"date": pd.to_datetime(sorted(event_dates.unique()))})
+    # merge_asof requires identical key dtypes; SQL DATE columns parse to datetime64[s]
+    # while the date_range spine is a finer resolution, so pin both to [ns].
+    ev = pd.DataFrame(
+        {"date": pd.to_datetime(sorted(event_dates.unique())).astype("datetime64[ns]")}
+    )
     ev["event_date"] = ev["date"]
-    merged = pd.merge_asof(spine.sort_values("date"), ev, on="date", direction="backward")
+    left = spine.sort_values("date").astype({"date": "datetime64[ns]"})
+    merged = pd.merge_asof(left, ev, on="date", direction="backward")
     days = (merged["date"] - merged["event_date"]).dt.days
     return days.fillna(_STALE).astype(int)
 
