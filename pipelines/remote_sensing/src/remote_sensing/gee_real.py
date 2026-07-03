@@ -102,7 +102,12 @@ def derive_aoi(lon: float, lat: float, buffer_m: int = 30000) -> dict:
     )
     # Dam-connected component: keep only polygons touching a small dam neighbourhood
     # (the dam point sits on the dam wall, hence the snap buffer).
-    geom = polys.filterBounds(dam.buffer(1000)).geometry().simplify(120).getInfo()
+    # simplify(300).buffer(250): reduceToVectors emits degenerate/self-intersecting rings
+    # that make every later reduceRegion over the AOI fail with GEE internal 500s
+    # (found in the 2026-07-03 backfill smoke test). simplify(300) repairs the rings;
+    # the outward buffer guarantees no true shoreline pixel is excluded — extra land in
+    # the AOI is harmless (Otsu separates it; the area reduction counts water only).
+    geom = polys.filterBounds(dam.buffer(1000)).geometry().simplify(300).buffer(250).getInfo()
     if not geom or not geom.get("coordinates"):
         raise GeeExtractionError(
             f"no GSW max-extent water connected to the dam point ({lon}, {lat}); "

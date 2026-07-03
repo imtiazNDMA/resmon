@@ -19,23 +19,23 @@ class ReservoirMeta:
     live_capacity_bcm: float
     dam_lon: float
     dam_lat: float
-    orbit_relative: int  # placeholder until RS freezes it (D1, Phase 2/3)
+    orbit_relative: int  # frozen by the 2026-07-03 scene-inventory recon (D1)
     pass_direction: str
 
 
 # Bulletin canonical name (from build_unified_dataset.canonical_name) → metadata.
 REGISTRY: dict[str, ReservoirMeta] = {
     "GOBIND SAGAR": ReservoirMeta(
-        "gobind_sagar", "Gobind Sagar", "Sutlej", 512.00, 6.229, 76.4604, 31.4112, 1, "ASC"
+        "gobind_sagar", "Gobind Sagar", "Sutlej", 512.00, 6.229, 76.4604, 31.4112, 27, "ASC"
     ),
     "PONG DAM": ReservoirMeta(
-        "pong", "Pong Dam", "Beas", 423.67, 6.157, 76.0913, 31.9669, 1, "ASC"
+        "pong", "Pong Dam", "Beas", 423.67, 6.157, 76.0913, 31.9669, 27, "ASC"
     ),
     # Dam-wall coordinates verified against JRC GSW max-extent (2026-07-03 recon):
     # the previous placeholder (75.65, 32.42) sat ~8 km SW of the dam with no water
     # within 1 km, so AOI derivation (dam-connected component) correctly failed.
     "THEIN DAM": ReservoirMeta(
-        "thein", "Thein Dam", "Ravi", 527.91, 2.344, 75.7303, 32.4431, 1, "ASC"
+        "thein", "Thein Dam", "Ravi", 527.91, 2.344, 75.7303, 32.4431, 27, "ASC"
     ),
 }
 
