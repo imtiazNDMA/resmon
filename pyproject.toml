@@ -66,3 +66,7 @@ exclude = ["build/", "dist/", "pipelines/build_unified_dataset\\.py"]
 testpaths = ["tests", "core", "pipelines", "api"]
 python_files = ["test_*.py"]
 addopts = "-q"
+# Repo root on sys.path so tests can import top-level `scripts/*.py` (e.g.
+# tests/integration/test_load_backfill.py -> scripts.load_backfill), the same way
+# `uv run python scripts/foo.py` already resolves it from cwd.
+pythonpath = ["."]
