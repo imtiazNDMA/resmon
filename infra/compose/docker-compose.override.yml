@@ -19,9 +19,14 @@ services:
     command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "${API_HOST_PORT:-8000}:8000"
+    environment:
+      # Dev-only: live SAR tile minting (/sar-tiles). If geeservice.json is absent
+      # the endpoint 503s and the frontend shows the imagery-unavailable chip.
+      GEE_SA_KEY_FILE: /run/secrets/gee_sa.json
     volumes:
       - ../../api/src:/app/api/src
       - ../../core/src:/app/core/src
+      - ../../geeservice.json:/run/secrets/gee_sa.json:ro
 
   prefect-worker:
     volumes:
