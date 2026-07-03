@@ -47,6 +47,17 @@ export function dockRise(el: HTMLElement) {
   return gsap.from(el, { yPercent: 110, duration: 0.55, ease: "power3.out" });
 }
 
+/** Dashboard panels stagger in with a 60ms cascade (spec motion score). */
+export function panelsIn(root: HTMLElement) {
+  return gsap.from(root.querySelectorAll(".panel"), {
+    y: 18,
+    opacity: 0,
+    stagger: 0.06,
+    duration: 0.45,
+    ease: "power3.out",
+  });
+}
+
 /** Highlight sweep across a clicked reservoir button. */
 export function buttonSweep(el: HTMLElement) {
   const sweep = document.createElement("div");
