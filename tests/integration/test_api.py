@@ -132,9 +132,7 @@ def test_acquisitions_endpoint_serves_real_series(client, seeded_observation_row
     assert "2026-01-01" not in dates
 
 
-def test_synthetic_rows_never_mint_tiles_or_freshen_staleness(
-    client, seeded_observation_rows
-):
+def test_synthetic_rows_never_mint_tiles_or_freshen_staleness(client, seeded_observation_rows):
     # sar-tiles: the synthetic date has no real scene to mint -> 404, not a fake tile
     assert client.get("/reservoirs/gobind_sagar/sar-tiles?date=2026-01-01").status_code == 404
     # status: last_acquisition_date must come from real rows only, so the synthetic

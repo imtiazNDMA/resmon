@@ -26,8 +26,7 @@ _MAX_DECIMAL_DIGITS = 5
 # — synthetic rows are marked by their scene_ids. Serving paths must never present a
 # synthetic area, mint a tile for a fake scene, or let one freshen the staleness clock.
 _REAL_OBS = (
-    "extraction_method <> 'stub' "
-    "AND NOT ('synthetic' = ANY(scene_ids) OR 'stub' = ANY(scene_ids))"
+    "extraction_method <> 'stub' AND NOT ('synthetic' = ANY(scene_ids) OR 'stub' = ANY(scene_ids))"
 )
 
 
@@ -87,8 +86,7 @@ def latest_status(s: Session, rid: str) -> dict | None:
     )
     last_acq = s.execute(
         text(
-            "SELECT max(acquisition_date) FROM observation WHERE reservoir_id = :r "
-            f"AND {_REAL_OBS}"
+            f"SELECT max(acquisition_date) FROM observation WHERE reservoir_id = :r AND {_REAL_OBS}"
         ),
         {"r": rid},
     ).scalar()
