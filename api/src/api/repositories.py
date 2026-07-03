@@ -190,6 +190,27 @@ def accuracy(s: Session) -> dict:
     }
 
 
+def acquisitions(s: Session, rid: str) -> list[dict]:
+    """Non-stub SAR acquisition series for the timeline (dashboard spec endpoint 1)."""
+    rows = (
+        s.execute(
+            text(
+                "SELECT acquisition_date::text AS date, surface_area, area_confidence "
+                "FROM observation "
+                "WHERE reservoir_id = :r AND extraction_method <> 'stub' "
+                "ORDER BY acquisition_date"
+            ),
+            {"r": rid},
+        )
+        .mappings()
+        .all()
+    )
+    return [
+        {"date": r["date"], "area_km2": r["surface_area"], "confidence": r["area_confidence"]}
+        for r in rows
+    ]
+
+
 def _bounded_geojson(geom_expr: str) -> str:
     """SQL for topology-preserving simplification + capped precision (D4)."""
     return (

@@ -16,6 +16,7 @@ import api.repositories as repo
 from api.db import get_db
 from api.schemas import (
     AccuracyReport,
+    AcquisitionOut,
     AoiProperties,
     CatchmentProperties,
     FeatureCollection,
@@ -30,6 +31,12 @@ from api.schemas import (
 )
 
 router = APIRouter()
+
+
+def _ensure_reservoir(db: Session, rid: str) -> None:
+    """404 on unknown reservoir id (shared by the additive dashboard endpoints)."""
+    if repo.get_reservoir(db, rid) is None:
+        raise HTTPException(status_code=404, detail=f"reservoir {rid!r} not found")
 
 
 @router.get("/reservoirs", tags=["reservoirs"], response_model=list[ReservoirSummary])
@@ -60,6 +67,15 @@ def reservoir_timeseries(
     rid: str, limit: int = Query(default=200, ge=1, le=2000), db: Session = Depends(get_db)
 ) -> list[dict]:
     return repo.timeseries(db, rid, limit)
+
+
+@router.get(
+    "/reservoirs/{rid}/acquisitions", tags=["reservoirs"], response_model=list[AcquisitionOut]
+)
+def reservoir_acquisitions(rid: str, db: Session = Depends(get_db)) -> list[dict]:
+    """Real (non-stub) SAR acquisition series for the dashboard timeline."""
+    _ensure_reservoir(db, rid)
+    return repo.acquisitions(db, rid)
 
 
 @router.get("/reservoirs/{rid}/forecast", tags=["forecast"], response_model=ForecastResponse)

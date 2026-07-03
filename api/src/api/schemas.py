@@ -52,6 +52,12 @@ class TimeseriesPoint(BaseModel):
     normal_storage_pct: float | None
 
 
+class AcquisitionOut(BaseModel):
+    date: str
+    area_km2: float
+    confidence: float
+
+
 # --- Forecast / risk --------------------------------------------------------------
 
 

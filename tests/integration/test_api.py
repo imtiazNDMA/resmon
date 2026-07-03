@@ -13,6 +13,7 @@ from data_engineering.seed import seed_reservoirs
 from fastapi.testclient import TestClient
 from ml.forecasting import run_forecasting
 from ml.release import run_release_risk
+from sqlalchemy import text
 
 
 @pytest.fixture
@@ -83,6 +84,50 @@ def test_geojson_layers(client):
     for path in ("/geojson/catchment", "/geojson/water-extent"):
         layer = client.get(path).json()
         assert layer["type"] == "FeatureCollection"
+
+
+@pytest.fixture
+def seeded_observation_rows(client, session):
+    """Two real (non-stub) SAR observations for gobind_sagar, mirroring the Task-1 loader."""
+    for d, area, conf, sid in (
+        ("2020-01-05", 120.5, 0.92, "S1A_TEST_0001"),
+        ("2020-01-29", 118.2, 0.91, "S1A_TEST_0003"),
+    ):
+        session.execute(
+            text(
+                """
+                INSERT INTO observation
+                    (reservoir_id, acquisition_date, surface_area, area_confidence,
+                     water_mask_ref, extraction_method, extraction_version, scene_ids,
+                     orbit_relative, pass_direction, aoi_version, layover_shadow_fraction,
+                     processing_params)
+                VALUES
+                    ('gobind_sagar', :d, :area, :conf, :ref, 'otsu_vh', 'v1',
+                     ARRAY[:sid], 27, 'ASC', 'v1', 0, CAST('{}' AS jsonb))
+                ON CONFLICT (reservoir_id, acquisition_date) DO UPDATE SET
+                    surface_area = EXCLUDED.surface_area,
+                    extraction_method = EXCLUDED.extraction_method,
+                    scene_ids = EXCLUDED.scene_ids
+                """
+            ),
+            {"d": d, "area": area, "conf": conf, "ref": f"backfill://{sid}", "sid": sid},
+        )
+
+
+def test_acquisitions_endpoint_serves_real_series(client, seeded_observation_rows):
+    r = client.get("/reservoirs/gobind_sagar/acquisitions")
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body) >= 2
+    first = body[0]
+    assert set(first) == {"date", "area_km2", "confidence"}
+    assert isinstance(first["area_km2"], (int, float))
+    dates = [row["date"] for row in body]
+    assert dates == sorted(dates)
+
+
+def test_acquisitions_unknown_reservoir_404(client):
+    assert client.get("/reservoirs/nope/acquisitions").status_code == 404
 
 
 def test_openapi_published(client):
