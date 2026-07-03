@@ -88,6 +88,32 @@ export interface FeatureCollection {
   features: ReservoirFeature[];
 }
 
+/** One non-stub SAR acquisition (`/reservoirs/{id}/acquisitions`). */
+export interface Acquisition {
+  date: string;
+  area_km2: number;
+  confidence: number;
+}
+
+/** Live EE tile template for one acquisition (`/reservoirs/{id}/sar-tiles`). */
+export interface SarTile {
+  tile_url: string;
+  expires_at: string;
+}
+
+/** One day of catchment rainfall (`/reservoirs/{id}/rainfall`). */
+export interface RainfallPoint {
+  date: string;
+  precip_mm: number | null;
+}
+
+/** Properties on `/geojson/aoi` features. */
+export interface AoiProperties {
+  reservoir_id: string;
+  name: string;
+  aoi_version: string;
+}
+
 export const RISK_COLOR: Record<RiskLevel, string> = {
   Low: "#2c7fb8",
   Watch: "#fec44f",
