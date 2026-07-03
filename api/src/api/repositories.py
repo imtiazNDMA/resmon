@@ -21,6 +21,15 @@ _IST = ZoneInfo("Asia/Kolkata")
 _SIMPLIFY_TOLERANCE_DEG = 0.0001
 _MAX_DECIMAL_DIGITS = 5
 
+# C5 provenance (mirrors ml.forecasting/ml.gate): the demo bootstrap writes synthetic
+# observations stamped with the REAL extractor name, so `<> 'stub'` alone is not enough
+# — synthetic rows are marked by their scene_ids. Serving paths must never present a
+# synthetic area, mint a tile for a fake scene, or let one freshen the staleness clock.
+_REAL_OBS = (
+    "extraction_method <> 'stub' "
+    "AND NOT ('synthetic' = ANY(scene_ids) OR 'stub' = ANY(scene_ids))"
+)
+
 
 def list_reservoirs(s: Session) -> list[dict]:
     rows = (
@@ -79,7 +88,7 @@ def latest_status(s: Session, rid: str) -> dict | None:
     last_acq = s.execute(
         text(
             "SELECT max(acquisition_date) FROM observation WHERE reservoir_id = :r "
-            "AND extraction_method <> 'stub'"
+            f"AND {_REAL_OBS}"
         ),
         {"r": rid},
     ).scalar()
@@ -197,7 +206,7 @@ def acquisitions(s: Session, rid: str) -> list[dict]:
             text(
                 "SELECT acquisition_date::text AS date, surface_area, area_confidence "
                 "FROM observation "
-                "WHERE reservoir_id = :r AND extraction_method <> 'stub' "
+                f"WHERE reservoir_id = :r AND {_REAL_OBS} "
                 "ORDER BY acquisition_date"
             ),
             {"r": rid},
@@ -217,7 +226,7 @@ def scene_id_for_date(s: Session, rid: str, date: str) -> str | None:
         text(
             "SELECT scene_ids FROM observation "
             "WHERE reservoir_id = :r AND acquisition_date = :d "
-            "AND extraction_method <> 'stub'"
+            f"AND {_REAL_OBS}"
         ),
         {"r": rid, "d": date},
     ).fetchone()

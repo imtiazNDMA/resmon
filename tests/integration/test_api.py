@@ -88,10 +88,13 @@ def test_geojson_layers(client):
 
 @pytest.fixture
 def seeded_observation_rows(client, session):
-    """Two real (non-stub) SAR observations for gobind_sagar, mirroring the Task-1 loader."""
+    """Two real SAR observations for gobind_sagar (mirroring the Task-1 loader) plus one
+    synthetic-provenance row (C5: scene_ids = ['synthetic']) that every serving path
+    must exclude — the demo bootstrap stamps such rows with the real extractor name."""
     for d, area, conf, sid in (
         ("2020-01-05", 120.5, 0.92, "S1A_TEST_0001"),
         ("2020-01-29", 118.2, 0.91, "S1A_TEST_0003"),
+        ("2026-01-01", 999.0, 0.80, "synthetic"),
     ):
         session.execute(
             text(
@@ -124,6 +127,20 @@ def test_acquisitions_endpoint_serves_real_series(client, seeded_observation_row
     assert isinstance(first["area_km2"], (int, float))
     dates = [row["date"] for row in body]
     assert dates == sorted(dates)
+    # C5 provenance: synthetic rows never reach the timeline, even with a real
+    # extractor name — a fake area on the dashboard is a lie about the reservoir.
+    assert "2026-01-01" not in dates
+
+
+def test_synthetic_rows_never_mint_tiles_or_freshen_staleness(
+    client, seeded_observation_rows
+):
+    # sar-tiles: the synthetic date has no real scene to mint -> 404, not a fake tile
+    assert client.get("/reservoirs/gobind_sagar/sar-tiles?date=2026-01-01").status_code == 404
+    # status: last_acquisition_date must come from real rows only, so the synthetic
+    # 2026 row cannot make stale data look fresh
+    status = client.get("/reservoirs/gobind_sagar/status").json()
+    assert status["last_acquisition_date"] != "2026-01-01"
 
 
 def test_acquisitions_unknown_reservoir_404(client):
