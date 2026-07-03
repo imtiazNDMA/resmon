@@ -130,6 +130,16 @@ def test_acquisitions_unknown_reservoir_404(client):
     assert client.get("/reservoirs/nope/acquisitions").status_code == 404
 
 
+def test_rainfall_endpoint_empty_is_honest(client):
+    r = client.get("/reservoirs/gobind_sagar/rainfall?window=30")
+    assert r.status_code == 200
+    assert r.json() == []  # no forcing rows seeded -> honest empty, not fake zeros
+
+
+def test_rainfall_unknown_reservoir_404(client):
+    assert client.get("/reservoirs/nope/rainfall").status_code == 404
+
+
 def test_openapi_published(client):
     schema = client.get("/openapi.json").json()
     assert schema["info"]["title"] == "Reservoir Monitoring & Analytics API"

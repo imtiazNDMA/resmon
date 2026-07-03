@@ -224,6 +224,28 @@ def scene_id_for_date(s: Session, rid: str, date: str) -> str | None:
     return row.scene_ids[0] if row and row.scene_ids else None
 
 
+def rainfall(s: Session, rid: str, window_days: int) -> list[dict]:
+    """Catchment precipitation over the trailing window (dashboard spec endpoint 3).
+
+    Empty until live forcing ingest lands — the frontend renders that honestly
+    ("awaiting live forcing"), never fake zeros.
+    """
+    rows = (
+        s.execute(
+            text(
+                "SELECT date::text AS date, catchment_precip AS precip_mm "
+                "FROM catchment_forcing "
+                "WHERE reservoir_id = :r AND date >= CURRENT_DATE - :w * INTERVAL '1 day' "
+                "ORDER BY date"
+            ),
+            {"r": rid, "w": window_days},
+        )
+        .mappings()
+        .all()
+    )
+    return [{"date": r["date"], "precip_mm": r["precip_mm"]} for r in rows]
+
+
 def _bounded_geojson(geom_expr: str) -> str:
     """SQL for topology-preserving simplification + capped precision (D4)."""
     return (

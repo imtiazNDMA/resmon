@@ -22,6 +22,7 @@ from api.schemas import (
     CatchmentProperties,
     FeatureCollection,
     ForecastResponse,
+    RainfallPointOut,
     ReleaseRiskEntry,
     ReservoirDetail,
     ReservoirMarkerProperties,
@@ -92,6 +93,17 @@ def reservoir_sar_tiles(rid: str, date: str, db: Session = Depends(get_db)) -> d
     except gee_tiles.GeeUnavailable as exc:
         raise HTTPException(status_code=503, detail=f"live imagery unavailable: {exc}") from exc
     return {"tile_url": url, "expires_at": expires.isoformat()}
+
+
+@router.get(
+    "/reservoirs/{rid}/rainfall", tags=["reservoirs"], response_model=list[RainfallPointOut]
+)
+def reservoir_rainfall(
+    rid: str, window: int = Query(default=90, ge=1, le=730), db: Session = Depends(get_db)
+) -> list[dict]:
+    """Catchment rainfall over the trailing ``window`` days (empty until live forcing)."""
+    _ensure_reservoir(db, rid)
+    return repo.rainfall(db, rid, window)
 
 
 @router.get("/reservoirs/{rid}/forecast", tags=["forecast"], response_model=ForecastResponse)

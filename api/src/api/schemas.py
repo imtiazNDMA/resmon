@@ -63,6 +63,11 @@ class SarTileOut(BaseModel):
     expires_at: str
 
 
+class RainfallPointOut(BaseModel):
+    date: str
+    precip_mm: float | None
+
+
 # --- Forecast / risk --------------------------------------------------------------
 
 
