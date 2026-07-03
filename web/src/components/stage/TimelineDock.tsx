@@ -11,7 +11,11 @@ export default function TimelineDock({ acquisitions }: { acquisitions: Acquisiti
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (rootRef.current) dockRise(rootRef.current);
+    if (!rootRef.current) return;
+    const tween = dockRise(rootRef.current); // gsap.from: revert on StrictMode remount
+    return () => {
+      tween.revert();
+    };
   }, []);
 
   const idx = useMemo(

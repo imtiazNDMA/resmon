@@ -29,7 +29,11 @@ export default function DashboardView() {
   const rain = useRainfall("gobind_sagar");
 
   useEffect(() => {
-    if (rootRef.current) panelsIn(rootRef.current);
+    if (!rootRef.current) return;
+    const tween = panelsIn(rootRef.current); // gsap.from: revert on StrictMode remount
+    return () => {
+      tween.revert();
+    };
   }, []);
 
   // merge the three series onto one date axis for the fleet chart
