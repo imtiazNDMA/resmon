@@ -141,6 +141,48 @@ def test_synthetic_rows_never_mint_tiles_or_freshen_staleness(client, seeded_obs
     assert status["last_acquisition_date"] != "2026-01-01"
 
 
+@pytest.fixture
+def seeded_mask_rows(client, session):
+    """One real observation WITH a mask geometry plus a NEWER synthetic-provenance row
+    that also has a mask (C5) — /geojson/water-extent must serve the real one."""
+    for d, area, sid in (
+        ("2020-01-05", 120.5, "S1A_TEST_0001"),
+        ("2026-01-01", 999.0, "synthetic"),
+    ):
+        session.execute(
+            text(
+                """
+                INSERT INTO observation
+                    (reservoir_id, acquisition_date, surface_area, area_confidence,
+                     water_mask_ref, extraction_method, extraction_version, scene_ids,
+                     orbit_relative, pass_direction, aoi_version, layover_shadow_fraction,
+                     processing_params, water_mask_geom)
+                VALUES
+                    ('gobind_sagar', :d, :area, 0.9, :ref, 'otsu_vh', 'v1',
+                     ARRAY[:sid], 27, 'ASC', 'v1', 0, CAST('{}' AS jsonb),
+                     ST_Multi(ST_GeomFromText(
+                       'POLYGON((76.4 31.4, 76.5 31.4, 76.5 31.5, 76.4 31.5, 76.4 31.4))', 4326)))
+                ON CONFLICT (reservoir_id, acquisition_date) DO UPDATE SET
+                    surface_area = EXCLUDED.surface_area,
+                    extraction_method = EXCLUDED.extraction_method,
+                    scene_ids = EXCLUDED.scene_ids,
+                    water_mask_geom = EXCLUDED.water_mask_geom
+                """
+            ),
+            {"d": d, "area": area, "ref": f"backfill://{sid}", "sid": sid},
+        )
+
+
+def test_water_extent_excludes_synthetic_masks(client, seeded_mask_rows):
+    # C5: the synthetic 2026 row has a mask AND a newer date — if the provenance
+    # filter is missing, DISTINCT ON picks it as the "latest" extent.
+    gj = client.get("/geojson/water-extent").json()
+    gs = [f for f in gj["features"] if f["properties"]["reservoir_id"] == "gobind_sagar"]
+    assert len(gs) == 1
+    assert gs[0]["properties"]["acquisition_date"] == "2020-01-05"
+    assert gs[0]["geometry"]["type"] in ("Polygon", "MultiPolygon")
+
+
 def test_acquisitions_unknown_reservoir_404(client):
     assert client.get("/reservoirs/nope/acquisitions").status_code == 404
 

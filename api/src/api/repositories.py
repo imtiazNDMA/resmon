@@ -300,7 +300,7 @@ def water_extent_features(s: Session) -> list[dict]:
                 {_bounded_geojson("o.water_mask_geom")} AS g
             FROM observation o
             JOIN reservoir r ON r.reservoir_id = o.reservoir_id
-            WHERE o.water_mask_geom IS NOT NULL
+            WHERE o.water_mask_geom IS NOT NULL AND {_REAL_OBS}
             ORDER BY o.reservoir_id, o.acquisition_date DESC
             """
             )
