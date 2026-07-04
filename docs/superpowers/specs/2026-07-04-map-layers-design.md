@@ -31,6 +31,13 @@ revamp feedback with data that already exists.
    sub-project B's open architecture decision (vector re-pass vs. cached rasters)
    would invalidate any abstraction designed now.
 
+**Implementation deviations (deliberate, recorded at final review 2026-07-04):**
+the date chip in decision 4 shows only while the water-extent toggle is on (a date
+for a hidden layer is noise), and the auto-hide rule in decision 3 gates on the
+*timeline's* latest acquisition rather than the mask's own date — the newest
+backfill observations carry no masks, so strict equality against the mask date
+would never be true. Both dissolve when sub-project B serves per-date masks.
+
 ## Architecture & data flow
 
 Frontend fetch stack (all following existing patterns in `web/src/lib/`):
