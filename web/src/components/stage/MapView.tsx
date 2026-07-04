@@ -6,6 +6,7 @@ import AreaMeter from "./AreaMeter";
 import CatchmentLayer from "./CatchmentLayer";
 import SarTileLayer from "./SarTileLayer";
 import TimelineDock from "./TimelineDock";
+import WaterExtentLayer from "./WaterExtentLayer";
 
 const HOME: [number, number] = [31.9, 76.1];
 
@@ -54,6 +55,7 @@ export default function MapView() {
           />
         )}
         <CatchmentLayer />
+        <WaterExtentLayer />
         {markers?.features.map((f) => {
           if (f.geometry?.type !== "Point") return null;
           const [lon, lat] = f.geometry.coordinates;
