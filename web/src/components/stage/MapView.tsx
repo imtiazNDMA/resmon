@@ -4,6 +4,7 @@ import { useAcquisitions, useAoi, useMarkers } from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
 import AreaMeter from "./AreaMeter";
 import CatchmentLayer from "./CatchmentLayer";
+import LayerChips from "./LayerChips";
 import SarTileLayer from "./SarTileLayer";
 import TimelineDock from "./TimelineDock";
 import WaterExtentLayer from "./WaterExtentLayer";
@@ -70,6 +71,7 @@ export default function MapView() {
         })}
         {selected && activeDate && <SarTileLayer rid={selected} date={activeDate} />}
       </MapContainer>
+      <LayerChips />
       {selected && acqs && <AreaMeter acquisitions={acqs} />}
       {selected && acqs && <TimelineDock acquisitions={acqs} />}
     </div>

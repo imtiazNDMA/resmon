@@ -38,10 +38,28 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
 /* ---- Map view ---- */
 .leaflet-root { position: absolute; inset: 0; background: #05080a; }
 .imagery-chip {
-  position: absolute; top: 12px; right: 12px; z-index: 1100;
+  position: absolute; top: 48px; right: 12px; z-index: 1100;
   background: rgba(21,27,35,.9); border: 1px solid var(--warn); color: var(--warn);
   font-size: 11px; padding: 6px 10px; border-radius: 16px;
 }
+
+/* ---- Layer chips (map overlay toggles + extent date) ---- */
+.layer-chips {
+  position: absolute; top: 12px; right: 12px; z-index: 1100;
+  display: flex; gap: 8px; align-items: center;
+}
+.layer-chip {
+  background: rgba(21,27,35,.9); border: 1px solid var(--line); color: var(--muted);
+  font-size: 11px; padding: 6px 10px; border-radius: 16px; cursor: pointer;
+  font-family: var(--font);
+}
+.layer-chip.on { border-color: var(--water); color: var(--text); }
+.layer-chip:disabled { opacity: .4; cursor: default; }
+.extent-date-chip {
+  background: rgba(21,27,35,.9); border: 1px solid var(--line); color: var(--muted);
+  font-size: 11px; padding: 6px 10px; border-radius: 16px; font-family: var(--mono);
+}
+.extent-date-chip.stale { border-color: var(--warn); color: var(--warn); }
 
 /* ---- Timeline dock ---- */
 .dock {
