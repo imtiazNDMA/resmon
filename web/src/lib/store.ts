@@ -8,10 +8,13 @@ interface AppState {
   selected: ReservoirId | null;
   activeDate: string | null;
   playing: boolean;
+  showCatchment: boolean;
+  showWaterExtent: boolean;
   selectReservoir: (id: ReservoirId) => void;
   openDashboard: () => void;
   setActiveDate: (d: string | null) => void;
   setPlaying: (p: boolean) => void;
+  toggleLayer: (layer: "catchment" | "waterExtent") => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -19,6 +22,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   selected: null,
   activeDate: null,
   playing: false,
+  showCatchment: true,
+  showWaterExtent: true,
   selectReservoir: (id) =>
     set({ view: "map", selected: id, activeDate: null, playing: false }),
   openDashboard: () => set({ view: "dashboard", playing: false }),
@@ -26,4 +31,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (get().selected !== null) set({ activeDate: d });
   },
   setPlaying: (p) => set({ playing: p }),
+  toggleLayer: (layer) =>
+    set(
+      layer === "catchment"
+        ? { showCatchment: !get().showCatchment }
+        : { showWaterExtent: !get().showWaterExtent },
+    ),
 }));

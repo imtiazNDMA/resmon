@@ -31,4 +31,16 @@ describe("app store transitions", () => {
     s().setActiveDate("2020-01-05");
     expect(s().activeDate).toBeNull();
   });
+
+  it("layer toggles default on and flip independently", () => {
+    expect(s().showCatchment).toBe(true);
+    expect(s().showWaterExtent).toBe(true);
+    s().toggleLayer("catchment");
+    expect(s().showCatchment).toBe(false);
+    expect(s().showWaterExtent).toBe(true); // independent
+    s().toggleLayer("catchment");
+    expect(s().showCatchment).toBe(true);
+    s().toggleLayer("waterExtent");
+    expect(s().showWaterExtent).toBe(false);
+  });
 });
