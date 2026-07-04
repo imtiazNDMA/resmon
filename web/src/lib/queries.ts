@@ -7,6 +7,20 @@ export const useMarkers = () =>
 export const useAoi = () =>
   useQuery({ queryKey: ["aoi"], queryFn: ({ signal }) => api.aoi(signal), staleTime: Infinity });
 
+export const useCatchment = () =>
+  useQuery({
+    queryKey: ["catchment"],
+    queryFn: ({ signal }) => api.catchment(signal),
+    staleTime: Infinity, // catchment geometry is static, same contract as useAoi
+  });
+
+export const useWaterExtent = () =>
+  useQuery({
+    queryKey: ["waterExtent"],
+    queryFn: ({ signal }) => api.waterExtent(signal),
+    staleTime: 10 * 60_000, // a new mask lands at most per-scene; matches acquisitions
+  });
+
 export const useStatus = (rid: string | null) =>
   useQuery({
     queryKey: ["status", rid],

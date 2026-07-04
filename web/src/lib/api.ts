@@ -1,12 +1,14 @@
 import type {
   Acquisition,
   AoiProperties,
+  CatchmentProperties,
   GeoFC,
   RainfallPoint,
   Reservoir,
   ReservoirMarkerProperties,
   SarTile,
   Status,
+  WaterExtentProperties,
 } from "../types";
 
 const BASE = "/api";
@@ -38,4 +40,7 @@ export const api = {
   markers: (s?: AbortSignal) =>
     getJson<GeoFC<ReservoirMarkerProperties>>("/geojson/reservoirs", s),
   aoi: (s?: AbortSignal) => getJson<GeoFC<AoiProperties>>("/geojson/aoi", s),
+  catchment: (s?: AbortSignal) => getJson<GeoFC<CatchmentProperties>>("/geojson/catchment", s),
+  waterExtent: (s?: AbortSignal) =>
+    getJson<GeoFC<WaterExtentProperties>>("/geojson/water-extent", s),
 };

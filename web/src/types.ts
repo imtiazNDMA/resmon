@@ -57,6 +57,21 @@ export interface AoiProperties {
   aoi_version: string;
 }
 
+/** Properties on `/geojson/catchment` features (HydroSHEDS HydroBASINS). */
+export interface CatchmentProperties {
+  reservoir_id: string;
+  name: string;
+  version: string | null;
+}
+
+/** Properties on `/geojson/water-extent` features (latest real SAR mask per reservoir). */
+export interface WaterExtentProperties {
+  reservoir_id: string;
+  name: string;
+  surface_area_km2: number;
+  acquisition_date: string;
+}
+
 /** Properties on `/geojson/reservoirs` marker features. */
 export interface ReservoirMarkerProperties {
   reservoir_id: string;
