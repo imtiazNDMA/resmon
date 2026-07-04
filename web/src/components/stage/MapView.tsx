@@ -3,6 +3,7 @@ import { CircleMarker, GeoJSON, MapContainer, TileLayer, useMap } from "react-le
 import { useAcquisitions, useAoi, useMarkers } from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
 import AreaMeter from "./AreaMeter";
+import CatchmentLayer from "./CatchmentLayer";
 import SarTileLayer from "./SarTileLayer";
 import TimelineDock from "./TimelineDock";
 
@@ -52,6 +53,7 @@ export default function MapView() {
             style={{ color: "#59b7ff", weight: 1.5, fillOpacity: 0.05 }}
           />
         )}
+        <CatchmentLayer />
         {markers?.features.map((f) => {
           if (f.geometry?.type !== "Point") return null;
           const [lon, lat] = f.geometry.coordinates;
