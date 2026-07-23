@@ -13,7 +13,7 @@ table always reflects the same run's extractions.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -22,7 +22,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from data_engineering.build_abt import build_abt
-from data_engineering.forcing import aggregate_forcing, build_forecast_forcing
+from data_engineering.forcing import aggregate_forcing
 from data_engineering.fusion import fuse_observations_groundtruth
 from data_engineering.ingest import ingest_bulletins
 from data_engineering.reservoirs import REGISTRY
@@ -57,7 +57,7 @@ def run_de_pipeline(
     abt_version: str = "abt_v1",
     backend: DataAccessBackend | None = None,
     forcing_start: date = date(2025, 5, 1),
-    forcing_end: date = date(2026, 4, 30),
+    forcing_end: date | None = None,
     build_abt_stage: bool = True,
 ) -> dict:
     """Run the full DE spine. Returns a summary of row counts per stage.
@@ -70,6 +70,9 @@ def run_de_pipeline(
 
     seeded = seed_reservoirs(session)
     counts = ingest_bulletins(session, csv_path)
+    if forcing_end is None:
+        latest_ground_truth = session.execute(text("SELECT max(date) FROM ground_truth")).scalar_one()
+        forcing_end = max(date(2026, 4, 30), latest_ground_truth - timedelta(days=5))
     # Stub generation self-gates: reservoirs that already carry real (non-stub)
     # observations are skipped, and reruns can never overwrite a real row.
     stubs = generate_stub_observations(session)
@@ -79,12 +82,9 @@ def run_de_pipeline(
     forecast_rows = 0
     for slug in slugs:
         forcing_rows += aggregate_forcing(session, backend, slug, forcing_start, forcing_end)
-    # forecast forcing over the in-range bulletin issue dates (cheap subset of the spine)
-    issue_dates = [
-        d for d in (forcing_start, forcing_end)
-    ]  # minimal seed; full set built in serving (Phase 9)
-    for slug in slugs:
-        forecast_rows += build_forecast_forcing(session, backend, slug, issue_dates)
+    # Forecast forcing is intentionally not populated until a real GFS-backed path exists.
+    # Writing plausible-looking zero rows here would train downstream models to ignore
+    # weather forecasts and hide the missing integration.
 
     abt_rows = build_and_validate_abt(session, slugs, abt_version) if build_abt_stage else 0
 

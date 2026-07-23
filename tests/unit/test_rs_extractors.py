@@ -10,7 +10,12 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from remote_sensing.aoi import aoi_bbox_from_occurrence, dam_connected_component, polygon_to_wkt
+from remote_sensing.aoi import (
+    analysis_exclusion_geojson,
+    aoi_bbox_from_occurrence,
+    dam_connected_component,
+    polygon_to_wkt,
+)
 from remote_sensing.area import area_confidence, compactness, polygon_compactness, surface_area_km2
 from remote_sensing.calibrate import db_to_linear, linear_to_db, mask_border_noise
 from remote_sensing.extractors import (
@@ -282,6 +287,14 @@ def test_polygon_compactness_square_beats_sliver():
     cs, cl = polygon_compactness(square), polygon_compactness(sliver)
     assert 0.0 < cl < cs <= 1.0
     assert polygon_compactness({"type": "Polygon", "coordinates": []}) == 0.0
+
+
+def test_thein_area_excludes_downstream_river_only():
+    exclusion = analysis_exclusion_geojson("thein")
+    assert exclusion is not None
+    assert analysis_exclusion_geojson("gobind_sagar") is None
+    assert exclusion["type"] == "Polygon"
+    assert exclusion["coordinates"][0][0] == [75.7303, 32.4431]
 
 
 # ---------------------------------------------------------------- harness

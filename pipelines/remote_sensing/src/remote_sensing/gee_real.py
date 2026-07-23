@@ -23,7 +23,7 @@ from collections.abc import Iterable, Mapping
 
 from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_exponential
 
-from remote_sensing.aoi import GSW_MAX_EXTENT_BAND
+from remote_sensing.aoi import GSW_MAX_EXTENT_BAND, analysis_exclusion_geojson
 from remote_sensing.extractors import (
     SEPARABILITY_FLOOR,
     VALLEY_RATIO_MAX,
@@ -202,6 +202,7 @@ def delineate_catchment(
 def latest_water_extent(
     aoi_geojson: dict,
     *,
+    reservoir_id: str | None = None,
     orbit_relative: int | None = None,
     pass_direction: str | None = None,
     smoothing_radius_m: float = 50.0,
@@ -222,6 +223,9 @@ def latest_water_extent(
 
     init_ee()
     aoi = ee.Geometry(aoi_geojson)
+    exclusion = analysis_exclusion_geojson(reservoir_id or "")
+    if exclusion is not None:
+        aoi = aoi.difference(ee.Geometry(exclusion), 1)
     coll = (
         ee.ImageCollection(S1_GRD)
         .filterBounds(aoi)

@@ -32,7 +32,7 @@ class RatingCurveFit:
         return self.storage_for_area(area) / self.capacity_bcm * 100.0
 
     def is_extrapolated(self, area: float) -> bool:
-        return area > self.observed_range["area_max"]
+        return area < self.observed_range["area_min"] or area > self.observed_range["area_max"]
 
 
 def fit_empirical(
@@ -49,8 +49,14 @@ def fit_empirical(
     areas = np.asarray(areas, dtype=float)
     storages = np.asarray(storages, dtype=float)
     levels = np.asarray(levels, dtype=float)
+    if capacity_bcm <= 0:
+        raise ValueError("capacity_bcm must be positive")
+    finite = np.isfinite(areas) & np.isfinite(storages) & np.isfinite(levels)
+    areas, storages, levels = areas[finite], storages[finite], levels[finite]
     if areas.size < degree + 1:
         raise ValueError(f"need ≥ {degree + 1} pairs to fit degree-{degree} curve")
+    if np.unique(areas).size < degree + 1:
+        raise ValueError(f"need ≥ {degree + 1} unique area values to fit degree-{degree} curve")
     storage_coeffs = np.polyfit(areas, storages, degree)
     level_coeffs = np.polyfit(areas, levels, degree)
     observed_range = {

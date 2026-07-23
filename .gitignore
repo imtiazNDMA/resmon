@@ -19,6 +19,7 @@ geeservice.json
 .env
 .env.*
 !.env.example
+.cache/
 
 # TS build info
 *.tsbuildinfo

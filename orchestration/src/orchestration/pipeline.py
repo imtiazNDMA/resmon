@@ -105,14 +105,14 @@ def run_full_pipeline(session: Session, abt_version: str = "abt_v1") -> dict:
         "fusion",
         lambda: fuse_observations_groundtruth(session),
     )
-    # Gold ABT built AFTER RS + fusion so it carries this run's real observations.
+    gt = _record_stage(session, "ml", "ground_truthing", lambda: run_ground_truthing(session))
+    # Gold ABT built AFTER rating-curve backfill so it carries SAR-derived storage/level.
     abt_rows = _record_stage(
         session,
         "data_engineering",
         "build_abt",
         lambda: build_and_validate_abt(session, slugs, abt_version),
     )
-    gt = _record_stage(session, "ml", "ground_truthing", lambda: run_ground_truthing(session))
     fc = _record_stage(session, "ml", "forecasting", lambda: run_forecasting(session))
     rr = _record_stage(session, "ml", "release_risk", lambda: run_release_risk(session))
     return {

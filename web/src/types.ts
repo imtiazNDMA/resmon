@@ -34,8 +34,14 @@ export interface Status {
 /** One non-stub SAR acquisition (`/reservoirs/{id}/acquisitions`). */
 export interface Acquisition {
   date: string;
+  historical_date: string | null;
   area_km2: number;
   confidence: number;
+  live_storage_bcm: number | null;
+  level_m: number | null;
+  pct_filled: number | null;
+  surface_area_correlation: number | null;
+  is_extrapolated: boolean;
 }
 
 /** Live EE tile template for one acquisition (`/reservoirs/{id}/sar-tiles`). */
@@ -48,6 +54,16 @@ export interface SarTile {
 export interface RainfallPoint {
   date: string;
   precip_mm: number | null;
+}
+
+export interface MetForcing {
+  reservoir_id: string;
+  as_of: string | null;
+  precip_7d_mm: number | null;
+  antecedent_precip_index_mm: number | null;
+  snow_cover_pct: number | null;
+  degree_day_melt_mm_day: number | null;
+  evaporation_mm_day: number | null;
 }
 
 /** Properties on `/geojson/aoi` features. */

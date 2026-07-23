@@ -38,6 +38,10 @@ def test_forecasting_persists_and_measures_skill(session):
     conn = session.connection()
     n_pred = conn.execute(text("SELECT count(*) FROM prediction")).scalar_one()
     assert n_pred == 42
+    n_volume = conn.execute(
+        text("SELECT count(*) FROM prediction WHERE predicted_volume_bcm IS NOT NULL")
+    ).scalar_one()
+    assert n_volume == 42
     n_mv = conn.execute(
         text("SELECT count(*) FROM model_version WHERE model_name = 'forecaster'")
     ).scalar_one()

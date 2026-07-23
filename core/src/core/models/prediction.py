@@ -7,7 +7,7 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Double, ForeignKey, Text, Uuid, func
+from sqlalchemy import Date, DateTime, Double, ForeignKey, Index, Text, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.models.base import Base
@@ -33,3 +33,5 @@ class Prediction(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+
+    __table_args__ = (Index("idx_prediction_model_version", "model_version_id"),)
