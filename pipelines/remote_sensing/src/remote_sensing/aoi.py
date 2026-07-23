@@ -25,6 +25,31 @@ GSW_MAX_EXTENT_BAND = "max_extent"
 #: ≥50 % would exclude the near-FRL flood margin that matters most.
 GSW_OCCURRENCE_MIN_PCT = 5.0
 
+# Thein's JRC-connected footprint includes the long Ravi reach below the dam. It is
+# useful for the map context but is not reservoir surface area. Keep this exclusion
+# explicit and versioned so historical and live extraction use the same boundary.
+THEIN_DOWNSTREAM_EXCLUSION = {
+    "type": "Polygon",
+    "coordinates": [
+        [
+            [75.7303, 32.4431],
+            [75.675, 32.425],
+            [75.555, 32.335],
+            [75.425, 32.215],
+            [75.365, 32.155],
+            [75.465, 32.105],
+            [75.650, 32.225],
+            [75.765, 32.375],
+            [75.7303, 32.4431],
+        ]
+    ],
+}
+
+
+def analysis_exclusion_geojson(reservoir_id: str) -> dict | None:
+    """Return fixed non-reservoir water to exclude from area extraction."""
+    return THEIN_DOWNSTREAM_EXCLUSION if reservoir_id == "thein" else None
+
 
 def dam_connected_component(water: np.ndarray, seed: tuple[int, int]) -> np.ndarray:
     """4-connected flood fill from ``seed``: the water component containing the dam.

@@ -22,7 +22,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from data_engineering.build_abt import build_abt
-from data_engineering.forcing import aggregate_forcing, build_forecast_forcing
+from data_engineering.forcing import aggregate_forcing
 from data_engineering.fusion import fuse_observations_groundtruth
 from data_engineering.ingest import ingest_bulletins
 from data_engineering.reservoirs import REGISTRY
@@ -79,12 +79,9 @@ def run_de_pipeline(
     forecast_rows = 0
     for slug in slugs:
         forcing_rows += aggregate_forcing(session, backend, slug, forcing_start, forcing_end)
-    # forecast forcing over the in-range bulletin issue dates (cheap subset of the spine)
-    issue_dates = [
-        d for d in (forcing_start, forcing_end)
-    ]  # minimal seed; full set built in serving (Phase 9)
-    for slug in slugs:
-        forecast_rows += build_forecast_forcing(session, backend, slug, issue_dates)
+    # Forecast forcing is intentionally not populated until a real GFS-backed path exists.
+    # Writing plausible-looking zero rows here would train downstream models to ignore
+    # weather forecasts and hide the missing integration.
 
     abt_rows = build_and_validate_abt(session, slugs, abt_version) if build_abt_stage else 0
 

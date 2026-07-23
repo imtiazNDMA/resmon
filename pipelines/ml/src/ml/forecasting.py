@@ -18,10 +18,32 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ml.baselines import climatology_delta, persistence_delta
-from ml.forecaster import MAX_HORIZON, Forecaster, build_examples
+from ml.forecaster import FORCING_FEATURES, MAX_HORIZON, Forecaster, build_examples
 
 
-def _read_series(conn) -> pd.DataFrame:
+def _read_series(conn, abt_version: str) -> pd.DataFrame:
+    abt = pd.read_sql(
+        text(
+            """
+            SELECT reservoir_id, date,
+                   COALESCE(derived_volume / NULLIF(live_capacity_bcm, 0) * 100,
+                            gt_pct_filled) AS pct_filled,
+                   normal_storage_pct, live_capacity_bcm,
+                   catchment_precip, antecedent_precip_index, snow_cover_area, swe,
+                   degree_day_melt, evaporation
+            FROM analytical_base_table
+            WHERE abt_version = :abt AND row_quality <> 'quarantine'
+            ORDER BY reservoir_id, date
+            """
+        ),
+        conn,
+        params={"abt": abt_version},
+        parse_dates=["date"],
+    )
+    if not abt.empty and abt["pct_filled"].notna().sum() >= 30:
+        return abt.dropna(subset=["pct_filled"]).reset_index(drop=True)
+    # Fallback keeps historical tests and pre-closed-loop deployments runnable, but the
+    # ABT/SAR path above is preferred whenever the estimation bridge has populated it.
     return pd.read_sql(
         text(
             "SELECT reservoir_id, date, pct_filled, normal_storage_pct, live_capacity_bcm "
@@ -31,8 +53,6 @@ def _read_series(conn) -> pd.DataFrame:
         conn,
         parse_dates=["date"],
     )
-
-
 def _observations_synthetic(conn) -> bool:
     """C5 provenance: True when any Observation row carries synthetic provenance —
     scene_ids containing 'synthetic'/'stub', or extraction_method = 'stub'. The bulletin
@@ -65,6 +85,7 @@ def _latest_base_features(df: pd.DataFrame) -> list[dict]:
             {
                 "reservoir_id": rid,
                 "base_date": g["date"].iloc[i],
+                "capacity_bcm": cap,
                 "features": {
                     "current_pct": pct[i],
                     "rate": rate,
@@ -72,10 +93,64 @@ def _latest_base_features(df: pd.DataFrame) -> list[dict]:
                     "doy_cos": np.cos(2 * np.pi * doy / 365.0),
                     "normal_pct": norm_i,
                     "log_capacity": np.log(cap),
+                    **{
+                        name: (
+                            float(g[name].iloc[i])
+                            if name in g.columns and pd.notna(g[name].iloc[i])
+                            else np.nan
+                        )
+                        for name in FORCING_FEATURES
+                    },
                 },
             }
         )
     return out
+
+
+def _forecast_forcing(conn, reservoir_id: str, issue_date, horizons: list[int]) -> dict[int, dict]:
+    rows = conn.execute(
+        text(
+            """
+            SELECT horizon, forecast_precip, forecast_degree_day_melt
+            FROM forecast_forcing
+            WHERE reservoir_id = :r AND issue_date = :d AND horizon = ANY(:h)
+            """
+        ),
+        {"r": reservoir_id, "d": issue_date.date(), "h": horizons},
+    ).mappings()
+    return {
+        int(r["horizon"]): {
+            "forecast_precip": r["forecast_precip"],
+            "forecast_degree_day_melt": r["forecast_degree_day_melt"],
+        }
+        for r in rows
+    }
+
+
+def _active_curves(conn) -> dict[str, dict]:
+    rows = conn.execute(
+        text(
+            """
+            SELECT reservoir_id, area_to_storage_params, area_to_level_params, frl_anchor
+            FROM rating_curve WHERE is_active
+            """
+        )
+    ).mappings()
+    return {str(r["reservoir_id"]): dict(r) for r in rows}
+
+
+def _level_for_volume(curve: dict | None, volume_bcm: float) -> float | None:
+    if curve is None:
+        return None
+    storage_coeffs = curve["area_to_storage_params"].get("coeffs", [])
+    level_coeffs = curve["area_to_level_params"].get("coeffs", [])
+    if len(storage_coeffs) != 2 or not level_coeffs:
+        return None
+    slope, intercept = float(storage_coeffs[0]), float(storage_coeffs[1])
+    if abs(slope) < 1e-12:
+        return None
+    area = (volume_bcm - intercept) / slope
+    return float(np.polyval([float(c) for c in level_coeffs], area))
 
 
 def walk_forward_evaluate(
@@ -185,7 +260,7 @@ def run_forecasting(
     trained on."""
     run_ts = run_timestamp or datetime.now(UTC)
     conn = session.connection()
-    df = _read_series(conn)
+    df = _read_series(conn, abt_version)
     ex = build_examples(df).sort_values("base_date").reset_index(drop=True)
     if len(ex) < 30:
         return {"trained": False, "reason": "insufficient examples"}
@@ -225,16 +300,27 @@ def run_forecasting(
     ).scalar_one()
 
     horizons = list(range(1, MAX_HORIZON + 1))
+    curves = _active_curves(conn)
     pred_rows: list[dict] = []
     for base in _latest_base_features(df):
-        pred_pct, low, high = fc.predict_fill_trajectory(base["features"], horizons)
+        horizon_features = _forecast_forcing(
+            conn, base["reservoir_id"], base["base_date"], horizons
+        )
+        pred_pct, low, high = fc.predict_fill_trajectory(
+            base["features"], horizons, horizon_features
+        )
+        capacity = float(base["capacity_bcm"])
+        curve = curves.get(base["reservoir_id"])
         for k, h in enumerate(horizons):
+            volume = float(pred_pct[k]) / 100.0 * capacity
             pred_rows.append(
                 {
                     "r": base["reservoir_id"],
                     "ts": run_ts,
                     "hd": (base["base_date"] + timedelta(days=h)).date(),
                     "pct": float(pred_pct[k]),
+                    "vol": volume,
+                    "lvl": _level_for_volume(curve, volume),
                     "lo": float(low[k]),
                     "hi": float(high[k]),
                     "mv": model_version_id,
@@ -244,8 +330,9 @@ def run_forecasting(
     session.execute(
         text(
             "INSERT INTO prediction (reservoir_id, run_timestamp, horizon_date, "
-            "predicted_pct_filled, interval_low, interval_high, model_version_id, "
-            "input_abt_version) VALUES (:r, :ts, :hd, :pct, :lo, :hi, :mv, :abt)"
+            "predicted_level_m, predicted_volume_bcm, predicted_pct_filled, "
+            "interval_low, interval_high, model_version_id, input_abt_version) "
+            "VALUES (:r, :ts, :hd, :lvl, :vol, :pct, :lo, :hi, :mv, :abt)"
         ),
         pred_rows,
     )

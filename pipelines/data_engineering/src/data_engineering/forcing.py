@@ -12,9 +12,14 @@ is derived. Missing source days stay NULL, never a silent zero.
 
 from __future__ import annotations
 
+import json
 from datetime import date
 
 import pandas as pd
+from data_engineering.openmeteo_forcing import (
+    OpenMeteoForcingUnavailable,
+    catchment_daily_forcing,
+)
 from pipelines_common.dataaccess import DataAccessBackend
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -73,8 +78,8 @@ def _catchment_mean_daily(ds, band: str, start: date, end: date) -> pd.Series:
     does not cover stay NaN (contract: NULL = not available, never a silent zero)."""
     if band in ds.data_vars:
         da = ds[band]
-    else:  # fixture names the var by the requested band; fall back to the first var
-        da = next(iter(ds.data_vars.values()))
+    else:
+        raise KeyError(f"Band {band!r} not found in dataset; available: {list(ds.data_vars)}")
     spatial = [d for d in da.dims if d != "time"]
     series = da.mean(dim=spatial).to_pandas()
     idx = pd.date_range(start, end, freq="D")
@@ -109,11 +114,69 @@ def _none_if_nan(v) -> float | None:
     return None if pd.isna(v) else float(v)
 
 
+def _catchment_region(session: Session, reservoir_id: str, backend: DataAccessBackend) -> dict:
+    row = session.execute(
+        text(
+            """
+            SELECT catchment_version, ST_AsGeoJSON(catchment_geom) AS geojson
+            FROM reservoir
+            WHERE reservoir_id = :r
+            """
+        ),
+        {"r": reservoir_id},
+    ).one_or_none()
+    if row is None:
+        raise ValueError(f"Reservoir {reservoir_id!r} not found while aggregating forcing")
+
+    catchment_version, geojson = row
+    if geojson:
+        return json.loads(geojson)
+    if backend.name == "fixture":
+        # FixtureBackend ignores region; real backends must never average over an empty AOI.
+        return {}
+    raise ValueError(
+        f"Reservoir {reservoir_id!r} has no catchment_geom/catchment_version; "
+        "run scripts/populate_geometry.py before production forcing aggregation"
+    )
+
+
 def aggregate_forcing(
     session: Session, backend: DataAccessBackend, reservoir_id: str, start: date, end: date
 ) -> int:
     """Build daily ``catchment_forcing`` rows for one reservoir. Returns rows affected."""
-    region: dict = {}  # real path: the persisted catchment polygon GeoJSON
+    if backend.name == "openmeteo":
+        try:
+            feats = catchment_daily_forcing(session, reservoir_id, start, end)
+        except OpenMeteoForcingUnavailable:
+            raise
+        src = (
+            '{"precip": "Open-Meteo gridded catchment mean", "snow": '
+            '"Open-Meteo cumulative snowfall-depth proxy in mm stored in swe", '
+            '"backend": "openmeteo"}'
+        )
+        fresh = '{"openmeteo_daily": true, "catchment_grid_deg": 0.25}'
+        rows = [
+            {
+                "reservoir_id": reservoir_id,
+                "date": d.date(),
+                "catchment_precip": _none_if_nan(feats.at[d, "catchment_precip"]),
+                "antecedent_precip_index": _none_if_nan(
+                    feats["catchment_precip"].ewm(halflife=ANTECEDENT_HALFLIFE_DAYS, adjust=False).mean().at[d]
+                ),
+                "snow_cover_area": _none_if_nan(feats.at[d, "snow_cover_area"]),
+                "swe": _none_if_nan(feats.at[d, "swe"]),
+                "degree_day_melt": _none_if_nan(feats.at[d, "degree_day_melt"]),
+                "evaporation": None,
+                "source_versions": src,
+                "freshness_flags": fresh,
+            }
+            for d in feats.index
+        ]
+        if rows:
+            session.execute(_CF_UPSERT, rows)
+        return len(rows)
+
+    region = _catchment_region(session, reservoir_id, backend)
     precip_m = _catchment_mean_daily(
         backend.get_collection(ERA5_LAND, region, start, end, ["total_precipitation_sum"]),
         "total_precipitation_sum",
@@ -162,6 +225,9 @@ def build_forecast_forcing(
     """Point-in-time GFS forecast forcing (FR-DE-10): for each issue_date the features
     come from the GFS run issued ≤ issue_date, read at valid time issue_date + horizon.
     Returns rows affected."""
+    raise NotImplementedError(
+        "Forecast forcing is not wired to GFS yet; refusing to write fake zero-valued rows"
+    )
     src = f'{{"asset": "NOAA/GFS0P25", "backend": "{backend.name}"}}'
     rows = []
     for issue in issue_dates:

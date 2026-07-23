@@ -3,6 +3,7 @@ import type {
   AoiProperties,
   CatchmentProperties,
   GeoFC,
+  MetForcing,
   RainfallPoint,
   Reservoir,
   ReservoirMarkerProperties,
@@ -37,6 +38,8 @@ export const api = {
     getJson<SarTile>(`/reservoirs/${rid}/sar-tiles?date=${date}`, s),
   rainfall: (rid: string, s?: AbortSignal) =>
     getJson<RainfallPoint[]>(`/reservoirs/${rid}/rainfall?window=90`, s),
+  metForcings: (rid: string, s?: AbortSignal) =>
+    getJson<MetForcing>(`/reservoirs/${rid}/met-forcings`, s),
   markers: (s?: AbortSignal) =>
     getJson<GeoFC<ReservoirMarkerProperties>>("/geojson/reservoirs", s),
   aoi: (s?: AbortSignal) => getJson<GeoFC<AoiProperties>>("/geojson/aoi", s),

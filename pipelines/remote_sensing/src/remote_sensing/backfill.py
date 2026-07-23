@@ -24,6 +24,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
+from remote_sensing.aoi import analysis_exclusion_geojson
 from remote_sensing.extractors import (
     SEPARABILITY_FLOOR,
     VALLEY_RATIO_MAX,
@@ -105,12 +106,20 @@ def _filtered_collection(aoi: Any, orbit_relative: int, pass_direction: str) -> 
     )
 
 
-def list_scene_ids(aoi_geojson: dict, orbit_relative: int, pass_direction: str) -> list[str]:
-    """Every qualifying scene id (frozen orbit/pass, footprint contains AOI), oldest first."""
+def _analysis_geometry(aoi_geojson: dict, reservoir_id: str):
     import ee
 
-    init_ee()
     aoi = ee.Geometry(aoi_geojson)
+    exclusion = analysis_exclusion_geojson(reservoir_id)
+    return aoi.difference(ee.Geometry(exclusion), 1) if exclusion else aoi
+
+
+def list_scene_ids(
+    aoi_geojson: dict, orbit_relative: int, pass_direction: str, reservoir_id: str = ""
+) -> list[str]:
+    """Every qualifying scene id (frozen orbit/pass, footprint contains AOI), oldest first."""
+    init_ee()
+    aoi = _analysis_geometry(aoi_geojson, reservoir_id)
     coll = _filtered_collection(aoi, orbit_relative, pass_direction).sort("system:time_start")
     ids = coll.aggregate_array("system:index").getInfo() or []
     if not ids:
@@ -207,13 +216,15 @@ def gate_scene(counts: list, centers: list) -> tuple[str, dict[str, float]]:
 
 
 def process_chunk(
-    aoi_geojson: dict, orbit_relative: int, pass_direction: str, ids: list[str]
+    aoi_geojson: dict,
+    orbit_relative: int,
+    pass_direction: str,
+    ids: list[str],
+    reservoir_id: str = "",
 ) -> list[SceneResult]:
     """Histogram pass -> client-side gates -> area pass, for one chunk of scene ids."""
-    import ee
-
     init_ee()
-    aoi = ee.Geometry(aoi_geojson)
+    aoi = _analysis_geometry(aoi_geojson, reservoir_id)
     coll = _filtered_collection(aoi, orbit_relative, pass_direction)
 
     results: list[SceneResult] = []

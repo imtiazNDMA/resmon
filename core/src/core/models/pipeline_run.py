@@ -7,7 +7,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Text, Uuid, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Text, Uuid, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -41,4 +41,5 @@ class PipelineRun(Base):
         CheckConstraint(
             "status IN ('running','success','failed','quarantined')", name="ck_pipeline_status"
         ),
+        Index("idx_pipeline_run_reservoir", "reservoir_id"),
     )

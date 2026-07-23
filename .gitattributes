@@ -1,6 +1,5 @@
 # Normalize line endings to LF in the repo; check out native on each OS.
 * text=auto eol=lf
-
 # Always LF for these regardless of platform (run inside Linux containers).
 *.py text eol=lf
 *.sh text eol=lf
@@ -11,10 +10,10 @@
 *.sql text eol=lf
 Dockerfile text eol=lf
 Taskfile.yml text eol=lf
-
 # Binary / data — never normalize.
 *.png binary
 *.jpg binary
 *.tif binary
 *.tiff binary
 *.parquet binary
+Historical[[:space:]]Indain[[:space:]]Dam[[:space:]]Data.rar filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,1 @@
+﻿import sqlalchemy; engine = sqlalchemy.create_engine('postgresql+psycopg://nirrp:nirrp_dev_2026@localhost:7544/nirrp'); print([r[0] for r in engine.connect().execute(sqlalchemy.text('SELECT version_num FROM alembic_version'))])

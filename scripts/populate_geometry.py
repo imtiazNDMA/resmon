@@ -89,7 +89,9 @@ def main() -> None:
 
             print(f"[{m.slug}] latest Sentinel-1 water extent ...", flush=True)
             try:
-                w = latest_water_extent(aoi, orbit_relative=orbit, pass_direction=pass_dir)
+                w = latest_water_extent(
+                    aoi, reservoir_id=m.slug, orbit_relative=orbit, pass_direction=pass_dir
+                )
             except GeeExtractionError as exc:
                 log.warning("[%s] skipping observation write: %s", m.slug, exc)
                 continue

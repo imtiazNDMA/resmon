@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
+from datetime import date as Date
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
 from sqlalchemy.orm import Session
 
 import api.gee_tiles as gee_tiles
@@ -20,8 +21,10 @@ from api.schemas import (
     AcquisitionOut,
     AoiProperties,
     CatchmentProperties,
+    CurrentEstimateOut,
     FeatureCollection,
     ForecastResponse,
+    MetForcingOut,
     RainfallPointOut,
     ReleaseRiskEntry,
     ReservoirDetail,
@@ -81,18 +84,62 @@ def reservoir_acquisitions(rid: str, db: Session = Depends(get_db)) -> list[dict
     return repo.acquisitions(db, rid)
 
 
+@router.get(
+    "/reservoirs/{rid}/current-estimate",
+    tags=["reservoirs"],
+    response_model=CurrentEstimateOut,
+)
+def reservoir_current_estimate(
+    rid: str, date: Date | None = Query(default=None), db: Session = Depends(get_db)
+) -> dict:
+    """Current reservoir state estimated from the selected SAR acquisition."""
+    _ensure_reservoir(db, rid)
+    est = repo.current_estimate(db, rid, date.isoformat() if date else None)
+    if est is None:
+        detail = f"no imagery-derived estimate for reservoir {rid!r}"
+        if date:
+            detail = f"no imagery-derived estimate for reservoir {rid!r} on {date.isoformat()}"
+        raise HTTPException(status_code=404, detail=detail)
+    return est
+
+
 @router.get("/reservoirs/{rid}/sar-tiles", tags=["reservoirs"], response_model=SarTileOut)
-def reservoir_sar_tiles(rid: str, date: str, db: Session = Depends(get_db)) -> dict:
+def reservoir_sar_tiles(rid: str, date: Date, db: Session = Depends(get_db)) -> dict:
     """Live Sentinel-1 tile URL for the acquisition on ``date`` (503 when GEE is down)."""
     _ensure_reservoir(db, rid)
-    scene_id = repo.scene_id_for_date(db, rid, date)
+    date_key = date.isoformat()
+    scene_id = repo.scene_id_for_date(db, rid, date_key)
     if scene_id is None:
-        raise HTTPException(status_code=404, detail=f"no acquisition on {date}")
+        raise HTTPException(status_code=404, detail=f"no acquisition on {date_key}")
     try:
-        url, expires = gee_tiles.get_cached_tile(rid, date, scene_id)
+        _, expires = gee_tiles.get_cached_tile(rid, date_key, scene_id)
     except gee_tiles.GeeUnavailable as exc:
         raise HTTPException(status_code=503, detail=f"live imagery unavailable: {exc}") from exc
+    url = f"/api/reservoirs/{rid}/sar-tile-raster/{date_key}/{{z}}/{{x}}/{{y}}"
     return {"tile_url": url, "expires_at": expires.isoformat()}
+
+
+@router.get("/reservoirs/{rid}/sar-tile-raster/{date}/{z}/{x}/{y}", tags=["reservoirs"])
+def reservoir_sar_tile_raster(
+    rid: str,
+    date: Date,
+    z: int = Path(ge=0, le=18),
+    x: int = Path(ge=0),
+    y: int = Path(ge=0),
+    db: Session = Depends(get_db),
+) -> Response:
+    """Cached XYZ tile proxy so the browser does not call Earth Engine directly."""
+    _ensure_reservoir(db, rid)
+    date_key = date.isoformat()
+    scene_id = repo.scene_id_for_date(db, rid, date_key)
+    if scene_id is None:
+        raise HTTPException(status_code=404, detail=f"no acquisition on {date_key}")
+    try:
+        tile_url, _ = gee_tiles.get_cached_tile(rid, date_key, scene_id)
+        content = gee_tiles.get_cached_raster(tile_url, rid, date_key, z, x, y)
+    except gee_tiles.GeeUnavailable as exc:
+        raise HTTPException(status_code=503, detail=f"live imagery unavailable: {exc}") from exc
+    return Response(content=content, media_type="image/png")
 
 
 @router.get(
@@ -104,6 +151,13 @@ def reservoir_rainfall(
     """Catchment rainfall over the trailing ``window`` days (empty until live forcing)."""
     _ensure_reservoir(db, rid)
     return repo.rainfall(db, rid, window)
+
+
+@router.get("/reservoirs/{rid}/met-forcings", tags=["reservoirs"], response_model=MetForcingOut)
+def reservoir_met_forcings(rid: str, db: Session = Depends(get_db)) -> dict:
+    """Latest catchment-aggregated MET forcings for map overlay toggles."""
+    _ensure_reservoir(db, rid)
+    return repo.met_forcings(db, rid)
 
 
 @router.get("/reservoirs/{rid}/forecast", tags=["forecast"], response_model=ForecastResponse)

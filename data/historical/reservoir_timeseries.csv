@@ -1,584 +1,139 @@
-SR. NO.,RESERVOIR NAME,FRL (M),CURRENT RESERVOIR LEVEL (M),LIVE CAPACITY AT FRL (BCM),CURRENT LIVE STORAGE (BCM),DATE,STORAGE AS % OF LIVE CAPACITY AT FRL - CURRENT YEAR,STORAGE AS % OF LIVE CAPACITY AT FRL - LAST YEAR,STORAGE AS % OF LIVE CAPACITY AT FRL - NORMAL STORAGE,BENEFITS - IRR-CCA,BENEFITS - HYDEL IN MW,SOURCE_PDF,pct_filled
-1,GOBIND SAGAR,512.0,488.294,6.229,2.723,2015-07-01,43.71,43.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,43.71417059045356
-1,PONG DAM,423.67,406.14,6.157,2.339,2015-07-02,37.99,25.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,37.988662258726286
-2,THEIN DAM,527.91,522.876,2.344,1.959,2015-07-02,83.57,75.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.57372522885963
-1,GOBIND SAGAR,512.0,491.024,6.229,3.024,2015-07-09,48.55,49.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,48.5463282649767
-2,PONG DAM,423.67,406.16,6.157,2.344,2015-07-09,38.07,25.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.0698693178514
-3,THEIN DAM,527.91,522.826,2.344,1.959,2015-07-09,83.57,74.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.57372522885963
-1,PONG DAM,423.67,408.54,6.157,2.752,2015-07-15,44.7,25.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,44.69636534246034
-2,THEIN DAM,527.91,523.676,2.344,1.999,2015-07-15,85.28,72.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.28018209928045
-1,GOBIND SAGAR,512.0,495.684,6.229,3.586,2015-07-16,57.57,55.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,57.56849641475081
-1,THEIN DAM,527.91,523.256,2.344,1.959,2015-07-21,83.57,72.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.57372522885963
-1,GOBIND SAGAR,512.0,499.304,6.229,4.054,2015-07-22,65.08,61.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,65.08161864623531
-2,PONG DAM,423.67,412.31,6.157,3.437,2015-07-22,55.82,32.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,55.82173244260036
-1,THEIN DAM,527.91,523.246,2.344,1.959,2015-07-28,83.57,72.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.57372522885963
-1,GOBIND SAGAR,512.0,502.034,6.229,4.438,2015-07-29,71.25,69.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,71.24623175924822
-1,PONG DAM,423.67,415.38,6.157,4.044,2015-07-30,65.68,38.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,65.68026942038867
-1,GOBIND SAGAR,512.0,504.525,6.229,4.795,2015-08-06,76.98,78.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,76.9773955127524
-2,PONG DAM,423.67,417.56,6.157,4.504,2015-08-06,73.15,43.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,73.15131885989875
-3,THEIN DAM,527.91,523.906,2.344,2.039,2015-08-06,86.99,73.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.98663896970127
-1,GOBIND SAGAR,512.0,507.735,6.229,5.277,2015-08-13,84.72,84.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,84.71526926398217
-2,PONG DAM,423.67,421.241,6.157,5.333,2015-08-13,86.62,49.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.61544926284193
-3,THEIN DAM,527.91,524.526,2.344,2.078,2015-08-13,88.65,71.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,88.65043441836156
-1,GOBIND SAGAR,512.0,509.215,6.229,5.508,2015-08-19,88.42,92.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,88.42366933977898
-2,THEIN DAM,527.91,523.366,2.344,2.039,2015-08-19,86.99,67.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.98663896970127
-1,PONG DAM,423.67,421.921,6.157,5.493,2015-08-20,89.21,67.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,89.21407515484545
-1,GOBIND SAGAR,512.0,510.485,6.229,5.706,2015-08-27,91.6,90.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,91.60229797617627
-2,PONG DAM,423.67,422.701,6.157,5.681,2015-08-27,92.27,69.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,92.26746057794956
-3,THEIN DAM,527.91,521.185,2.344,1.8,2015-08-27,76.79,61.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,76.79055916893688
-1,GOBIND SAGAR,512.0,511.445,6.229,5.857,2015-09-03,94.03,90.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,94.02640365342876
-2,PONG DAM,423.67,422.691,6.157,5.68,2015-09-03,92.25,67.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,92.25121916612453
-3,THEIN DAM,527.91,518.775,2.344,1.66,2015-09-03,70.82,67.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,70.817960122464
-1,GOBIND SAGAR,512.0,511.505,6.229,5.865,2015-09-10,94.15,93.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,94.15483309328317
-2,PONG DAM,423.67,422.231,6.157,5.568,2015-09-10,90.43,69.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,90.43218104172209
-3,THEIN DAM,527.91,518.775,2.344,1.66,2015-09-10,70.82,67.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,70.817960122464
-1,GOBIND SAGAR,512.0,511.335,6.229,5.84,2015-09-23,93.75,94.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,93.75349109373806
-2,PONG DAM,423.67,420.921,6.157,5.255,2015-09-23,85.35,71.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.34861914049024
-1,THEIN DAM,527.91,514.155,2.344,1.36,2015-09-27,58.02,62.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,58.01953359430786
-1,GOBIND SAGAR,512.0,511.765,6.229,5.906,2015-09-30,94.81,92.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,94.81303397253717
-2,PONG DAM,423.67,421.191,6.157,5.319,2015-09-30,86.39,69.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.38806949729162
-1,GOBIND SAGAR,512.0,510.985,6.229,5.784,2015-10-08,92.85,90.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,92.854485014757
-2,PONG DAM,423.67,420.571,6.157,5.172,2015-10-08,84.0,68.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,84.0005819590134
-3,THEIN DAM,527.91,513.705,2.344,1.318,2015-10-08,56.23,54.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,56.227753880365995
-1,GOBIND SAGAR,512.0,480.923,6.229,1.977,2016-07-06,31.74,46.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,31.738125324027422
-2,PONG DAM,423.67,394.389,6.157,0.792,2016-07-06,12.86,37.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,12.863198165417366
-3,THEIN DAM,527.91,504.085,2.344,0.817,2016-07-06,34.85,82.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,34.85438157834523
-1,PONG DAM,423.67,395.299,6.157,0.886,2016-07-13,14.39,43.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,14.389890876969428
-1,GOBIND SAGAR,512.0,481.914,6.229,2.064,2016-07-14,33.13,58.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,33.13479548244442
-2,THEIN DAM,527.91,504.285,2.344,0.817,2016-07-14,34.85,85.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,34.85438157834523
-1,GOBIND SAGAR,512.0,484.184,6.229,2.292,2016-07-20,36.8,63.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,36.795034518295836
-1,PONG DAM,423.67,398.479,6.157,1.241,2016-07-21,20.16,55.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,20.155592074852212
-2,THEIN DAM,527.91,506.475,2.344,0.939,2016-07-21,40.06,84.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,40.059075033128735
-1,PONG DAM,423.67,399.64,6.157,1.383,2016-07-27,22.46,62.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,22.46187255400533
-1,GOBIND SAGAR,512.0,485.294,6.229,2.403,2016-07-28,38.58,71.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.57699299627612
-2,THEIN DAM,527.91,506.835,2.344,0.964,2016-07-28,41.13,84.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,41.12561057714175
-1,GOBIND SAGAR,512.0,487.894,6.229,2.666,2016-08-04,42.8,75.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,42.79911083149071
-2,PONG DAM,423.67,405.24,6.157,2.189,2016-08-04,35.55,71.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,35.552450484973
-3,THEIN DAM,527.91,508.645,2.344,1.037,2016-08-04,44.24,87.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,44.239894365659744
-1,GOBIND SAGAR,512.0,490.394,6.229,2.953,2016-08-08,47.41,79.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,47.406516986268585
-2,PONG DAM,423.67,409.57,6.157,2.935,2016-08-08,47.67,77.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,47.668543706439365
-1,THEIN DAM,527.91,513.775,2.344,1.36,2016-08-11,58.02,87.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,58.01953359430786
-1,THEIN DAM,527.91,517.485,2.344,1.568,2016-08-15,66.89,89.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,66.89310932049611
-1,GOBIND SAGAR,512.0,496.724,6.229,3.72,2016-08-17,59.72,88.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,59.719689532312614
-2,PONG DAM,423.67,414.63,6.157,3.887,2016-08-17,63.13,88.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,63.13036776386023
-1,GOBIND SAGAR,512.0,498.784,6.229,3.987,2016-08-24,64.01,91.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,64.0060220874544
-2,PONG DAM,423.67,415.28,6.157,4.024,2016-08-24,65.36,92.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,65.35544118388825
-3,THEIN DAM,527.91,519.415,2.344,1.69,2016-08-24,72.1,80.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,72.09780277527962
-1,GOBIND SAGAR,512.0,501.424,6.229,4.349,2016-09-01,69.82,93.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,69.8174542408676
-2,PONG DAM,423.67,417.24,6.157,4.438,2016-09-01,72.08,93.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,72.0793856794473
-3,THEIN DAM,527.91,521.355,2.344,1.841,2016-09-01,78.54,73.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.5396774611182
-1,GOBIND SAGAR,512.0,502.765,6.229,4.542,2016-09-08,72.92,94.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,72.91581447735587
-2,THEIN DAM,527.91,521.655,2.344,1.841,2016-09-08,78.54,63.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.5396774611182
-1,PONG DAM,423.67,417.96,6.157,4.592,2016-09-11,74.58,90.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,74.58056310050068
-1,GOBIND SAGAR,512.0,503.175,6.229,4.601,2016-09-15,73.86,94.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,73.86298159628234
-2,THEIN DAM,527.91,520.815,2.344,1.8,2016-09-15,76.79,55.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,76.79055916893688
-1,GOBIND SAGAR,512.0,503.065,6.229,4.584,2016-09-22,73.59,94.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,73.59006903659167
-2,PONG DAM,423.67,417.3,6.157,4.449,2016-09-22,72.26,85.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,72.25804120952255
-3,THEIN DAM,527.91,519.615,2.344,1.721,2016-09-22,73.42,50.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,73.42030684985575
-1,GOBIND SAGAR,512.0,502.875,6.229,4.557,2016-09-29,73.16,95.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,73.15661967708294
-2,PONG DAM,423.67,416.68,6.157,4.318,2016-09-29,70.13,86.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,70.13041626044469
-3,THEIN DAM,527.91,518.275,2.344,1.599,2016-09-29,68.22,58.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,68.21561339507225
-1,GOBIND SAGAR,512.0,502.545,6.229,4.51,2016-10-06,72.4,93.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,72.40209671793814
-2,PONG DAM,423.67,416.29,6.157,4.236,2016-10-06,68.8,85.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,68.79862049079289
-3,THEIN DAM,527.91,517.155,2.344,1.538,2016-10-06,65.61,56.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,65.61326666768052
-1,GOBIND SAGAR,512.0,480.283,6.229,1.924,2017-07-06,30.89,32.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,30.887280284991792
-2,PONG DAM,423.67,396.959,6.157,1.065,2017-07-06,17.3,13.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,17.29710359364835
-3,THEIN DAM,527.91,515.795,2.344,1.446,2017-07-06,61.67,34.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,61.67409190000001
-1,GOBIND SAGAR,512.0,483.704,6.229,2.244,2017-07-13,36.02,33.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,36.02445787916922
-2,PONG DAM,423.67,398.879,6.157,1.286,2017-07-13,20.89,14.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,20.8864556069782
-3,THEIN DAM,527.91,516.125,2.344,1.476,2017-07-13,62.99,35.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,62.9896655326792
-1,GOBIND SAGAR,512.0,488.044,6.229,2.683,2017-07-20,43.07,37.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,43.072023391181375
-2,PONG DAM,423.67,404.35,6.157,2.087,2017-07-20,33.9,20.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,33.895826478820766
-3,THEIN DAM,527.91,521.015,2.344,1.8,2017-07-20,76.78,40.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,76.77687720315701
-1,THEIN DAM,527.91,521.355,2.344,1.84,2017-07-26,78.51,39.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.51343439829353
-1,GOBIND SAGAR,512.0,492.844,6.229,3.232,2017-07-27,51.89,38.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,51.88549370119203
-2,PONG DAM,423.67,408.04,6.157,2.666,2017-07-27,43.3,22.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,43.299603925508464
-1,GOBIND SAGAR,512.0,496.134,6.229,3.644,2017-08-03,58.5,40.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,58.49960985369547
-2,PONG DAM,423.67,413.1,6.157,3.591,2017-08-03,58.32,34.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,58.322909863653734
-3,THEIN DAM,527.91,522.866,2.344,1.959,2017-08-03,83.57,44.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.56523714778159
-1,GOBIND SAGAR,512.0,503.415,6.229,4.635,2017-08-10,74.41,51.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,74.40880671566367
-2,PONG DAM,423.67,418.53,6.157,4.72,2017-08-10,76.66,51.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,76.65946381410349
-3,THEIN DAM,527.91,523.326,2.344,1.959,2017-08-10,83.57,55.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.56523714778159
-1,GOBIND SAGAR,512.0,505.765,6.229,4.972,2017-08-17,79.82,60.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,79.8188968695318
-2,PONG DAM,423.67,420.0,6.157,5.047,2017-08-17,81.97,63.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,81.97040548088566
-3,THEIN DAM,527.91,522.515,2.344,1.919,2017-08-17,81.88,68.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,81.88130289795224
-1,PONG DAM,423.67,420.311,6.157,5.115,2017-08-23,83.07,65.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.07482148498715
-1,GOBIND SAGAR,512.0,507.605,6.229,5.257,2017-08-24,84.39,64.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,84.39419566434606
-2,THEIN DAM,527.91,521.475,2.344,1.84,2017-08-24,78.51,72.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.51343439829353
-1,GOBIND SAGAR,512.0,508.935,6.229,5.464,2017-08-31,87.72,69.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.71730742057959
-2,PONG DAM,423.67,420.991,6.157,5.272,2017-08-31,85.62,71.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.6247231415156
-3,THEIN DAM,527.91,520.225,2.344,1.721,2017-08-31,73.41,77.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,73.40900870349832
-1,GOBIND SAGAR,512.0,509.915,6.229,5.617,2017-09-07,90.17,73.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,90.17352045779568
-2,PONG DAM,423.67,421.711,6.157,5.443,2017-09-07,88.4,75.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,88.40200456359435
-3,THEIN DAM,527.91,521.715,2.344,1.841,2017-09-07,78.54,79.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.5396774611182
-1,GOBIND SAGAR,512.0,509.805,6.229,5.6,2017-09-12,89.9,73.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,89.900607898105
-1,PONG DAM,423.67,421.511,6.157,5.396,2017-09-14,87.64,75.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.63865820781832
-2,THEIN DAM,527.91,521.755,2.344,1.88,2017-09-14,80.2,77.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,80.19736864812288
-1,GOBIND SAGAR,512.0,508.665,6.229,5.423,2017-09-21,87.06,74.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.05910654132562
-2,PONG DAM,423.67,421.051,6.157,5.286,2017-09-21,85.85,73.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.8521029070659
-3,THEIN DAM,527.91,520.385,2.344,1.76,2017-09-21,75.09,73.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,75.09294295332765
-1,GOBIND SAGAR,512.0,508.885,6.229,5.457,2017-09-28,87.6,73.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.60493166070695
-2,PONG DAM,423.67,420.841,6.157,5.235,2017-09-28,85.02,70.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.02379090398979
-3,THEIN DAM,527.91,519.585,2.344,1.69,2017-09-28,72.09,69.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,72.09343507081913
-1,GOBIND SAGAR,512.0,508.505,6.229,5.397,2017-10-03,86.64,73.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.6417108617987
-1,PONG DAM,423.67,420.121,6.157,5.072,2017-10-04,82.38,69.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,82.37644077651122
-1,THEIN DAM,527.91,518.395,2.344,1.629,2017-10-05,69.51,66.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,69.51491075076792
-1,GOBIND SAGAR,512.0,457.032,6.229,0.459,2018-07-05,7.37,30.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,7.36863911164825
-2,PONG DAM,423.67,391.879,6.157,0.55,2018-07-05,8.93,17.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,8.932776503762062
-3,THEIN DAM,527.91,505.685,2.344,0.892,2018-07-05,38.05,62.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.05398821038427
-1,GOBIND SAGAR,512.0,458.552,6.229,0.53,2018-07-12,8.51,35.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,8.508450390356368
-2,PONG DAM,423.67,390.859,6.157,0.457,2018-07-12,7.42,21.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,7.422325204035022
-3,THEIN DAM,527.91,506.115,2.344,0.915,2018-07-12,39.04,62.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,39.03520091087624
-1,GOBIND SAGAR,512.0,463.843,6.229,0.79,2018-07-19,12.68,42.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,12.682407185625527
-2,PONG DAM,423.67,392.669,6.157,0.622,2018-07-19,10.1,32.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,10.10215815516364
-3,THEIN DAM,527.91,507.195,2.344,0.964,2018-07-19,41.13,73.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,41.12561057714175
-1,GOBIND SAGAR,512.0,470.163,6.229,1.166,2018-07-26,18.72,51.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,18.718590858784
-2,PONG DAM,423.67,395.639,6.157,0.921,2018-07-26,14.96,42.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,14.958340290845197
-3,THEIN DAM,527.91,508.215,2.344,1.013,2018-07-26,43.22,79.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,43.21602024340724
-1,GOBIND SAGAR,512.0,478.323,6.229,1.76,2018-08-02,28.26,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,28.25780354512763
-2,PONG DAM,423.67,399.639,6.157,1.381,2018-08-02,22.44,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,22.437870043202864
-3,THEIN DAM,527.91,509.924,2.344,1.111,2018-08-02,47.41,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,47.41327372175769
-1,GOBIND SAGAR,512.0,463.552,6.229,2.229,2018-08-09,35.78,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,35.78265662652112
-2,PONG DAM,423.67,405.219,6.157,2.188,2018-08-09,35.54,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,35.53998344343025
-3,THEIN DAM,527.91,512.064,2.344,1.233,2018-08-09,52.62,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,52.62294530716724
-1,GOBIND SAGAR,512.0,492.304,6.229,3.17,2018-08-16,50.89,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,50.89176952416118
-2,PONG DAM,423.67,412.251,6.157,3.427,2018-08-16,55.65,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,55.65393123215853
-3,THEIN DAM,527.91,516.304,2.344,1.476,2018-08-16,62.99,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,62.9896655326792
-1,GOBIND SAGAR,512.0,496.294,6.229,3.644,2018-08-23,58.5,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,58.495831585358815
-2,PONG DAM,423.67,414.729,6.157,3.908,2018-08-23,63.47,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,63.46711812220238
-3,THEIN DAM,527.91,518.934,2.344,2.048,2018-08-23,87.35,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.35408920989762
-1,GOBIND SAGAR,512.0,499.585,6.229,4.089,2018-08-30,65.64,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,65.64444201268262
-2,PONG DAM,423.67,417.552,6.157,4.502,2018-08-30,73.12,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,73.12341576579504
-3,THEIN DAM,527.91,520.534,2.344,1.76,2018-08-30,75.09,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,75.09294295332765
-1,GOBIND SAGAR,512.0,501.603,6.229,4.376,2018-09-06,70.26,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,70.25836508627388
-2,PONG DAM,423.67,418.82,6.157,4.783,2018-09-06,77.69,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,77.69112502458991
-3,THEIN DAM,527.91,521.065,2.344,1.8,2018-09-06,76.78,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,76.77687720315701
-1,GOBIND SAGAR,512.0,502.966,6.229,4.57,2018-09-13,73.37,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,73.36731754358647
-2,PONG DAM,423.67,419.621,6.157,4.961,2018-09-13,80.58,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,80.57599403014456
-3,THEIN DAM,527.91,521.226,2.344,1.8,2018-09-13,76.78,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,76.77687720315701
-1,GOBIND SAGAR,512.0,503.374,6.229,4.629,2018-09-20,74.32,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,74.31782530123616
-2,PONG DAM,423.67,419.67,6.157,4.973,2018-09-20,80.78,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,80.77633215553031
-3,THEIN DAM,527.91,520.486,2.344,1.76,2018-09-20,75.09,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,75.09294295332765
-1,GOBIND SAGAR,512.0,506.434,6.229,5.073,2018-09-27,81.45,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,81.44663348360895
-2,PONG DAM,423.67,424.251,6.157,6.059,2018-09-27,98.41,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,98.4060871894754
-3,THEIN DAM,527.91,526.865,2.344,2.277,2018-09-27,97.14,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,97.14195703703072
-1,GOBIND SAGAR,512.0,508.056,6.229,5.326,2018-10-04,85.51,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.50609369857119
-2,PONG DAM,423.67,424.37,6.157,6.088,2018-10-04,98.89,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,98.88689869040117
-3,THEIN DAM,527.91,526.926,2.344,2.277,2018-10-04,97.14,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,97.14195703703072
-1,GOBIND SAGAR,512.0,489.514,6.229,2.573,2019-07-04,41.31,7.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,41.30611859318288
-2,PONG DAM,423.67,404.41,6.157,1.968,2019-07-04,31.96,9.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,31.963098471643153
-3,THEIN DAM,527.91,509.775,2.344,1.085,2019-07-04,46.31,38.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,46.308191870307176
-1,GOBIND SAGAR,512.0,492.354,6.229,2.891,2019-07-11,46.41,8.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,46.41118882739671
-2,PONG DAM,423.67,404.78,6.157,2.023,2019-07-11,32.86,7.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,32.856376122019356
-3,THEIN DAM,527.91,510.735,2.344,1.141,2019-07-11,48.68,39.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,48.676682228753876
-1,GOBIND SAGAR,512.0,495.874,6.229,3.316,2019-07-18,53.23,12.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,53.234002819663594
-2,PONG DAM,423.67,405.63,6.157,2.153,2019-07-18,34.97,10.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,34.96775965927221
-3,THEIN DAM,527.91,511.805,2.344,1.233,2019-07-18,52.6,41.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,52.60153303072176
-1,GOBIND SAGAR,512.0,498.584,6.229,3.663,2019-07-25,58.8,17.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,58.804629773349745
-2,PONG DAM,423.67,406.4,6.157,2.28,2019-07-25,37.03,14.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,37.030418961049996
-3,THEIN DAM,527.91,512.655,2.344,1.263,2019-07-25,53.88,43.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,53.88137568353737
-1,GOBIND SAGAR,512.0,503.005,6.229,4.276,2019-08-01,68.65,28.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,68.64553560219588
-2,PONG DAM,423.67,409.46,6.157,2.805,2019-08-01,45.56,22.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,45.556889712717236
-3,THEIN DAM,527.91,514.145,2.344,1.36,2019-08-01,58.02,46.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,58.01953359430786
-1,GOBIND SAGAR,512.0,506.575,6.229,4.794,2019-08-08,76.96,34.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,76.9613418327706
-2,PONG DAM,423.67,411.79,6.157,4.238,2019-08-08,68.83,34.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,68.83110331444294
-3,THEIN DAM,527.91,516.865,2.344,1.538,2019-08-08,65.61,50.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,65.61326666768052
-1,GOBIND SAGAR,512.0,509.405,6.229,5.235,2019-08-14,84.04,48.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,84.04101470474637
-2,PONG DAM,423.67,414.199,6.157,3.679,2019-08-14,59.75,52.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,59.75215410425567
-3,THEIN DAM,527.91,518.205,2.344,1.599,2019-08-14,68.22,60.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,68.21561339507225
-1,GOBIND SAGAR,512.0,511.495,6.229,5.562,2019-08-22,89.29,58.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,89.29056805879644
-2,PONG DAM,423.67,420.391,6.157,4.994,2019-08-22,81.11,62.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,81.1096106541595
-3,THEIN DAM,527.91,524.386,2.344,2.078,2019-08-22,88.65,69.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,88.65043441836156
-1,GOBIND SAGAR,512.0,510.705,6.229,5.439,2019-08-29,87.32,65.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.31596542103448
-2,PONG DAM,423.67,421.701,6.157,5.298,2019-08-29,86.05,73.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.04699984896615
-3,THEIN DAM,527.91,524.226,2.344,2.039,2019-08-29,86.99,75.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.98663896970127
-1,GOBIND SAGAR,512.0,510.645,6.229,5.43,2019-09-05,87.17,70.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.17148230119824
-2,PONG DAM,423.67,422.641,6.157,5.523,2019-09-05,89.7,78.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,89.7013175095961
-3,THEIN DAM,527.91,524.246,2.344,2.039,2019-09-05,86.99,77.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.98663896970127
-1,GOBIND SAGAR,512.0,510.805,6.229,5.455,2019-09-19,87.57,74.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.57282430074335
-2,PONG DAM,423.67,422.641,6.157,5.522,2019-09-19,89.69,81.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,89.68507609777109
-3,THEIN DAM,527.91,523.776,2.344,2.039,2019-09-19,86.99,75.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.98663896970127
-1,GOBIND SAGAR,512.0,510.165,6.229,5.354,2019-09-26,85.95,81.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.9514026225811
-2,PONG DAM,423.67,422.331,6.157,5.36,2019-09-26,87.05,97.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.05396738211753
-3,THEIN DAM,527.91,523.426,2.344,1.999,2019-09-26,85.28,95.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.28018209928045
-1,GOBIND SAGAR,512.0,510.385,6.229,5.389,2019-10-03,86.51,85.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.51328142194427
-2,PONG DAM,423.67,422.481,6.157,5.627,2019-10-03,91.39,99.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,91.3904243393984
-3,THEIN DAM,527.91,523.564,2.344,2.039,2019-10-03,86.99,97.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.98663896970127
-1,GOBIND SAGAR,512.0,509.595,6.229,5.266,2019-10-10,84.54,83.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,84.53867878418231
-2,PONG DAM,423.67,422.141,6.157,5.403,2019-10-10,87.75,98.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.75234809059346
-3,THEIN DAM,527.91,523.456,2.344,1.999,2019-10-10,85.28,95.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.28018209928045
-1,GOBIND SAGAR,512.0,482.664,6.229,1.895,2020-07-02,30.42,41.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,30.42172356551946
-2,PONG DAM,423.67,406.789,6.157,2.346,2020-07-02,38.1,32.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.10235214150144
-3,THEIN DAM,527.91,511.795,2.344,1.263,2020-07-02,53.89,49.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,53.885895994539254
-1,GOBIND SAGAR,512.0,484.714,6.229,2.088,2020-07-09,33.52,45.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,33.52008380200772
-2,PONG DAM,423.67,406.789,6.157,2.347,2020-07-09,38.12,32.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.118593553326455
-3,THEIN DAM,527.91,511.375,2.344,1.172,2020-07-09,49.99,47.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,49.99179804180888
-1,GOBIND SAGAR,512.0,487.614,6.229,2.362,2020-07-16,37.92,52.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,37.91879211702215
-2,PONG DAM,423.67,406.881,6.157,2.362,2020-07-16,38.36,34.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.3622147307018
-3,THEIN DAM,527.91,511.045,2.344,1.172,2020-07-16,50.0,51.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,49.99918630333
-1,GOBIND SAGAR,512.0,490.824,6.229,2.719,2020-07-23,43.65,57.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,43.649955870526334
-2,PONG DAM,423.67,407.28,6.157,2.429,2020-07-23,39.45,37.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,39.45038932297826
-3,THEIN DAM,527.91,510.615,2.344,1.172,2020-07-23,50.0,54.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,49.99918630333
-1,GOBIND SAGAR,512.0,492.944,6.229,2.956,2020-07-30,47.45,65.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,47.45467802621399
-2,PONG DAM,423.67,407.841,6.157,2.524,2020-07-30,40.99,41.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,40.99332344635534
-3,THEIN DAM,527.91,509.195,2.344,1.061,2020-07-30,45.26,58.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,45.255732964163826
-1,GOBIND SAGAR,512.0,495.344,6.229,3.249,2020-08-06,52.16,75.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,52.15840626088271
-2,PONG DAM,423.67,408.95,6.157,2.713,2020-08-06,44.06,49.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,44.06295028128449
-3,THEIN DAM,527.91,509.015,2.344,1.061,2020-08-06,45.26,64.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,45.26376848791223
-1,GOBIND SAGAR,512.0,498.464,6.229,3.648,2020-08-13,58.56,83.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,58.56382457362268
-2,PONG DAM,423.67,410.831,6.157,3.045,2020-08-13,49.46,58.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,49.45509900719177
-3,THEIN DAM,527.91,509.165,2.344,1.061,2020-08-13,45.26,68.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,45.26376848791223
-1,GOBIND SAGAR,512.0,501.464,6.229,4.055,2020-08-20,65.1,91.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,65.09767232621711
-2,PONG DAM,423.67,412.809,6.157,3.414,2020-08-20,55.45,64.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,55.448179970624864
-3,THEIN DAM,527.91,508.995,2.344,1.061,2020-08-20,45.26,87.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,45.26376848791223
-1,GOBIND SAGAR,512.0,503.785,6.229,4.388,2020-08-27,70.44,87.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,70.44354776015797
-2,PONG DAM,423.67,416.771,6.157,4.208,2020-08-27,68.34,85.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,68.34386095969226
-3,THEIN DAM,527.91,510.735,2.344,1.141,2020-08-27,48.68,89.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,48.6762244091297
-1,GOBIND SAGAR,512.0,506.355,6.229,4.622,2020-09-06,74.2,,,676.0,1379.0,Indian_Dams_Data-2020_2024.xlsx,74.19901183152994
-2,PONG DAM,423.67,419.393,6.157,4.624,2020-09-06,75.11,,,0.0,396.0,Indian_Dams_Data-2020_2024.xlsx,75.10676320711387
-3,THEIN DAM,527.91,514.274,2.344,,2020-09-06,,,,348.0,600.0,Indian_Dams_Data-2020_2024.xlsx,
-1,GOBIND SAGAR,512.0,506.755,6.229,4.822,2020-09-10,77.41,87.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,77.41084487226114
-2,PONG DAM,423.67,419.6,6.157,4.819,2020-09-10,78.27,92.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.26736358478067
-3,THEIN DAM,527.91,515.655,2.344,1.446,2020-09-10,61.67,87.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,61.67409190000001
-1,GOBIND SAGAR,512.0,506.385,6.229,4.767,2020-09-17,76.53,88.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,76.52789247326189
-2,PONG DAM,423.67,419.28,6.157,4.748,2020-09-17,77.11,90.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,77.11422334520411
-3,THEIN DAM,527.91,516.215,2.344,1.476,2020-09-17,62.99,87.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,62.9896655326792
-1,GOBIND SAGAR,512.0,505.475,6.229,4.629,2020-09-24,74.31,86.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,74.31248463577286
-2,PONG DAM,423.67,418.771,6.157,4.637,2020-09-24,75.31,87.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,75.31142663262666
-3,THEIN DAM,527.91,515.415,2.344,1.446,2020-09-24,61.67,87.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,61.67409190000001
-1,GOBIND SAGAR,512.0,504.407,6.229,4.629,2020-09-30,74.32,,,676.0,1379.0,Indian_Dams_Data-2020_2024.xlsx,74.31782530123616
-2,PONG DAM,423.67,418.35,6.157,4.637,2020-09-30,75.31,,,0.0,396.0,Indian_Dams_Data-2020_2024.xlsx,75.3071013324996
-3,THEIN DAM,527.91,515.414,2.344,,2020-09-30,,,,348.0,600.0,Indian_Dams_Data-2020_2024.xlsx,
-1,GOBIND SAGAR,512.0,503.435,6.229,4.337,2020-10-08,69.62,85.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,69.62481008108595
-2,PONG DAM,423.67,417.6,6.157,4.38,2020-10-08,71.14,88.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,71.13738379359603
-3,THEIN DAM,527.91,513.515,2.344,1.319,2020-10-08,56.25,85.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,56.25392853336179
-1,GOBIND SAGAR,512.0,465.223,6.229,0.779,2021-07-01,12.51,30.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,12.511058360064217
-2,PONG DAM,423.67,390.039,6.157,0.35,2021-07-01,5.68,38.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,5.679585854685723
-3,THEIN DAM,527.91,502.195,2.344,0.719,2021-07-01,30.68,54.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,30.6791771140785
-1,GOBIND SAGAR,512.0,467.533,6.229,0.72,2021-07-08,11.56,33.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,11.564709073854232
-2,PONG DAM,423.67,389.439,6.157,0.384,2021-07-08,6.23,38.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,6.230515699496508
-3,THEIN DAM,527.91,498.814,2.344,0.567,2021-07-08,24.21,51.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,24.20655484129693
-1,GOBIND SAGAR,512.0,471.593,6.229,1.053,2021-07-15,16.91,37.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,16.905968604497033
-2,PONG DAM,423.67,394.739,6.157,0.944,2021-07-15,15.33,38.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,15.325866592009096
-3,THEIN DAM,527.91,499.293,2.344,0.583,2021-07-15,24.89,50.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,24.890653130290104
-1,GOBIND SAGAR,512.0,476.883,6.229,1.434,2021-07-22,23.02,43.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,23.017139418836095
-2,PONG DAM,423.67,399.73,6.157,1.615,2021-07-22,26.22,39.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,26.224260612993344
-3,THEIN DAM,527.91,499.384,2.344,0.583,2021-07-22,24.89,50.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,24.890653130290104
-1,GOBIND SAGAR,512.0,482.784,6.229,1.544,2021-07-29,24.78,46.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,24.78151944397335
-2,PONG DAM,423.67,402.38,6.157,2.06,2021-07-29,33.46,41.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,33.45646693941855
-3,THEIN DAM,527.91,504.414,2.344,0.842,2021-07-29,35.94,46.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,35.94147164479523
-1,GOBIND SAGAR,512.0,488.104,6.229,1.956,2021-08-05,31.41,52.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,31.405964447443253
-2,PONG DAM,423.67,405.58,6.157,2.645,2021-08-05,42.95,44.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,42.95249408270262
-3,THEIN DAM,527.91,507.696,2.344,0.988,2021-08-05,42.15,45.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,42.15097919104097
-1,GOBIND SAGAR,512.0,490.824,6.229,2.203,2021-08-12,35.37,57.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,35.36779959479692
-2,PONG DAM,423.67,406.67,6.157,2.874,2021-08-12,46.68,48.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,46.678783214877384
-3,THEIN DAM,527.91,508.284,2.344,1.013,2021-08-12,43.2,44.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,43.203438097184296
-1,GOBIND SAGAR,512.0,492.814,6.229,2.381,2021-08-19,38.22,65.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.222887271837216
-2,PONG DAM,423.67,406.92,6.157,2.923,2021-08-19,47.48,55.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,47.48013571642034
-3,THEIN DAM,527.91,507.416,2.344,0.988,2021-08-19,42.15,45.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,42.15097919104097
-1,GOBIND SAGAR,512.0,494.544,6.229,2.552,2021-08-26,40.97,70.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,40.965696220005135
-2,PONG DAM,423.67,407.59,6.157,3.059,2021-08-26,49.68,67.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,49.683855095663475
-3,THEIN DAM,527.91,506.913,2.344,0.939,2021-08-26,40.05,46.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,40.046061378754274
-1,GOBIND SAGAR,512.0,496.724,6.229,3.013,2021-09-02,48.38,74.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,48.376092325581645
-2,PONG DAM,423.67,409.93,6.157,3.561,2021-09-02,57.84,75.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,57.83761679886309
-3,THEIN DAM,527.91,505.715,2.344,0.892,2021-09-02,38.05,56.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.046389457081915
-1,GOBIND SAGAR,512.0,497.584,6.229,2.864,2021-09-09,45.99,78.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,45.986159382441166
-2,PONG DAM,423.67,410.06,6.157,3.589,2021-09-09,58.3,78.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,58.29839448725029
-3,THEIN DAM,527.91,505.185,2.344,0.866,2021-09-09,36.94,62.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,36.9413076056314
-1,GOBIND SAGAR,512.0,499.744,6.229,3.086,2021-09-16,49.55,76.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,49.54699906953636
-2,PONG DAM,423.67,411.7,6.157,3.947,2021-09-16,64.11,77.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,64.10820012343675
-3,THEIN DAM,527.91,507.376,2.344,0.963,2021-09-16,41.1,63.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,41.09852028489762
-1,GOBIND SAGAR,512.0,501.134,6.229,,2021-09-23,,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,
-2,PONG DAM,423.67,412.867,6.157,3.38,2021-09-23,54.89,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,54.89264635569271
-3,THEIN DAM,527.91,508.153,2.344,1.013,2021-09-23,43.2,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,43.203438097184296
-1,GOBIND SAGAR,512.0,502.542,6.229,,2021-09-30,,,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,
-2,PONG DAM,423.67,412.87,6.157,3.409,2021-09-30,55.37,,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,55.37345785661848
-3,THEIN DAM,527.91,508.772,2.344,1.037,2021-09-30,44.26,,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,44.25589700332765
-1,GOBIND SAGAR,512.0,502.978,6.229,4.279,2021-10-07,68.69,70.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,68.69398773514209
-2,PONG DAM,423.67,412.78,6.157,3.409,2021-10-07,55.37,71.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,55.37345785661848
-3,THEIN DAM,527.91,508.513,2.344,1.013,2021-10-07,43.2,58.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,43.203438097184296
-1,GOBIND SAGAR,512.0,502.978,6.229,4.21,2021-10-13,67.59,,,676.0,1379.0,Indian_Dams_Data-2020_2024.xlsx,67.58506201788408
-2,PONG DAM,423.67,412.763,6.157,3.409,2021-10-13,55.37,,,0.0,396.0,Indian_Dams_Data-2020_2024.xlsx,55.37345785661848
-3,THEIN DAM,527.91,508.772,2.344,1.037,2021-10-13,44.26,,,348.0,600.0,Indian_Dams_Data-2020_2024.xlsx,44.25589700332765
-1,GOBIND SAGAR,512.0,473.702,6.229,1.225,2022-07-03,19.66,,,676.0,1379.0,Indian_Dams_Data-2020_2024.xlsx,19.66362923637823
-2,PONG DAM,423.67,394.798,6.157,0.765,2022-07-03,12.42,,,0.0,396.0,Indian_Dams_Data-2020_2024.xlsx,12.420963773915869
-3,THEIN DAM,527.91,502.774,2.344,0.767,2022-07-03,32.73,,,348.0,600.0,Indian_Dams_Data-2020_2024.xlsx,32.73147198105802
-1,GOBIND SAGAR,512.0,476.393,6.229,1.314,2022-07-07,21.09,14.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,21.089390872852785
-2,PONG DAM,423.67,396.139,6.157,0.727,2022-07-07,11.8,5.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,11.799915585220075
-3,THEIN DAM,527.91,504.045,2.344,0.817,2022-07-07,34.84,26.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,34.83638979334472
-1,GOBIND SAGAR,512.0,479.676,6.229,1.337,2022-07-14,21.47,15.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,21.465633526922463
-2,PONG DAM,423.67,398.724,6.157,0.965,2022-07-14,15.67,6.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,15.666441405164855
-3,THEIN DAM,527.91,505.575,2.344,0.866,2022-07-14,36.94,25.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,36.9413076056314
-1,GOBIND SAGAR,512.0,483.922,6.229,1.961,2022-07-21,31.49,22.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,31.48556947214642
-2,PONG DAM,423.67,402.11,6.157,1.592,2022-07-21,25.86,21.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,25.863651987299008
-3,THEIN DAM,527.91,507.705,2.344,0.988,2022-07-21,42.15,25.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,42.15097919104097
-1,GOBIND SAGAR,512.0,488.003,6.229,2.405,2022-07-28,38.61,29.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.61437765451919
-2,PONG DAM,423.67,403.75,6.157,1.871,2022-07-28,30.39,27.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,30.39129362101673
-3,THEIN DAM,527.91,510.705,2.344,1.111,2022-07-28,47.41,34.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,47.41327372175769
-1,GOBIND SAGAR,512.0,493.538,6.229,2.969,2022-08-04,47.66,39.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,47.664003597142404
-2,PONG DAM,423.67,408.642,6.157,2.599,2022-08-04,42.21,35.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,42.211243018775384
-3,THEIN DAM,527.91,516.584,2.344,1.476,2022-08-04,62.99,42.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,62.9896655326792
-1,THEIN DAM,527.91,519.513,2.344,1.69,2022-08-09,72.09,43.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,72.09343507081913
-1,GOBIND SAGAR,512.0,498.031,6.229,3.483,2022-08-11,55.92,44.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,55.92153974172419
-2,PONG DAM,423.67,412.833,6.157,3.184,2022-08-11,51.71,38.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,51.70727016205945
-1,GOBIND SAGAR,512.0,502.667,6.229,4.485,2022-08-18,72.0,47.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,72.000962641965
-2,PONG DAM,423.67,416.491,6.157,4.143,2022-08-18,67.29,38.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,67.29357631707002
-3,THEIN DAM,527.91,523.726,2.344,1.998,2022-08-18,85.25,42.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.24917139761094
-1,GOBIND SAGAR,512.0,506.026,6.229,4.892,2022-08-25,78.54,51.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.53570347580671
-2,PONG DAM,423.67,421.182,6.157,4.972,2022-08-25,80.76,40.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,80.75629834299171
-3,THEIN DAM,527.91,522.845,2.344,1.959,2022-08-25,83.57,41.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.56523714778159
-1,GOBIND SAGAR,512.0,507.196,6.229,4.894,2022-09-01,78.58,55.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.57530796570879
-2,PONG DAM,423.67,421.56,6.157,5.271,2022-09-01,85.6,47.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.60448097732663
-3,THEIN DAM,527.91,522.485,2.344,1.959,2022-09-01,83.57,38.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.56523714778159
-1,GOBIND SAGAR,512.0,508.37,6.229,5.077,2022-09-08,81.51,57.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,81.50604021846203
-2,PONG DAM,423.67,422.127,6.157,5.405,2022-09-08,87.79,47.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.78816654403117
-3,THEIN DAM,527.91,521.955,2.344,1.88,2022-09-08,80.2,36.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,80.19736864812288
-1,GOBIND SAGAR,512.0,508.601,6.229,5.105,2022-09-15,81.96,61.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,81.96149185233587
-2,PONG DAM,423.67,421.907,6.157,5.152,2022-09-15,83.68,52.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.68123497362352
-3,THEIN DAM,527.91,521.665,2.344,1.88,2022-09-15,80.2,41.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,80.19736864812288
-1,GOBIND SAGAR,512.0,508.336,6.229,5.068,2022-09-22,81.37,64.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,81.36742450380478
-2,PONG DAM,423.67,421.362,6.157,5.056,2022-09-22,82.12,55.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,82.11859759561476
-3,THEIN DAM,527.91,521.226,2.344,1.84,2022-09-22,78.51,42.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.51343439829353
-1,GOBIND SAGAR,512.0,510.043,6.229,5.276,2022-09-29,84.69,68.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,84.69420165557877
-2,PONG DAM,423.67,422.136,6.157,5.422,2022-09-29,88.07,55.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,88.06863991957123
-3,THEIN DAM,527.91,523.665,2.344,1.998,2022-09-29,85.25,44.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.24917139761094
-1,GOBIND SAGAR,512.0,510.113,6.229,5.346,2022-10-06,85.82,69.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.82292961778776
-2,PONG DAM,423.67,422.05,6.157,5.38,2022-10-06,87.39,55.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,87.3874902932597
-3,THEIN DAM,527.91,523.866,2.344,2.077,2022-10-06,88.62,43.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,88.61703989726963
-1,GOBIND SAGAR,512.0,485.083,6.229,2.123,2023-06-30,34.08,20.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,34.07966356073206
-2,PONG DAM,423.67,407.341,6.157,2.439,2023-06-30,39.61,10.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,39.60684738876077
-3,THEIN DAM,527.91,512.466,2.344,1.232,2023-06-30,52.57,33.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,52.57032236186008
-1,GOBIND SAGAR,512.0,488.043,6.229,2.409,2023-07-06,38.67,21.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.673784389372294
-2,PONG DAM,423.67,407.591,6.157,2.481,2023-07-06,40.29,12.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,40.28799701507228
-3,THEIN DAM,527.91,512.674,2.344,1.233,2023-07-06,52.62,35.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,52.62294530716724
-1,GOBIND SAGAR,512.0,497.205,6.229,3.487,2023-07-13,55.98,21.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,55.9809464765773
-2,PONG DAM,423.67,416.241,6.157,4.096,2023-07-13,66.53,16.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,66.53229144060421
-3,THEIN DAM,527.91,522.787,2.344,1.959,2023-07-13,83.57,37.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.56523714778159
-1,GOBIND SAGAR,512.0,502.374,6.229,4.185,2023-07-20,67.19,31.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,67.18901711886339
-2,PONG DAM,423.67,418.82,6.157,4.647,2023-07-20,75.47,26.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,75.46737183280818
-3,THEIN DAM,527.91,524.704,2.344,2.078,2023-07-20,88.67,42.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,88.66966284257681
-1,GOBIND SAGAR,512.0,505.224,6.229,4.593,2023-07-27,73.74,39.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,73.74356019765614
-2,PONG DAM,423.67,419.569,6.157,4.812,2023-07-27,78.15,30.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.15190271297709
-3,THEIN DAM,527.91,523.854,2.344,2.039,2023-07-27,86.99,47.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.98572859274746
-1,GOBIND SAGAR,512.0,507.053,6.229,4.873,2023-08-03,78.24,47.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,78.23866980154118
-2,PONG DAM,423.67,418.695,6.157,4.626,2023-08-03,75.13,41.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,75.12679701965243
-3,THEIN DAM,527.91,522.924,2.344,1.999,2023-08-03,85.3,63.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.3017943429181
-1,GOBIND SAGAR,512.0,508.163,6.229,5.042,2023-08-10,80.95,55.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,80.95157735983305
-2,PONG DAM,423.67,418.301,6.157,4.6,2023-08-10,74.71,52.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,74.70608695634238
-3,THEIN DAM,527.91,522.397,2.344,1.959,2023-08-10,83.57,72.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.56523714778159
-1,GOBIND SAGAR,512.0,511.003,6.229,5.487,2023-08-17,88.08,72.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,88.08038554220583
-2,PONG DAM,423.67,425.611,6.157,6.156,2023-08-17,99.99,67.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,99.98875838002274
-3,THEIN DAM,527.91,522.147,2.344,1.959,2023-08-17,83.57,85.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.56523714778159
-1,GOBIND SAGAR,512.0,510.293,6.229,5.374,2023-08-24,86.28,78.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.2783812516616
-2,PONG DAM,423.67,424.208,6.157,5.899,2023-08-24,95.8,80.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,95.80169155946078
-3,THEIN DAM,527.91,520.705,2.344,1.76,2023-08-24,75.09,85.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,75.09294295332765
-1,GOBIND SAGAR,512.0,509.854,6.229,5.306,2023-08-31,85.19,78.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.18925777935463
-2,PONG DAM,423.67,423.379,6.157,5.697,2023-08-31,92.54,80.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,92.53618011567322
-3,THEIN DAM,527.91,520.675,2.344,1.76,2023-08-31,75.09,84.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,75.09294295332765
-1,GOBIND SAGAR,512.0,509.924,6.229,5.316,2023-09-06,85.35,82.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.34767573896292
-2,PONG DAM,423.67,423.282,6.157,5.697,2023-09-06,92.54,88.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,92.53618011567322
-3,THEIN DAM,527.91,519.434,2.344,1.721,2023-09-06,73.41,62.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,73.40900870349832
-1,GOBIND SAGAR,512.0,510.196,6.229,5.359,2023-09-14,86.04,82.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.04075431224916
-2,PONG DAM,423.67,422.989,6.157,5.604,2023-09-14,91.01,84.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,91.0136103627416
-3,THEIN DAM,527.91,516.764,2.344,1.507,2023-09-14,64.31,80.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,64.30523916535837
-1,GOBIND SAGAR,512.0,510.055,6.229,5.396,2023-09-21,86.63,82.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,86.63482166078023
-2,PONG DAM,423.67,423.169,6.157,5.71,2023-09-21,92.74,82.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,92.73651824105895
-3,THEIN DAM,527.91,516.285,2.344,1.507,2023-09-21,64.31,79.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,64.30523916535837
-1,PONG DAM,423.67,423.172,6.157,5.448,2023-09-27,88.49,88.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,88.48934998288128
-1,THEIN DAM,527.91,515.764,2.344,1.446,2023-09-28,61.67,85.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,61.67409190000001
-1,GOBIND SAGAR,512.0,509.93,6.229,5.351,2023-09-29,85.9,85.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,85.90213859759191
-1,GOBIND SAGAR,512.0,509.315,6.229,5.221,2023-10-05,83.82,86.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,83.82290287773318
-2,PONG DAM,423.67,422.471,6.157,5.48,2023-10-05,89.01,87.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,89.0102291088842
-3,THEIN DAM,527.91,514.914,2.344,1.416,2023-10-05,60.41,89.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,60.411141212627996
-1,GOBIND SAGAR,512.0,482.922,6.229,1.919,2024-06-27,30.81,29.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,30.81229314381121
-2,PONG DAM,423.67,398.398,6.157,1.15,2024-06-27,18.67,35.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,18.67151328595095
-3,THEIN DAM,527.91,502.225,2.344,0.719,2024-06-27,30.68,53.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,30.6791771140785
-1,GOBIND SAGAR,512.0,484.754,6.229,2.092,2024-07-04,33.58,37.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,33.58460743695617
-2,PONG DAM,423.67,398.31,6.157,1.14,2024-07-04,18.51,40.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,18.511242785642363
-3,THEIN DAM,527.91,501.774,2.344,0.719,2024-07-04,30.68,51.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,30.6791771140785
-1,GOBIND SAGAR,512.0,486.714,6.229,2.277,2024-07-11,36.55,56.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,36.554944179611496
-2,PONG DAM,423.67,400.931,6.157,1.473,2024-07-11,23.92,67.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,23.920372171057334
-3,THEIN DAM,527.91,501.804,2.344,0.719,2024-07-11,30.68,80.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,30.6791771140785
-1,GOBIND SAGAR,512.0,486.903,6.229,2.296,2024-07-18,36.85,64.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,36.851977853877024
-2,PONG DAM,423.67,400.37,6.157,1.396,2024-07-18,22.68,75.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,22.678275793665744
-3,THEIN DAM,527.91,498.525,2.344,0.567,2024-07-18,24.21,85.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,24.20655484129693
-1,GOBIND SAGAR,512.0,488.125,6.229,2.416,2024-07-25,38.79,73.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,38.79259785907851
-2,PONG DAM,423.67,401.26,6.157,1.518,2024-07-25,24.66,78.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,24.661623234984575
-3,THEIN DAM,527.91,492.286,2.344,0.336,2024-07-25,14.31,87.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,14.313441123549492
-1,GOBIND SAGAR,512.0,490.323,6.229,2.663,2024-08-01,42.75,77.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,42.753046849285596
-2,PONG DAM,423.67,402.72,6.157,1.721,2024-08-01,27.95,75.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,27.94716849131071
-3,THEIN DAM,527.91,491.423,2.344,0.299,2024-08-01,12.73,85.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,12.734752764334473
-1,GOBIND SAGAR,512.0,492.365,6.229,2.891,2024-08-08,46.42,80.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,46.416462165227166
-2,PONG DAM,423.67,407.14,6.157,3.424,2024-08-08,55.61,75.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,55.61386360708137
-3,THEIN DAM,527.91,495.434,2.344,0.45,2024-08-08,19.21,84.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,19.20737503711604
-1,GOBIND SAGAR,512.0,496.675,6.229,3.343,2024-08-16,53.66,89.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,53.66408381730615
-2,PONG DAM,423.67,412.141,6.157,3.285,2024-08-16,53.35,100.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,53.35004279022252
-3,THEIN DAM,527.91,499.744,2.344,0.603,2024-08-16,25.73,84.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,25.73262025520478
-1,GOBIND SAGAR,512.0,497.903,6.229,3.576,2024-08-22,57.41,85.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,57.40670811305185
-2,PONG DAM,423.67,414.299,6.157,3.698,2024-08-22,60.06,96.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,60.061369990644806
-3,THEIN DAM,527.91,501.506,2.344,0.694,2024-08-22,29.63,75.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,29.626718207935156
-1,GOBIND SAGAR,512.0,499.265,6.229,3.75,2024-08-29,60.2,86.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,60.198824651147866
-2,PONG DAM,423.67,414.641,6.157,3.763,2024-08-29,61.12,93.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,61.12316205518922
-3,THEIN DAM,527.91,500.954,2.344,0.645,2024-08-29,27.52,75.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,27.521800395648473
-1,GOBIND SAGAR,512.0,500.436,6.229,3.908,2024-09-05,62.73,85.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,62.73351200488041
-2,PONG DAM,423.67,415.381,6.157,3.918,2024-09-05,63.63,93.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,63.62738862251097
-3,THEIN DAM,527.91,501.634,2.344,0.694,2024-09-05,29.63,72.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,29.626718207935156
-1,GOBIND SAGAR,512.0,501.686,6.229,4.087,2024-09-12,65.6,86.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,65.60483752278056
-2,PONG DAM,423.67,416.031,6.157,4.054,2024-09-12,65.85,91.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,65.85114181429267
-3,THEIN DAM,527.91,501.152,2.344,0.67,2024-09-12,28.57,66.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,28.574259301791816
-1,GOBIND SAGAR,512.0,502.225,6.229,4.164,2024-09-19,66.85,86.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,66.85237895469578
-2,PONG DAM,423.67,416.15,6.157,4.078,2024-09-19,66.23,93.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,66.2317842525256
-3,THEIN DAM,527.91,499.393,2.344,0.603,2024-09-19,25.73,63.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,25.73262025520478
-1,GOBIND SAGAR,512.0,503.374,6.229,4.185,2024-09-26,67.19,86.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,67.18901711886339
-2,PONG DAM,423.67,415.68,6.157,3.98,2024-09-26,64.65,93.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,64.64911306197824
-3,THEIN DAM,527.91,498.363,2.344,0.567,2024-09-26,24.21,63.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,24.20655484129693
-1,GOBIND SAGAR,512.0,502.033,6.229,4.137,2024-10-03,66.42,85.0,,676.0,1379.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,66.41672956577301
-2,PONG DAM,423.67,415.452,6.157,3.932,2024-10-03,63.87,89.0,,0.0,396.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,63.86779437297386
-3,THEIN DAM,527.91,498.284,2.344,0.567,2024-10-03,24.21,62.0,,348.0,600.0,Weekly Level and Capacity of Eastern Rivers from (cwc.gov.in) (2015-2024).xlsx,24.20655484129693
-1,GOBIND SAGAR,512.0,502.033,6.229,4.137,2024-10-09,66.42,,,676.0,1379.0,Indian_Dams_Data-2020_2024.xlsx,66.41672956577301
-2,PONG DAM,423.67,415.452,6.157,3.932,2024-10-09,63.87,,,0.0,396.0,Indian_Dams_Data-2020_2024.xlsx,63.86779437297386
-3,THEIN DAM,527.91,498.284,2.344,0.567,2024-10-09,24.21,,,348.0,600.0,Indian_Dams_Data-2020_2024.xlsx,24.20655484129693
-1,GOBIND SAGAR,512.0,474.5,6.229,1.273,2025-05-08,20.44,21.86,27.52,676.0,1379.0,bulletin-08-05-2025-10.pdf,20.436667201798038
-2,PONG DAM,423.67,394.3,6.157,0.72,2025-05-08,11.69,28.83,29.08,0.0,396.0,bulletin-08-05-2025-10.pdf,11.69400682150398
-3,THEIN DAM,527.91,504.74,2.344,0.788,2025-05-08,33.62,38.05,51.0,348.0,600.0,bulletin-08-05-2025-10.pdf,33.61774744027304
-1,GOBIND SAGAR,512.0,475.45,6.229,1.329,2025-05-15,21.34,22.14,26.99,676.0,1379.0,bulletin-15-05-2025-12.pdf,21.33568791138224
-2,PONG DAM,423.67,394.31,6.157,0.721,2025-05-15,11.71,27.03,27.82,0.0,396.0,bulletin-15-05-2025-12.pdf,11.710248497644956
-3,THEIN DAM,527.91,505.9,2.344,0.91,2025-05-15,38.82,37.8,48.38,348.0,600.0,bulletin-15-05-2025-12.pdf,38.82252559726963
-1,GOBIND SAGAR,512.0,475.34,6.229,1.323,2025-05-22,21.24,23.82,23.78,676.0,1379.0,bulletin-22-05-2025-14.pdf,21.239364263926795
-2,PONG DAM,423.67,394.29,6.157,0.719,2025-05-22,11.68,25.86,26.48,0.0,396.0,bulletin-22-05-2025-14.pdf,11.677765145363
-3,THEIN DAM,527.91,506.87,2.344,0.957,2025-05-22,40.83,36.95,49.98,348.0,600.0,bulletin-22-05-2025-14.pdf,40.82764505119454
-1,GOBIND SAGAR,512.0,476.22,6.229,1.387,2025-05-29,22.27,27.4,27.48,676.0,1379.0,bulletin-29-05-2025-15.pdf,22.266816503451597
-2,PONG DAM,423.67,394.76,6.157,0.764,2025-05-29,12.41,25.87,25.75,0.0,396.0,bulletin-29-05-2025-15.pdf,12.408640571707
-3,THEIN DAM,527.91,508.08,2.344,0.988,2025-05-29,42.15,39.04,48.64,348.0,600.0,bulletin-29-05-2025-15.pdf,42.15017064846416
-1,GOBIND SAGAR,512.0,475.86,6.229,1.359,2025-06-05,21.82,29.84,28.42,676.0,1379.0,bulletin-05-06-2025-18.pdf,21.817306148659497
-2,PONG DAM,423.67,394.81,6.157,0.769,2025-06-05,12.49,24.74,26.24,0.0,396.0,bulletin-05-06-2025-18.pdf,12.489848952411888
-3,THEIN DAM,527.91,507.96,2.344,0.988,2025-06-05,42.15,41.13,49.82,348.0,600.0,bulletin-05-06-2025-18.pdf,42.15017064846416
-1,GOBIND SAGAR,512.0,473.98,6.229,1.239,2025-06-12,19.89,30.77,29.12,676.0,1379.0,bulletin-12-06-2025-23.pdf,19.890833199550492
-2,PONG DAM,423.67,393.44,6.157,0.636,2025-06-12,10.33,22.53,24.71,0.0,396.0,bulletin-12-06-2025-23.pdf,10.32970602566185
-3,THEIN DAM,527.91,506.84,2.344,0.956,2025-06-12,40.78,40.74,49.83,348.0,600.0,bulletin-12-06-2025-23.pdf,40.784982935153586
-1,GOBIND SAGAR,512.0,475.73,6.229,1.35,2025-06-19,21.67,31.14,28.55,676.0,1379.0,bulletin-19-06-2025-28.pdf,21.67282067747632
-2,PONG DAM,423.67,392.6,6.157,0.561,2025-06-19,9.11,20.33,23.15,0.0,396.0,bulletin-19-06-2025-28.pdf,9.111580315088517
-3,THEIN DAM,527.91,505.77,2.344,0.866,2025-06-19,36.95,35.92,48.58,348.0,600.0,bulletin-19-06-2025-28.pdf,36.94539249146758
-1,GOBIND SAGAR,512.0,477.51,6.229,1.485,2025-06-26,23.84,30.82,28.27,676.0,1379.0,bulletin-26-06-2025-37.pdf,23.840102745223955
-2,PONG DAM,423.67,394.09,6.157,0.699,2025-06-26,11.35,18.68,22.46,0.0,396.0,bulletin-26-06-2025-37.pdf,11.352931622543446
-3,THEIN DAM,527.91,505.44,2.344,0.866,2025-06-26,36.95,31.74,46.62,348.0,600.0,bulletin-26-06-2025-37.pdf,36.94539249146758
-1,GOBIND SAGAR,512.0,481.87,6.229,1.822,2025-07-03,29.25,33.07,28.68,676.0,1379.0,bulletin-03-07-2025-38.pdf,29.250280943971745
-2,PONG DAM,423.67,402.35,6.157,1.669,2025-07-03,27.11,18.52,21.79,0.0,396.0,bulletin-03-07-2025-38.pdf,27.107357479291867
-3,THEIN DAM,527.91,504.83,2.344,0.817,2025-07-03,34.85,28.58,45.51,348.0,600.0,bulletin-03-07-2025-38.pdf,34.85494880546075
-1,GOBIND SAGAR,512.0,484.75,6.229,2.094,2025-07-10,33.62,36.31,35.0,676.0,1379.0,bulletin-10-07-2025-41.pdf,33.61695296195216
-2,PONG DAM,423.67,403.99,6.157,1.91,2025-07-10,31.02,23.92,28.15,0.0,396.0,bulletin-10-07-2025-41.pdf,31.0216014292675
-3,THEIN DAM,527.91,505.34,2.344,0.866,2025-07-10,36.95,30.67,48.69,348.0,600.0,bulletin-10-07-2025-41.pdf,36.94539249146758
-1,GOBIND SAGAR,512.0,486.18,6.229,2.229,2025-07-17,35.78,36.94,39.56,676.0,1379.0,bulletin-17-07-2025-44.pdf,35.78423502969979
-2,PONG DAM,423.67,405.01,6.157,2.059,2025-07-17,33.44,22.67,34.32,0.0,396.0,bulletin-17-07-2025-44.pdf,33.44161117427319
-3,THEIN DAM,527.91,505.38,2.344,0.866,2025-07-17,36.95,25.73,50.86,348.0,600.0,bulletin-17-07-2025-44.pdf,36.94539249146758
-1,GOBIND SAGAR,512.0,490.65,6.229,2.702,2025-07-24,43.38,38.24,44.07,676.0,1379.0,bulletin-24-07-2025-44.pdf,43.37774923743779
-2,PONG DAM,423.67,408.55,6.157,2.647,2025-07-24,42.99,24.65,37.56,0.0,396.0,bulletin-24-07-2025-44.pdf,42.9917167451681
-3,THEIN DAM,527.91,506.41,2.344,0.915,2025-07-24,39.04,15.15,52.54,348.0,600.0,bulletin-24-07-2025-44.pdf,39.03583617747441
-1,GOBIND SAGAR,512.0,494.24,6.229,3.408,2025-07-31,54.71,42.22,52.55,676.0,1379.0,bulletin-31-07-2025-46.pdf,54.71183175469577
-2,PONG DAM,423.67,493.03,6.157,3.439,2025-07-31,55.86,24.65,42.94,0.0,396.0,bulletin-31-07-2025-46.pdf,55.85512424882248
-3,THEIN DAM,527.91,509.62,2.344,1.086,2025-07-31,46.33,11.9,54.56,348.0,600.0,bulletin-31-07-2025-46.pdf,46.33105802047782
-1,GOBIND SAGAR,512.0,499.51,6.229,3.785,2025-08-07,60.76,45.45,59.03,676.0,1379.0,bulletin-07-08-2025-48.pdf,60.76416760314658
-2,PONG DAM,423.67,419.05,6.157,4.702,2025-08-07,76.37,39.08,53.33,0.0,396.0,bulletin-07-08-2025-48.pdf,76.36836121487738
-3,THEIN DAM,527.91,516.88,2.344,1.507,2025-08-07,64.29,17.58,58.6,348.0,600.0,bulletin-07-08-2025-48.pdf,64.29180887372013
-1,GOBIND SAGAR,512.0,503.56,6.229,4.358,2025-08-14,69.96,52.05,69.2,676.0,1379.0,bulletin-14-08-2025-48.pdf,69.96307593514207
-2,PONG DAM,423.67,419.52,6.157,4.806,2025-08-14,78.06,53.35,68.1,0.0,396.0,bulletin-14-08-2025-48.pdf,78.05749553353905
-3,THEIN DAM,527.91,518.92,2.344,1.629,2025-08-14,69.5,22.44,63.78,348.0,600.0,bulletin-14-08-2025-48.pdf,69.49658703071673
-1,GOBIND SAGAR,512.0,507.95,6.229,5.012,2025-08-21,80.46,56.99,73.93,676.0,1379.0,bulletin-21-08-2025-50.pdf,80.46235350778616
-2,PONG DAM,423.67,421.96,6.157,5.364,2025-08-21,87.12,60.06,73.95,0.0,396.0,bulletin-21-08-2025-50.pdf,87.12035082020464
-3,THEIN DAM,527.91,523.57,2.344,1.999,2025-08-21,85.28,29.65,66.72,348.0,600.0,bulletin-21-08-2025-50.pdf,85.28156996587032
-1,GOBIND SAGAR,512.0,509.6,6.229,5.269,2025-08-28,84.59,60.2,77.21,676.0,1379.0,bulletin-28-08-2025-51.pdf,84.58821640712794
-2,PONG DAM,423.67,424.74,6.157,6.039,2025-08-28,98.08,61.13,79.74,0.0,396.0,bulletin-28-08-2025-51.pdf,98.08348221536463
-3,THEIN DAM,527.91,525.65,2.344,2.158,2025-08-28,92.06,27.52,66.53,348.0,600.0,bulletin-28-08-2025-51.pdf,92.06484641638225
-1,GOBIND SAGAR,512.0,511.75,6.229,5.606,2025-09-04,90.0,62.74,79.44,676.0,1379.0,bulletin-04-09-2025-53.pdf,89.99839460587575
-2,PONG DAM,423.67,425.05,6.157,6.118,2025-09-04,99.37,63.63,81.68,0.0,396.0,bulletin-04-09-2025-53.pdf,99.36657463050187
-3,THEIN DAM,527.91,527.04,2.344,2.277,2025-09-04,97.14,29.65,67.06,348.0,600.0,bulletin-04-09-2025-53.pdf,97.14163822525599
-1,GOBIND SAGAR,512.0,511.15,6.229,5.512,2025-09-11,88.49,65.6,162.8,676.0,1379.0,bulletin-11-09-2025-55.pdf,88.48932412907368
-2,PONG DAM,423.67,423.77,6.157,5.797,2025-09-11,94.15,65.84,82.42,0.0,396.0,bulletin-11-09-2025-55.pdf,94.152996589248
-3,THEIN DAM,527.91,524.42,2.344,2.078,2025-09-11,88.65,28.58,65.29,348.0,600.0,bulletin-11-09-2025-55.pdf,88.6518771331058
-1,GOBIND SAGAR,512.0,511.1,6.229,5.504,2025-09-18,88.36,66.85,80.95,676.0,1379.0,bulletin-18-09-2025-56.pdf,88.36089259913308
-2,PONG DAM,423.67,425.16,6.157,6.146,2025-09-18,99.82,66.23,81.78,0.0,396.0,bulletin-18-09-2025-56.pdf,99.82134156244923
-3,THEIN DAM,527.91,524.59,2.344,2.118,2025-09-18,90.36,25.73,63.73,348.0,600.0,bulletin-18-09-2025-56.pdf,90.35836177474403
-1,GOBIND SAGAR,512.0,510.57,6.229,5.421,2025-09-25,87.03,67.19,82.06,676.0,1379.0,bulletin-25-09-2025-57.pdf,87.02841547599937
-2,PONG DAM,423.67,423.9,6.157,5.828,2025-09-25,94.66,64.66,82.22,0.0,396.0,bulletin-25-09-2025-57.pdf,94.65648854961832
-3,THEIN DAM,527.91,524.49,2.344,2.078,2025-09-25,88.65,24.19,65.17,348.0,600.0,bulletin-25-09-2025-57.pdf,88.6518771331058
-1,GOBIND SAGAR,512.0,509.97,6.229,5.327,2025-10-02,85.52,66.42,80.76,676.0,1379.0,bulletin-02-10-2025-58.pdf,85.5193449991973
-2,PONG DAM,423.67,423.32,6.157,5.687,2025-10-02,92.37,63.86,80.56,0.0,396.0,bulletin-02-10-2025-58.pdf,92.36641221374046
-3,THEIN DAM,527.91,523.72,2.344,1.959,2025-10-02,83.58,24.19,65.74,348.0,600.0,bulletin-02-10-2025-58.pdf,83.57508532423209
-1,GOBIND SAGAR,512.0,509.02,6.229,5.18,2025-10-09,83.16,63.93,82.14,676.0,1379.0,bulletin-09-10-2025-60.pdf,83.15941563653877
-2,PONG DAM,423.67,421.88,6.157,5.346,2025-10-09,86.83,61.64,79.31,0.0,396.0,bulletin-09-10-2025-60.pdf,86.82800064966705
-3,THEIN DAM,527.91,521.79,2.344,1.841,2025-10-09,78.54,24.19,65.2,348.0,600.0,bulletin-09-10-2025-60.pdf,78.54095563139933
-1,GOBIND SAGAR,512.0,509.3,6.229,5.223,2025-10-16,83.85,62.14,78.39,676.0,1379.0,bulletin-16-10-2025-61.pdf,83.84973510996949
-2,PONG DAM,423.67,421.37,6.157,5.226,2025-10-16,84.88,58.44,77.35,0.0,396.0,bulletin-16-10-2025-61.pdf,84.87899951274971
-3,THEIN DAM,527.91,523.15,2.344,1.959,2025-10-16,83.58,24.87,63.74,348.0,600.0,bulletin-16-10-2025-61.pdf,83.57508532423209
-1,GOBIND SAGAR,512.0,509.55,6.229,5.262,2025-10-23,84.48,61.09,79.08,676.0,1379.0,bulletin-23-10-2025-62.pdf,84.47583881842992
-2,PONG DAM,423.67,420.65,6.157,5.054,2025-10-23,82.09,55.56,75.49,0.0,396.0,bulletin-23-10-2025-62.pdf,82.08543121650155
-3,THEIN DAM,527.91,523.84,2.344,1.999,2025-10-23,85.28,25.73,61.63,348.0,600.0,bulletin-23-10-2025-62.pdf,85.28156996587032
-1,GOBIND SAGAR,512.0,509.69,6.229,5.285,2025-10-30,84.85,61.09,76.38,676.0,1379.0,bulletin-30-10-2025-62.pdf,84.84507946700916
-2,PONG DAM,423.67,420.04,6.157,4.921,2025-10-30,79.93,55.56,75.39,0.0,396.0,bulletin-30-10-2025-62.pdf,79.9252882897515
-3,THEIN DAM,527.91,524.15,2.344,2.039,2025-10-30,86.99,27.56,60.63,348.0,600.0,bulletin-30-10-2025-62.pdf,86.98805460750854
-1,GOBIND SAGAR,512.0,509.81,6.229,5.303,2025-11-06,85.13,59.3,73.73,676.0,1379.0,bulletin-06-11-2025-63.pdf,85.13405040937549
-2,PONG DAM,423.67,419.49,6.157,4.799,2025-11-06,77.94,50.04,66.72,0.0,396.0,bulletin-06-11-2025-63.pdf,77.94380380055223
-3,THEIN DAM,527.91,523.97,2.344,1.999,2025-11-06,85.28,28.58,58.66,348.0,600.0,bulletin-06-11-2025-63.pdf,85.28156996587032
-1,GOBIND SAGAR,512.0,509.92,6.229,5.321,2025-11-13,85.42,58.32,72.42,676.0,1379.0,bulletin-13-11-2025-64.pdf,85.42302135174185
-2,PONG DAM,423.67,418.88,6.157,4.665,2025-11-13,75.77,47.83,64.69,0.0,396.0,bulletin-13-11-2025-64.pdf,75.7674191976612
-3,THEIN DAM,527.91,523.52,2.344,1.999,2025-11-13,85.28,29.65,56.31,348.0,600.0,bulletin-13-11-2025-64.pdf,85.28156996587032
-1,GOBIND SAGAR,512.0,509.85,6.229,5.305,2025-11-20,85.17,57.25,73.77,676.0,1379.0,bulletin-20-11-2025-65.pdf,85.16615829186065
-2,PONG DAM,423.67,418.28,6.157,4.534,2025-11-20,73.64,45.41,62.28,0.0,396.0,bulletin-20-11-2025-65.pdf,73.63975962319311
-3,THEIN DAM,527.91,523.173,2.344,1.999,2025-11-20,85.28,29.65,54.91,348.0,600.0,bulletin-20-11-2025-65.pdf,85.28156996587032
-1,GOBIND SAGAR,512.0,508.49,6.229,5.098,2025-11-27,81.84,56.12,72.6,676.0,1379.0,bulletin-27-11-2025-68.pdf,81.84299245464761
-2,PONG DAM,423.67,418.32,6.157,4.543,2025-11-27,73.79,42.96,60.06,0.0,396.0,bulletin-27-11-2025-68.pdf,73.78593470846192
-3,THEIN DAM,527.91,523.014,2.344,1.999,2025-11-27,85.28,29.65,52.8,348.0,600.0,bulletin-27-11-2025-68.pdf,85.28156996587032
-1,GOBIND SAGAR,512.0,507.07,6.229,4.874,2025-12-04,78.25,54.62,72.08,676.0,1379.0,bulletin-04-12-2025-68.pdf,78.2469096163108
-2,PONG DAM,423.67,418.21,6.157,4.518,2025-12-04,73.38,42.23,60.49,0.0,396.0,bulletin-04-12-2025-68.pdf,73.37989280493747
-3,THEIN DAM,527.91,523.01,2.344,1.959,2025-12-04,83.58,27.56,51.19,348.0,600.0,bulletin-04-12-2025-68.pdf,83.57508532423209
-1,GOBIND SAGAR,512.0,506.16,6.229,4.733,2025-12-11,75.98,51.65,66.17,676.0,1379.0,bulletin-11-12-2025-69.pdf,75.98330390110772
-2,PONG DAM,423.67,417.16,6.157,4.389,2025-12-11,71.28,37.73,58.36,0.0,396.0,bulletin-11-12-2025-69.pdf,71.28471658275134
-3,THEIN DAM,527.91,522.52,2.344,1.959,2025-12-11,83.58,25.73,48.13,348.0,600.0,bulletin-11-12-2025-69.pdf,83.57508532423209
-1,GOBIND SAGAR,512.0,505.08,6.229,4.577,2025-12-18,73.48,48.38,65.15,676.0,1379.0,bulletin-18-12-2025-70.pdf,73.47888906726601
-2,PONG DAM,423.67,416.74,6.157,4.206,2025-12-18,68.31,34.95,58.49,0.0,396.0,bulletin-18-12-2025-70.pdf,68.31248984895242
-3,THEIN DAM,527.91,521.758,2.344,1.841,2025-12-18,78.54,24.87,46.05,348.0,600.0,bulletin-18-12-2025-70.pdf,78.54095563139933
-1,GOBIND SAGAR,512.0,503.51,6.229,4.352,2025-12-26,69.87,44.68,61.73,676.0,1379.0,bulletin-26-12-2025-71.pdf,69.86675228768662
-2,PONG DAM,423.67,415.98,6.157,4.047,2025-12-26,65.73,32.32,54.62,0.0,396.0,bulletin-26-12-2025-71.pdf,65.73006334253695
-3,THEIN DAM,527.91,520.665,2.344,1.76,2025-12-26,75.09,22.44,42.13,348.0,600.0,bulletin-26-12-2025-71.pdf,75.08532423208192
-1,GOBIND SAGAR,512.0,502.58,6.229,4.219,2026-01-01,67.73,43.37,59.36,676.0,1379.0,bulletin-01-01-2026-73.pdf,67.73157810242415
-2,PONG DAM,423.67,415.13,6.157,3.87,2026-01-01,62.86,29.62,44.39,0.0,396.0,bulletin-01-01-2026-73.pdf,62.85528666558389
-3,THEIN DAM,527.91,519.849,2.344,1.69,2026-01-01,72.1,21.63,36.39,348.0,600.0,bulletin-01-01-2026-73.pdf,72.09897610921502
-1,GOBIND SAGAR,512.0,499.561,6.229,3.791,2026-01-22,60.86,39.37,51.86,676.0,1379.0,bulletin-22-01-2026-76.pdf,60.860491250602024
-2,PONG DAM,423.67,412.09,6.157,3.28,2026-01-22,53.27,22.28,41.96,0.0,396.0,bulletin-22-01-2026-76.pdf,53.27269774240702
-3,THEIN DAM,527.91,517.475,2.344,1.568,2026-01-22,66.89,20.01,34.09,348.0,600.0,bulletin-22-01-2026-76.pdf,66.89419795221843
-1,GOBIND SAGAR,512.0,498.933,6.229,3.711,2026-01-29,59.58,37.78,51.17,676.0,1379.0,bulletin-29-01-2026-77.pdf,59.57617595119602
-2,PONG DAM,423.67,411.72,6.157,3.208,2026-01-29,52.1,20.56,42.1,0.0,396.0,bulletin-29-01-2026-77.pdf,52.10329706025662
-3,THEIN DAM,527.91,517.72,2.344,1.568,2026-01-29,66.89,17.58,33.77,348.0,600.0,bulletin-29-01-2026-77.pdf,66.89419795221843
-1,GOBIND SAGAR,512.0,498.043,6.229,3.597,2026-02-05,57.75,36.0,48.07,676.0,1379.0,bulletin-05-02-2026-77.pdf,57.74602664954246
-2,PONG DAM,423.67,411.22,6.157,3.118,2026-02-05,50.64,18.66,37.1,0.0,396.0,bulletin-05-02-2026-77.pdf,50.641546207568624
-3,THEIN DAM,527.91,517.868,2.344,1.568,2026-02-05,66.89,15.96,34.14,348.0,600.0,bulletin-05-02-2026-77.pdf,66.89419795221843
-1,GOBIND SAGAR,512.0,496.836,6.229,3.443,2026-02-12,55.27,33.6,44.38,676.0,1379.0,bulletin-12-02-2026-82.pdf,55.27371969818591
-2,PONG DAM,423.67,410.69,6.157,3.025,2026-02-12,49.13,17.28,35.52,0.0,396.0,bulletin-12-02-2026-82.pdf,49.13107032645769
-3,THEIN DAM,527.91,517.693,2.344,1.568,2026-02-12,66.89,14.33,34.23,348.0,600.0,bulletin-12-02-2026-82.pdf,66.89419795221843
-1,GOBIND SAGAR,512.0,495.489,6.229,3.271,2026-02-19,52.51,30.68,39.3,676.0,1379.0,bulletin-19-02-2026-82.pdf,52.512441804462995
-2,PONG DAM,423.67,410.22,6.157,2.94,2026-02-19,47.75,15.92,36.69,0.0,396.0,bulletin-19-02-2026-82.pdf,47.750527854474576
-3,THEIN DAM,527.91,517.17,2.344,1.538,2026-02-19,65.61,11.9,34.36,348.0,600.0,bulletin-19-02-2026-82.pdf,65.61433447098976
-1,GOBIND SAGAR,512.0,494.059,6.229,3.088,2026-02-26,49.57,28.46,37.79,676.0,1379.0,bulletin-26-02-2026-84.pdf,49.57457055707176
-2,PONG DAM,423.67,409.66,6.157,2.843,2026-02-26,46.18,14.63,34.47,0.0,396.0,bulletin-26-02-2026-84.pdf,46.175085268799734
-3,THEIN DAM,527.91,516.586,2.344,1.477,2026-02-26,63.01,11.9,34.97,348.0,600.0,bulletin-26-02-2026-84.pdf,63.01194539249148
-1,GOBIND SAGAR,512.0,490.259,6.229,2.659,2026-03-12,42.69,25.52,32.19,676.0,1379.0,bulletin-12-03-2026-86.pdf,42.687429764007064
-2,PONG DAM,423.67,407.55,6.157,2.478,2026-03-12,40.25,16.14,29.77,0.0,396.0,bulletin-12-03-2026-86.pdf,40.24687347734287
-3,THEIN DAM,527.91,514.651,2.344,1.386,2026-03-12,59.13,20.01,35.6,348.0,600.0,bulletin-12-03-2026-86.pdf,59.129692832764505
-1,GOBIND SAGAR,512.0,488.625,6.229,2.476,2026-03-19,39.75,23.1,30.27,676.0,1379.0,bulletin-19-03-2026-86.pdf,39.74955851661583
-2,PONG DAM,423.67,406.71,6.157,2.336,2026-03-19,37.94,14.2,28.47,0.0,396.0,bulletin-19-03-2026-86.pdf,37.94055546532402
-3,THEIN DAM,527.91,514.392,2.344,1.36,2026-03-19,58.02,20.82,35.8,348.0,600.0,bulletin-19-03-2026-86.pdf,58.020477815699664
-1,GOBIND SAGAR,512.0,487.915,6.229,2.397,2026-03-27,38.48,20.02,28.07,676.0,1379.0,bulletin-27-03-2026-88.pdf,38.4812971584524
-2,PONG DAM,423.67,406.49,6.157,2.299,2026-03-27,37.34,13.25,27.34,0.0,396.0,bulletin-27-03-2026-88.pdf,37.33961344810785
-3,THEIN DAM,527.91,514.294,2.344,1.36,2026-03-27,58.02,20.01,36.52,348.0,600.0,bulletin-27-03-2026-88.pdf,58.020477815699664
-1,GOBIND SAGAR,512.0,487.296,6.229,2.343,2026-04-02,37.61,19.07,26.79,676.0,1379.0,bulletin-02-04-2026-90.pdf,37.61438433135334
-2,PONG DAM,423.67,406.53,6.157,2.306,2026-04-02,37.45,12.98,27.17,0.0,396.0,bulletin-02-04-2026-90.pdf,37.453305181094684
-3,THEIN DAM,527.91,514.518,2.344,1.386,2026-04-02,59.13,17.58,37.76,348.0,600.0,bulletin-02-04-2026-90.pdf,59.129692832764505
-1,GOBIND SAGAR,512.0,487.098,6.229,2.316,2026-04-09,37.18,19.14,26.4,676.0,1379.0,bulletin-09-04-2026-91.pdf,37.18092791780382
-2,PONG DAM,423.67,406.63,6.157,2.323,2026-04-09,37.73,12.29,27.35,0.0,396.0,bulletin-09-04-2026-91.pdf,37.72941367549131
-3,THEIN DAM,527.91,515.625,2.344,1.446,2026-04-09,61.69,17.58,38.93,348.0,600.0,bulletin-09-04-2026-91.pdf,61.689419795221845
-1,GOBIND SAGAR,512.0,486.884,6.229,2.295,2026-04-16,36.84,19.48,26.23,676.0,1379.0,bulletin-16-04-2026-91.pdf,36.84379515170974
-2,PONG DAM,423.67,406.98,6.157,2.382,2026-04-16,38.69,11.95,27.53,0.0,396.0,bulletin-16-04-2026-91.pdf,38.687672567809
-3,THEIN DAM,527.91,517.527,2.344,1.568,2026-04-16,66.89,23.25,40.23,348.0,600.0,bulletin-16-04-2026-91.pdf,66.89419795221843
-1,GOBIND SAGAR,512.0,486.217,6.229,2.232,2026-04-23,35.83,20.73,26.37,676.0,1379.0,bulletin-23-04-2026-92.pdf,35.83239685342752
-2,PONG DAM,423.67,406.99,6.157,2.383,2026-04-23,38.7,11.76,27.32,0.0,396.0,bulletin-23-04-2026-92.pdf,38.703914243949974
-3,THEIN DAM,527.91,518.346,2.344,1.599,2026-04-23,68.22,24.87,42.29,348.0,600.0,bulletin-23-04-2026-92.pdf,68.21672354948805
+SR. NO. - NAN,RESERVOIR NAME - NAN,FRL (M) - NAN,CURRENT RESERVOIR LEVEL (M) - NAN,LIVE CAPACITY AT FRL (BCM) - NAN,CURRENT LIVE STORAGE (BCM) - NAN,DATE - NAN,STORAGE AS % OF LIVE CAPACITY AT FRL - CURRENT YEAR,NAN - LAST YEAR,NAN - NORMAL STORAGE,BENEFITS - IRR-CCA,NAN - HYDEL IN MW,DATE,SOURCE_PDF,pct_filled,STORAGE AS % OF LIVE CAPACITY AT FRL - NORMAL STORAGE,BENEFITS - HYDEL IN MW
+1,GOBIND SAGAR,512.000,476.220,6.229,1.387,29.05.2025,22.27,27.40,27.48,676.000,1379.000,2025-05-29,bulletin-29-05-2025-15.pdf,22.266816503451597,27.48,1379.000
+1,THEIN DAM,527.910,508.080,2.344,0.988,29.05.2025,42.15,39.04,48.64,348.000,600.000,2025-05-29,bulletin-29-05-2025-15.pdf,42.15017064846416,48.64,600.000
+2,PONG DAM,423.670,394.760,6.157,0.764,29.05.2025,12.41,25.87,25.75,0.000,396.000,2025-05-29,bulletin-29-05-2025-15.pdf,12.408640571707,25.75,396.000
+1,GOBIND SAGAR,512.000,475.860,6.229,1.359,05.06.2025,21.82,29.84,28.42,676.000,1379.000,2025-06-05,bulletin-05-06-2025-18.pdf,21.817306148659497,28.42,1379.000
+1,THEIN DAM,527.910,507.960,2.344,0.988,05.06.2025,42.15,41.13,49.82,348.000,600.000,2025-06-05,bulletin-05-06-2025-18.pdf,42.15017064846416,49.82,600.000
+2,PONG DAM,423.670,394.810,6.157,0.769,05.06.2025,12.49,24.74,26.24,0.000,396.000,2025-06-05,bulletin-05-06-2025-18.pdf,12.489848952411888,26.24,396.000
+1,GOBIND SAGAR,512.000,473.980,6.229,1.239,12.06.2025,19.89,30.77,29.12,676.000,1379.000,2025-06-12,bulletin-12-06-2025-23.pdf,19.890833199550492,29.12,1379.000
+1,THEIN DAM,527.910,506.840,2.344,0.956,12.06.2025,40.78,40.74,49.83,348.000,600.000,2025-06-12,bulletin-12-06-2025-23.pdf,40.784982935153586,49.83,600.000
+2,PONG DAM,423.670,393.440,6.157,0.636,12.06.2025,10.33,22.53,24.71,0.000,396.000,2025-06-12,bulletin-12-06-2025-23.pdf,10.32970602566185,24.71,396.000
+1,GOBIND SAGAR,512.000,475.730,6.229,1.350,19.06.2025,21.67,31.14,28.55,676.000,1379.000,2025-06-19,bulletin-19-06-2025-28.pdf,21.67282067747632,28.55,1379.000
+1,THEIN DAM,527.910,505.770,2.344,0.866,19.06.2025,36.95,35.92,48.58,348.000,600.000,2025-06-19,bulletin-19-06-2025-28.pdf,36.94539249146758,48.58,600.000
+2,PONG DAM,423.670,392.600,6.157,0.561,19.06.2025,9.11,20.33,23.15,0.000,396.000,2025-06-19,bulletin-19-06-2025-28.pdf,9.111580315088517,23.15,396.000
+1,GOBIND SAGAR,512.000,477.510,6.229,1.485,26.06.2025,23.84,30.82,28.27,676.000,1379.000,2025-06-26,bulletin-26-06-2025-37.pdf,23.840102745223955,28.27,1379.000
+1,THEIN DAM,527.910,505.440,2.344,0.866,26.06.2025,36.95,31.74,46.62,348.000,600.000,2025-06-26,bulletin-26-06-2025-37.pdf,36.94539249146758,46.62,600.000
+2,PONG DAM,423.670,394.090,6.157,0.699,26.06.2025,11.35,18.68,22.46,0.000,396.000,2025-06-26,bulletin-26-06-2025-37.pdf,11.352931622543446,22.46,396.000
+1,GOBIND SAGAR,512.000,481.870,6.229,1.822,03.07.2025,29.25,33.07,28.68,676.000,1379.000,2025-07-03,bulletin-03-07-2025-38.pdf,29.250280943971745,28.68,1379.000
+1,THEIN DAM,527.910,504.830,2.344,0.817,03.07.2025,34.85,28.58,45.51,348.000,600.000,2025-07-03,bulletin-03-07-2025-38.pdf,34.85494880546075,45.51,600.000
+2,PONG DAM,423.670,402.350,6.157,1.669,03.07.2025,27.11,18.52,21.79,0.000,396.000,2025-07-03,bulletin-03-07-2025-38.pdf,27.107357479291867,21.79,396.000
+1,GOBIND SAGAR,512.000,484.750,6.229,2.094,11.07.2025,33.62,36.31,35.00,676.000,1379.000,2025-07-10,bulletin-10-07-2025-41.pdf,33.61695296195216,35.00,1379.000
+1,THEIN DAM,527.910,505.340,2.344,0.866,11.07.2025,36.95,30.67,48.69,348.000,600.000,2025-07-10,bulletin-10-07-2025-41.pdf,36.94539249146758,48.69,600.000
+2,PONG DAM,423.670,403.990,6.157,1.910,11.07.2025,31.02,23.92,28.15,0.000,396.000,2025-07-10,bulletin-10-07-2025-41.pdf,31.0216014292675,28.15,396.000
+1,GOBIND SAGAR,512.000,486.180,6.229,2.229,17.07.2025,35.78,36.94,39.56,676.000,1379.000,2025-07-17,bulletin-17-07-2025-44.pdf,35.78423502969979,39.56,1379.000
+1,THEIN DAM,527.910,505.380,2.344,0.866,17.07.2025,36.95,25.73,50.86,348.000,600.000,2025-07-17,bulletin-17-07-2025-44.pdf,36.94539249146758,50.86,600.000
+2,PONG DAM,423.670,405.010,6.157,2.059,17.07.2025,33.44,22.67,34.32,0.000,396.000,2025-07-17,bulletin-17-07-2025-44.pdf,33.44161117427319,34.32,396.000
+1,GOBIND SAGAR,512.000,490.650,6.229,2.702,24.07.2025,43.38,38.24,44.07,676.000,1379.000,2025-07-24,bulletin-24-07-2025-44.pdf,43.37774923743779,44.07,1379.000
+1,THEIN DAM,527.910,506.410,2.344,0.915,24.07.2025,39.04,15.15,52.54,348.000,600.000,2025-07-24,bulletin-24-07-2025-44.pdf,39.03583617747441,52.54,600.000
+2,PONG DAM,423.670,408.550,6.157,2.647,24.07.2025,42.99,24.65,37.56,0.000,396.000,2025-07-24,bulletin-24-07-2025-44.pdf,42.9917167451681,37.56,396.000
+1,GOBIND SAGAR,512.000,494.240,6.229,3.408,31.07.2025,54.71,42.22,52.55,676.000,1379.000,2025-07-31,bulletin-31-07-2025-46.pdf,54.71183175469577,52.55,1379.000
+1,THEIN DAM,527.910,509.620,2.344,1.086,31.07.2025,46.33,11.90,54.56,348.000,600.000,2025-07-31,bulletin-31-07-2025-46.pdf,46.33105802047782,54.56,600.000
+2,PONG DAM,423.670,493.030,6.157,3.439,31.07.2025,55.86,24.65,42.94,0.000,396.000,2025-07-31,bulletin-31-07-2025-46.pdf,55.85512424882248,42.94,396.000
+1,GOBIND SAGAR,512.000,499.510,6.229,3.785,07.08.2025,60.76,45.45,59.03,676.000,1379.000,2025-08-07,bulletin-07-08-2025-48.pdf,60.76416760314658,59.03,1379.000
+1,THEIN DAM,527.910,516.880,2.344,1.507,07.08.2025,64.29,17.58,58.60,348.000,600.000,2025-08-07,bulletin-07-08-2025-48.pdf,64.29180887372013,58.60,600.000
+2,PONG DAM,423.670,419.050,6.157,4.702,07.08.2025,76.37,39.08,53.33,0.000,396.000,2025-08-07,bulletin-07-08-2025-48.pdf,76.36836121487738,53.33,396.000
+1,GOBIND SAGAR,512.000,503.560,6.229,4.358,14.08.2025,69.96,52.05,69.20,676.000,1379.000,2025-08-14,bulletin-14-08-2025-48.pdf,69.96307593514207,69.20,1379.000
+1,THEIN DAM,527.910,518.920,2.344,1.629,14.08.2025,69.50,22.44,63.78,348.000,600.000,2025-08-14,bulletin-14-08-2025-48.pdf,69.49658703071673,63.78,600.000
+2,PONG DAM,423.670,419.520,6.157,4.806,14.08.2025,78.06,53.35,68.10,0.000,396.000,2025-08-14,bulletin-14-08-2025-48.pdf,78.05749553353905,68.10,396.000
+1,GOBIND SAGAR,512.000,507.950,6.229,5.012,26.08.2025,80.46,56.99,73.93,676.000,1379.000,2025-08-21,bulletin-21-08-2025-50.pdf,80.46235350778616,73.93,1379.000
+1,THEIN DAM,527.910,523.570,2.344,1.999,26.08.2025,85.28,29.65,66.72,348.000,600.000,2025-08-21,bulletin-21-08-2025-50.pdf,85.28156996587032,66.72,600.000
+2,PONG DAM,423.670,421.960,6.157,5.364,26.08.2025,87.12,60.06,73.95,0.000,396.000,2025-08-21,bulletin-21-08-2025-50.pdf,87.12035082020464,73.95,396.000
+1,GOBIND SAGAR,512.000,509.600,6.229,5.269,28.08.2025,84.59,60.20,77.21,676.000,1379.000,2025-08-28,bulletin-28-08-2025-51.pdf,84.58821640712794,77.21,1379.000
+1,THEIN DAM,527.910,525.650,2.344,2.158,28.08.2025,92.06,27.52,66.53,348.000,600.000,2025-08-28,bulletin-28-08-2025-51.pdf,92.06484641638225,66.53,600.000
+2,PONG DAM,423.670,424.740,6.157,6.039,28.08.2025,98.08,61.13,79.74,0.000,396.000,2025-08-28,bulletin-28-08-2025-51.pdf,98.08348221536463,79.74,396.000
+1,GOBIND SAGAR,512.000,511.750,6.229,5.606,05.09.2025,90.00,62.74,79.44,676.000,1379.000,2025-09-04,bulletin-04-09-2025-53.pdf,89.99839460587575,79.44,1379.000
+1,THEIN DAM,527.910,527.040,2.344,2.277,05.09.2025,97.14,29.65,67.06,348.000,600.000,2025-09-04,bulletin-04-09-2025-53.pdf,97.14163822525599,67.06,600.000
+2,PONG DAM,423.670,425.050,6.157,6.118,05.09.2025,99.37,63.63,81.68,0.000,396.000,2025-09-04,bulletin-04-09-2025-53.pdf,99.36657463050187,81.68,396.000
+1,GOBIND SAGAR,512.000,511.150,6.229,5.512,11.09.2025,88.49,65.60,162.80,676.000,1379.000,2025-09-11,bulletin-11-09-2025-55.pdf,88.48932412907368,162.80,1379.000
+1,THEIN DAM,527.910,524.420,2.344,2.078,11.09.2025,88.65,28.58,65.29,348.000,600.000,2025-09-11,bulletin-11-09-2025-55.pdf,88.6518771331058,65.29,600.000
+2,PONG DAM,423.670,423.770,6.157,5.797,11.09.2025,94.15,65.84,82.42,0.000,396.000,2025-09-11,bulletin-11-09-2025-55.pdf,94.152996589248,82.42,396.000
+1,GOBIND SAGAR,512.000,511.100,6.229,5.504,18.09.2025,88.36,66.85,80.95,676.000,1379.000,2025-09-18,bulletin-18-09-2025-56.pdf,88.36089259913308,80.95,1379.000
+1,THEIN DAM,527.910,524.590,2.344,2.118,18.09.2025,90.36,25.73,63.73,348.000,600.000,2025-09-18,bulletin-18-09-2025-56.pdf,90.35836177474403,63.73,600.000
+2,PONG DAM,423.670,425.160,6.157,6.146,18.09.2025,99.82,66.23,81.78,0.000,396.000,2025-09-18,bulletin-18-09-2025-56.pdf,99.82134156244923,81.78,396.000
+1,GOBIND SAGAR,512.000,510.570,6.229,5.421,25.09.2025,87.03,67.19,82.06,676.000,1379.000,2025-09-25,bulletin-25-09-2025-57.pdf,87.02841547599937,82.06,1379.000
+1,THEIN DAM,527.910,524.490,2.344,2.078,25.09.2025,88.65,24.19,65.17,348.000,600.000,2025-09-25,bulletin-25-09-2025-57.pdf,88.6518771331058,65.17,600.000
+2,PONG DAM,423.670,423.900,6.157,5.828,25.09.2025,94.66,64.66,82.22,0.000,396.000,2025-09-25,bulletin-25-09-2025-57.pdf,94.65648854961832,82.22,396.000
+1,GOBIND SAGAR,512.000,509.970,6.229,5.327,07.10.2025,85.52,66.42,80.76,676.000,1379.000,2025-10-02,bulletin-02-10-2025-58.pdf,85.5193449991973,80.76,1379.000
+1,THEIN DAM,527.910,523.720,2.344,1.959,07.10.2025,83.58,24.19,65.74,348.000,600.000,2025-10-02,bulletin-02-10-2025-58.pdf,83.57508532423209,65.74,600.000
+2,PONG DAM,423.670,423.320,6.157,5.687,07.10.2025,92.37,63.86,80.56,0.000,396.000,2025-10-02,bulletin-02-10-2025-58.pdf,92.36641221374046,80.56,396.000
+1,GOBIND SAGAR,512.000,503.510,6.229,4.352,26.12.2025,69.87,44.68,61.73,676.000,1379.000,2025-12-26,bulletin-26-12-2025-71.pdf,69.86675228768662,61.73,1379.000
+1,THEIN DAM,527.910,520.665,2.344,1.760,26.12.2025,75.09,22.44,42.13,348.000,600.000,2025-12-26,bulletin-26-12-2025-71.pdf,75.08532423208192,42.13,600.000
+2,PONG DAM,423.670,415.980,6.157,4.047,26.12.2025,65.72,32.32,54.62,0.000,396.000,2025-12-26,bulletin-26-12-2025-71.pdf,65.73006334253695,54.62,396.000
+1,GOBIND SAGAR,512.000,502.580,6.229,4.219,01.01.2026,67.73,43.37,59.36,676.000,1379.000,2026-01-01,bulletin-01-01-2026-73.pdf,67.73157810242415,59.36,1379.000
+1,THEIN DAM,527.910,519.849,2.344,1.690,01.01.2026,72.10,21.63,36.39,348.000,600.000,2026-01-01,bulletin-01-01-2026-73.pdf,72.09897610921502,36.39,600.000
+2,PONG DAM,423.670,415.130,6.157,3.870,01.01.2026,62.86,29.62,44.39,0.000,396.000,2026-01-01,bulletin-01-01-2026-73.pdf,62.85528666558389,44.39,396.000
+1,GOBIND SAGAR,512.000,499.561,6.229,3.791,22.01.2026,60.86,39.37,51.86,676.000,1379.000,2026-01-22,bulletin-22-01-2026-76.pdf,60.860491250602024,51.86,1379.000
+1,THEIN DAM,527.910,517.475,2.344,1.568,22.01.2026,66.89,20.01,34.09,348.000,600.000,2026-01-22,bulletin-22-01-2026-76.pdf,66.89419795221843,34.09,600.000
+2,PONG DAM,423.670,412.090,6.157,3.280,22.01.2026,53.28,22.28,41.96,0.000,396.000,2026-01-22,bulletin-22-01-2026-76.pdf,53.27269774240702,41.96,396.000
+1,GOBIND SAGAR,512.000,498.933,6.229,3.711,29.01.2026,59.57,37.78,51.17,676.000,1379.000,2026-01-29,bulletin-29-01-2026-77.pdf,59.57617595119602,51.17,1379.000
+1,THEIN DAM,527.910,517.720,2.344,1.568,29.01.2026,66.89,17.58,33.77,348.000,600.000,2026-01-29,bulletin-29-01-2026-77.pdf,66.89419795221843,33.77,600.000
+2,PONG DAM,423.670,411.720,6.157,3.208,29.01.2026,52.11,20.56,42.10,0.000,396.000,2026-01-29,bulletin-29-01-2026-77.pdf,52.10329706025662,42.10,396.000
+1,GOBIND SAGAR,512.000,498.043,6.229,3.597,05.02.2026,57.75,36.00,48.07,676.000,1379.000,2026-02-05,bulletin-05-02-2026-77.pdf,57.74602664954246,48.07,1379.000
+1,THEIN DAM,527.910,517.868,2.344,1.568,05.02.2026,66.89,15.96,34.14,348.000,600.000,2026-02-05,bulletin-05-02-2026-77.pdf,66.89419795221843,34.14,600.000
+2,PONG DAM,423.670,411.220,6.157,3.118,05.02.2026,50.65,18.66,37.10,0.000,396.000,2026-02-05,bulletin-05-02-2026-77.pdf,50.641546207568624,37.10,396.000
+1,GOBIND SAGAR,512.000,496.836,6.229,3.443,12.02.2026,55.27,33.60,44.38,676.000,1379.000,2026-02-12,bulletin-12-02-2026-82.pdf,55.27371969818591,44.38,1379.000
+1,THEIN DAM,527.910,517.693,2.344,1.568,12.02.2026,66.89,14.33,34.23,348.000,600.000,2026-02-12,bulletin-12-02-2026-82.pdf,66.89419795221843,34.23,600.000
+2,PONG DAM,423.670,410.690,6.157,3.025,12.02.2026,49.13,17.28,35.52,0.000,396.000,2026-02-12,bulletin-12-02-2026-82.pdf,49.13107032645769,35.52,396.000
+1,GOBIND SAGAR,512.000,495.489,6.229,3.271,19.02.2026,52.51,30.68,39.30,676.000,1379.000,2026-02-19,bulletin-19-02-2026-82.pdf,52.512441804462995,39.30,1379.000
+1,THEIN DAM,527.910,517.170,2.344,1.538,19.02.2026,65.61,11.90,34.36,348.000,600.000,2026-02-19,bulletin-19-02-2026-82.pdf,65.61433447098976,34.36,600.000
+2,PONG DAM,423.670,410.220,6.157,2.940,19.02.2026,47.76,15.92,36.69,0.000,396.000,2026-02-19,bulletin-19-02-2026-82.pdf,47.750527854474576,36.69,396.000
+1,GOBIND SAGAR,512.000,494.059,6.229,3.088,26.02.2026,49.58,28.46,37.79,676.000,1379.000,2026-02-26,bulletin-26-02-2026-84.pdf,49.57457055707176,37.79,1379.000
+1,THEIN DAM,527.910,516.586,2.344,1.477,26.02.2026,63.01,11.90,34.97,348.000,600.000,2026-02-26,bulletin-26-02-2026-84.pdf,63.01194539249148,34.97,600.000
+2,PONG DAM,423.670,409.660,6.157,2.843,26.02.2026,46.18,14.63,34.47,0.000,396.000,2026-02-26,bulletin-26-02-2026-84.pdf,46.175085268799734,34.47,396.000
+1,GOBIND SAGAR,512.000,490.259,6.229,2.659,12.03.2026,42.68,25.52,32.19,676.000,1379.000,2026-03-12,bulletin-12-03-2026-86.pdf,42.687429764007064,32.19,1379.000
+1,THEIN DAM,527.910,514.651,2.344,1.386,12.03.2026,59.13,20.01,35.60,348.000,600.000,2026-03-12,bulletin-12-03-2026-86.pdf,59.129692832764505,35.60,600.000
+2,PONG DAM,423.670,407.550,6.157,2.478,12.03.2026,40.25,16.14,29.77,0.000,396.000,2026-03-12,bulletin-12-03-2026-86.pdf,40.24687347734287,29.77,396.000
+1,GOBIND SAGAR,512.000,488.625,6.229,2.476,19.03.2026,39.75,23.10,30.27,676.000,1379.000,2026-03-19,bulletin-19-03-2026-86.pdf,39.74955851661583,30.27,1379.000
+1,THEIN DAM,527.910,514.392,2.344,1.360,19.03.2026,58.02,20.82,35.80,348.000,600.000,2026-03-19,bulletin-19-03-2026-86.pdf,58.020477815699664,35.80,600.000
+2,PONG DAM,423.670,406.710,6.157,2.336,19.03.2026,37.94,14.20,28.47,0.000,396.000,2026-03-19,bulletin-19-03-2026-86.pdf,37.94055546532402,28.47,396.000
+1,GOBIND SAGAR,512.000,487.915,6.229,2.397,27.03.2026,38.48,20.02,28.07,676.000,1379.000,2026-03-27,bulletin-27-03-2026-88.pdf,38.4812971584524,28.07,1379.000
+1,THEIN DAM,527.910,514.294,2.344,1.360,27.03.2026,58.02,20.01,36.52,348.000,600.000,2026-03-27,bulletin-27-03-2026-88.pdf,58.020477815699664,36.52,600.000
+2,PONG DAM,423.670,406.490,6.157,2.299,27.03.2026,37.34,13.25,27.34,0.000,396.000,2026-03-27,bulletin-27-03-2026-88.pdf,37.33961344810785,27.34,396.000
+1,GOBIND SAGAR,512.000,487.296,6.229,2.343,02.04.2026,37.61,19.07,26.79,676.000,1379.000,2026-04-02,bulletin-02-04-2026-90.pdf,37.61438433135334,26.79,1379.000
+1,THEIN DAM,527.910,514.518,2.344,1.386,02.04.2026,59.13,17.58,37.76,348.000,600.000,2026-04-02,bulletin-02-04-2026-90.pdf,59.129692832764505,37.76,600.000
+2,PONG DAM,423.670,406.530,6.157,2.306,02.04.2026,37.46,12.98,27.17,0.000,396.000,2026-04-02,bulletin-02-04-2026-90.pdf,37.453305181094684,27.17,396.000
+1,GOBIND SAGAR,512.000,487.098,6.229,2.316,09.04.2026,37.17,19.14,26.40,676.000,1379.000,2026-04-09,bulletin-09-04-2026-91.pdf,37.18092791780382,26.40,1379.000
+1,THEIN DAM,527.910,515.625,2.344,1.446,09.04.2026,61.69,17.58,38.93,348.000,600.000,2026-04-09,bulletin-09-04-2026-91.pdf,61.689419795221845,38.93,600.000
+2,PONG DAM,423.670,406.630,6.157,2.323,09.04.2026,37.72,12.29,27.35,0.000,396.000,2026-04-09,bulletin-09-04-2026-91.pdf,37.72941367549131,27.35,396.000
+1,GOBIND SAGAR,512.000,486.884,6.229,2.295,16.04.2026,36.85,19.48,26.23,676.000,1379.000,2026-04-16,bulletin-16-04-2026-91.pdf,36.84379515170974,26.23,1379.000
+1,THEIN DAM,527.910,517.527,2.344,1.568,16.04.2026,66.89,23.25,40.23,348.000,600.000,2026-04-16,bulletin-16-04-2026-91.pdf,66.89419795221843,40.23,600.000
+2,PONG DAM,423.670,406.980,6.157,2.382,16.04.2026,38.69,11.95,27.53,0.000,396.000,2026-04-16,bulletin-16-04-2026-91.pdf,38.687672567809,27.53,396.000
+1,GOBIND SAGAR,512.000,486.217,6.229,2.232,23.04.2026,35.84,20.73,26.37,676.000,1379.000,2026-04-23,bulletin-23-04-2026-92.pdf,35.83239685342752,26.37,1379.000
+1,THEIN DAM,527.910,518.346,2.344,1.599,23.04.2026,68.22,24.87,42.29,348.000,600.000,2026-04-23,bulletin-23-04-2026-92.pdf,68.21672354948805,42.29,600.000
+2,PONG DAM,423.670,406.990,6.157,2.383,23.04.2026,38.70,11.76,27.32,0.000,396.000,2026-04-23,bulletin-23-04-2026-92.pdf,38.703914243949974,27.32,396.000
+1,GOBIND SAGAR,512.000,485.504,6.229,2.165,30.04.2026,34.76,20.03,25.48,676.000,1379.000,2026-04-30,bulletin-30-04-2026-94.pdf,34.75678279017499,25.48,1379.000
+1,THEIN DAM,527.910,518.470,2.344,1.599,30.04.2026,68.22,29.65,43.03,348.000,600.000,2026-04-30,bulletin-30-04-2026-94.pdf,68.21672354948805,43.03,600.000
+2,PONG DAM,423.670,406.750,6.157,2.343,30.04.2026,38.05,11.68,26.81,0.000,396.000,2026-04-30,bulletin-30-04-2026-94.pdf,38.05424719831086,26.81,396.000
+1,GOBIND SAGAR,512.000,484.379,6.229,2.059,07.05.2026,33.05,20.38,24.08,676.000,1379.000,2026-05-07,bulletin-07-05-2026-95.pdf,33.05506501846203,24.08,1379.000
+1,THEIN DAM,527.910,517.890,2.344,1.568,07.05.2026,66.89,32.76,43.90,348.000,600.000,2026-05-07,bulletin-07-05-2026-95.pdf,66.89419795221843,43.90,600.000
+2,PONG DAM,423.670,406.500,6.157,2.301,07.05.2026,37.37,11.69,26.15,0.000,396.000,2026-05-07,bulletin-07-05-2026-95.pdf,37.372096800389805,26.15,396.000
+1,GOBIND SAGAR,512.000,483.596,6.229,1.985,14.05.2026,31.87,21.42,23.07,676.000,1379.000,2026-05-14,bulletin-14-05-2026-96.pdf,31.867073366511477,23.07,1379.000
+1,THEIN DAM,527.910,517.472,2.344,1.568,14.05.2026,66.89,35.92,43.85,348.000,600.000,2026-05-14,bulletin-14-05-2026-96.pdf,66.89419795221843,43.85,600.000
+2,PONG DAM,423.670,406.310,6.157,2.269,14.05.2026,36.85,11.71,25.11,0.000,396.000,2026-05-14,bulletin-14-05-2026-96.pdf,36.852363163878515,25.11,396.000
+1,GOBIND SAGAR,512.000,482.480,6.229,1.880,21.05.2026,30.17,21.23,21.74,676.000,1379.000,2026-05-21,bulletin-21-05-2026-98.pdf,30.181409536041098,21.74,1379.000
+1,THEIN DAM,527.910,516.302,2.344,1.507,21.05.2026,64.29,36.95,43.60,348.000,600.000,2026-05-21,bulletin-21-05-2026-98.pdf,64.29180887372013,43.60,600.000
+2,PONG DAM,423.670,406.050,6.157,2.226,21.05.2026,36.16,11.68,24.11,0.000,396.000,2026-05-21,bulletin-21-05-2026-98.pdf,36.153971089816466,24.11,396.000
+1,GOBIND SAGAR,512.000,482.111,6.229,1.845,29.05.2026,29.62,22.27,22.34,676.000,1379.000,2026-05-29,bulletin-29-05-2026-99.pdf,29.619521592550967,22.34,1379.000
+1,THEIN DAM,527.910,514.735,2.344,1.386,29.05.2026,59.13,42.15,44.84,348.000,600.000,2026-05-29,bulletin-29-05-2026-99.pdf,59.129692832764505,44.84,600.000
+2,PONG DAM,423.670,405.740,6.157,2.174,29.05.2026,35.31,12.41,23.28,0.000,396.000,2026-05-29,bulletin-29-05-2026-99.pdf,35.30940393048562,23.28,396.000
+1,GOBIND SAGAR,512.000,482.110,6.229,1.844,04.06.2026,29.60,22.17,23.04,676.000,1379.000,2026-06-04,bulletin-04-06-2026-101.pdf,29.603467651308396,23.04,1379.000
+1,THEIN DAM,527.910,512.610,2.344,1.263,04.06.2026,53.88,42.15,45.82,348.000,600.000,2026-06-04,bulletin-04-06-2026-101.pdf,53.882252559726965,45.82,600.000
+2,PONG DAM,423.670,405.670,6.157,2.161,04.06.2026,35.10,12.48,22.23,0.000,396.000,2026-06-04,bulletin-04-06-2026-101.pdf,35.09826214065291,22.23,396.000
+1,GOBIND SAGAR,512.000,480.563,6.229,1.717,11.06.2026,27.57,20.17,24.13,676.000,1379.000,2026-06-11,bulletin-11-06-2026-105.pdf,27.564617113501367,24.13,1379.000
+1,THEIN DAM,527.910,510.240,2.344,1.111,11.06.2026,47.40,40.06,45.56,348.000,600.000,2026-06-11,bulletin-11-06-2026-105.pdf,47.39761092150171,45.56,600.000
+2,PONG DAM,423.670,404.540,6.157,1.613,11.06.2026,26.20,10.64,20.93,0.000,396.000,2026-06-11,bulletin-11-06-2026-105.pdf,26.19782361539711,20.93,396.000
+1,GOBIND SAGAR,512.000,478.637,6.229,1.571,18.06.2026,25.22,21.30,24.95,676.000,1379.000,2026-06-18,bulletin-18-06-2026-105.pdf,25.220741692085408,24.95,1379.000
+1,THEIN DAM,527.910,507.450,2.344,0.964,18.06.2026,41.13,38.05,44.59,348.000,600.000,2026-06-18,bulletin-18-06-2026-105.pdf,41.12627986348123,44.59,600.000
+2,PONG DAM,423.670,403.390,6.157,1.821,18.06.2026,29.57,9.29,19.29,0.000,396.000,2026-06-18,bulletin-18-06-2026-105.pdf,29.576092252720482,19.29,396.000
+1,GOBIND SAGAR,512.000,475.872,6.229,1.360,25.06.2026,21.84,23.25,24.55,676.000,1379.000,2026-06-25,bulletin-25-06-2026-107.pdf,21.833360089902072,24.55,1379.000
+1,THEIN DAM,527.910,504.760,2.344,0.842,25.06.2026,35.92,36.95,42.32,348.000,600.000,2026-06-25,bulletin-25-06-2026-107.pdf,35.92150170648464,42.32,600.000
+2,PONG DAM,423.670,402.450,6.157,1.684,25.06.2026,27.35,11.03,18.45,0.000,396.000,2026-06-25,bulletin-25-06-2026-107.pdf,27.350982621406526,18.45,396.000
+1,GOBIND SAGAR,512.000,475.473,6.229,1.330,02.07.2026,21.36,28.34,26.71,676.000,1379.000,2026-07-02,bulletin-02-07-2026-108.pdf,21.35174185262482,26.71,1379.000
+1,THEIN DAM,527.910,503.000,2.344,0.744,02.07.2026,31.74,35.92,41.43,348.000,600.000,2026-07-02,bulletin-02-07-2026-108.pdf,31.74061433447099,41.43,600.000
+2,PONG DAM,423.670,401.660,6.157,1.575,02.07.2026,25.58,24.86,20.36,0.000,396.000,2026-07-02,bulletin-02-07-2026-108.pdf,25.580639922039953,20.36,396.000
+1,GOBIND SAGAR,512.000,478.566,6.229,1.565,09.07.2026,25.13,33.11,30.52,676.000,1379.000,2026-07-09,bulletin-09-07-2026-108.pdf,25.124418044629955,30.52,1379.000
+1,THEIN DAM,527.910,502.200,2.344,0.744,09.07.2026,31.74,35.92,41.89,348.000,600.000,2026-07-09,bulletin-09-07-2026-108.pdf,31.74061433447099,41.89,600.000
+2,PONG DAM,423.670,402.170,6.157,1.645,09.07.2026,26.72,30.46,24.16,0.000,396.000,2026-07-09,bulletin-09-07-2026-108.pdf,26.717557251908396,24.16,396.000
+1,GOBIND SAGAR,512.000,482.300,6.229,1.863,16.07.2026,29.90,35.55,35.05,676.000,1379.000,2026-07-16,bulletin-16-07-2026-109.pdf,29.90849253491732,35.05,1379.000
+1,THEIN DAM,527.910,501.890,2.344,0.695,16.07.2026,29.65,36.95,45.61,348.000,600.000,2026-07-16,bulletin-16-07-2026-109.pdf,29.650170648464165,45.61,600.000
+2,PONG DAM,423.670,403.040,6.157,1.770,16.07.2026,28.75,33.10,28.26,0.000,396.000,2026-07-16,bulletin-16-07-2026-109.pdf,28.747766769530614,28.26,396.000
