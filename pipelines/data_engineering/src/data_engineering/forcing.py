@@ -16,13 +16,14 @@ import json
 from datetime import date
 
 import pandas as pd
+from pipelines_common.dataaccess import DataAccessBackend
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
 from data_engineering.openmeteo_forcing import (
     OpenMeteoForcingUnavailable,
     catchment_daily_forcing,
 )
-from pipelines_common.dataaccess import DataAccessBackend
-from sqlalchemy import text
-from sqlalchemy.orm import Session
 
 # §6.6 assets (lead sources per FR-DE-8/9, ADR notes).
 ERA5_LAND = "ECMWF/ERA5_LAND/DAILY_AGGR"
@@ -161,7 +162,10 @@ def aggregate_forcing(
                 "date": d.date(),
                 "catchment_precip": _none_if_nan(feats.at[d, "catchment_precip"]),
                 "antecedent_precip_index": _none_if_nan(
-                    feats["catchment_precip"].ewm(halflife=ANTECEDENT_HALFLIFE_DAYS, adjust=False).mean().at[d]
+                    feats["catchment_precip"]
+                    .ewm(halflife=ANTECEDENT_HALFLIFE_DAYS, adjust=False)
+                    .mean()
+                    .at[d]
                 ),
                 "snow_cover_area": _none_if_nan(feats.at[d, "snow_cover_area"]),
                 "swe": _none_if_nan(feats.at[d, "swe"]),

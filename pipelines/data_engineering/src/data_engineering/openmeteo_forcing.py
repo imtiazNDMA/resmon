@@ -32,7 +32,9 @@ def _cache_path(reservoir_id: str, start: date, end: date) -> Path:
     return _CACHE_ROOT / safe / f"{start.isoformat()}_{end.isoformat()}.json"
 
 
-def _samples(session: Session, reservoir_id: str, scale: int = 4, max_points: int = 80) -> list[dict]:
+def _samples(
+    session: Session, reservoir_id: str, scale: int = 4, max_points: int = 80
+) -> list[dict]:
     rows = (
         session.execute(
             text(
@@ -150,7 +152,9 @@ def catchment_daily_forcing(
 
     frames = []
     for item in responses:
-        daily = item.get("daily") if isinstance(item.get("daily"), dict) else {}
+        daily = item.get("daily")
+        if not isinstance(daily, dict):
+            continue
         if not daily.get("time"):
             continue
         frames.append(pd.DataFrame(daily).assign(sample_weight=1.0))

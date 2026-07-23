@@ -35,10 +35,14 @@ def _pearson(left: np.ndarray, right: np.ndarray) -> float:
 def _read_pairs(
     conn, reservoir_id: str, extraction_method: str, *, include_synthetic: bool
 ) -> pd.DataFrame:
-    synthetic_filter = "" if include_synthetic else """
+    synthetic_filter = (
+        ""
+        if include_synthetic
+        else """
               AND NOT ('synthetic' = ANY(m.scene_ids) OR 'stub' = ANY(m.scene_ids))
               AND m.extraction_method <> 'stub'
     """
+    )
     return pd.read_sql(
         text(
             f"""

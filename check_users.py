@@ -1,1 +1,0 @@
-﻿import sqlalchemy; engine = sqlalchemy.create_engine('postgresql+psycopg://postgres:postgres@localhost:55432/reservoir'); print([r[0] for r in engine.connect().execute(sqlalchemy.text('SELECT usename FROM pg_user'))])

@@ -47,9 +47,8 @@ def _with_curve_estimate(row, *, fill_missing: bool = True) -> dict:
     if area is not None and observed_range:
         area_min = observed_range.get("area_min")
         area_max = observed_range.get("area_max")
-        out["is_extrapolated"] = (
-            (area_min is not None and float(area) < float(area_min))
-            or (area_max is not None and float(area) > float(area_max))
+        out["is_extrapolated"] = (area_min is not None and float(area) < float(area_min)) or (
+            area_max is not None and float(area) > float(area_max)
         )
     if fill_missing and out.get("live_storage_bcm") is None and area is not None:
         out["live_storage_bcm"] = _polyval(out.get("storage_coeffs"), float(area))

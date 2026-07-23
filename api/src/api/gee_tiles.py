@@ -15,7 +15,6 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import httpx
-
 from core.config import get_settings
 
 _CACHE: OrderedDict[tuple[str, str, str], tuple[str, datetime]] = OrderedDict()

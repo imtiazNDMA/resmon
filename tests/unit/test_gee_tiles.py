@@ -57,7 +57,10 @@ def test_cache_is_bounded(monkeypatch):
     monkeypatch.setattr(gee_tiles, "_CACHE_MAX", 2)
 
     def fake_mint(scene_id: str):
-        return (f"https://tiles/{scene_id}/{{z}}/{{x}}/{{y}}", datetime.now(UTC) + timedelta(hours=3))
+        return (
+            f"https://tiles/{scene_id}/{{z}}/{{x}}/{{y}}",
+            datetime.now(UTC) + timedelta(hours=3),
+        )
 
     monkeypatch.setattr(gee_tiles, "mint_tile", fake_mint)
     gee_tiles.get_cached_tile("gobind_sagar", "2020-01-01", "S1A_1")
@@ -72,7 +75,10 @@ def test_disk_cache_loaded_without_remint(monkeypatch):
 
     def fake_mint(scene_id: str):
         calls.append(scene_id)
-        return (f"https://tiles/{scene_id}/{{z}}/{{x}}/{{y}}", datetime.now(UTC) + timedelta(hours=3))
+        return (
+            f"https://tiles/{scene_id}/{{z}}/{{x}}/{{y}}",
+            datetime.now(UTC) + timedelta(hours=3),
+        )
 
     monkeypatch.setattr(gee_tiles, "mint_tile", fake_mint)
     url1, _ = gee_tiles.get_cached_tile("pong", "2020-01-05", "S1A_DISK")
@@ -111,8 +117,12 @@ def test_raster_cache_loaded_without_refetch(monkeypatch, tmp_path):
 
     monkeypatch.setattr(gee_tiles.httpx, "Client", FakeClient)
 
-    first = gee_tiles.get_cached_raster("https://tiles/{z}/{x}/{y}", "pong", "2020-01-05", 8, 10, 20)
-    second = gee_tiles.get_cached_raster("https://tiles/{z}/{x}/{y}", "pong", "2020-01-05", 8, 10, 20)
+    first = gee_tiles.get_cached_raster(
+        "https://tiles/{z}/{x}/{y}", "pong", "2020-01-05", 8, 10, 20
+    )
+    second = gee_tiles.get_cached_raster(
+        "https://tiles/{z}/{x}/{y}", "pong", "2020-01-05", 8, 10, 20
+    )
 
     assert first == second == b"tile-bytes"
     assert calls == ["https://tiles/8/10/20"]

@@ -46,10 +46,14 @@ def load_candidate(path: Path) -> ModuleType:
 
 
 def read_pairs(conn, *, include_synthetic: bool = False) -> pd.DataFrame:
-    synthetic_filter = "" if include_synthetic else """
+    synthetic_filter = (
+        ""
+        if include_synthetic
+        else """
       AND NOT ('synthetic' = ANY(m.scene_ids) OR 'stub' = ANY(m.scene_ids))
       AND m.extraction_method <> 'stub'
     """
+    )
     return pd.read_sql(
         text(
             f"""

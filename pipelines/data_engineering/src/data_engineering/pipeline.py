@@ -13,7 +13,7 @@ table always reflects the same run's extractions.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -57,7 +57,7 @@ def run_de_pipeline(
     abt_version: str = "abt_v1",
     backend: DataAccessBackend | None = None,
     forcing_start: date = date(2025, 5, 1),
-    forcing_end: date = date(2026, 4, 30),
+    forcing_end: date | None = None,
     build_abt_stage: bool = True,
 ) -> dict:
     """Run the full DE spine. Returns a summary of row counts per stage.
@@ -70,6 +70,9 @@ def run_de_pipeline(
 
     seeded = seed_reservoirs(session)
     counts = ingest_bulletins(session, csv_path)
+    if forcing_end is None:
+        latest_ground_truth = session.execute(text("SELECT max(date) FROM ground_truth")).scalar_one()
+        forcing_end = max(date(2026, 4, 30), latest_ground_truth - timedelta(days=5))
     # Stub generation self-gates: reservoirs that already carry real (non-stub)
     # observations are skipped, and reruns can never overwrite a real row.
     stubs = generate_stub_observations(session)

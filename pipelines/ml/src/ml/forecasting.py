@@ -53,6 +53,8 @@ def _read_series(conn, abt_version: str) -> pd.DataFrame:
         conn,
         parse_dates=["date"],
     )
+
+
 def _observations_synthetic(conn) -> bool:
     """C5 provenance: True when any Observation row carries synthetic provenance —
     scene_ids containing 'synthetic'/'stub', or extraction_method = 'stub'. The bulletin

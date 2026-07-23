@@ -44,8 +44,7 @@ def test_ground_truthing_passes_ac2_and_backfills(session):
     assert n_flagged == 3
     metrics = conn.execute(
         text(
-            "SELECT fit_metrics FROM rating_curve "
-            "WHERE reservoir_id = 'gobind_sagar' AND is_active"
+            "SELECT fit_metrics FROM rating_curve WHERE reservoir_id = 'gobind_sagar' AND is_active"
         )
     ).scalar_one()
     assert metrics["n_pairs"] >= 5

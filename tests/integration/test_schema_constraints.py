@@ -23,7 +23,9 @@ def test_reservoir_updated_at_changes_on_raw_sql_update(conn, add_reservoir):
         text("SELECT updated_at FROM reservoir WHERE reservoir_id = :rid"), {"rid": rid}
     ).scalar_one()
     conn.execute(text("SELECT pg_sleep(0.01)"))
-    conn.execute(text("UPDATE reservoir SET name = 'updated' WHERE reservoir_id = :rid"), {"rid": rid})
+    conn.execute(
+        text("UPDATE reservoir SET name = 'updated' WHERE reservoir_id = :rid"), {"rid": rid}
+    )
     after = conn.execute(
         text("SELECT updated_at FROM reservoir WHERE reservoir_id = :rid"), {"rid": rid}
     ).scalar_one()

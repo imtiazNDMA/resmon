@@ -28,9 +28,7 @@ def upgrade() -> None:
         $$ LANGUAGE plpgsql;
         """
     )
-    op.execute(
-        "DROP TRIGGER IF EXISTS trg_reservoir_set_updated_at ON reservoir;"
-    )
+    op.execute("DROP TRIGGER IF EXISTS trg_reservoir_set_updated_at ON reservoir;")
     op.execute(
         """
         CREATE TRIGGER trg_reservoir_set_updated_at
