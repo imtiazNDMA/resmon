@@ -7,6 +7,7 @@ existing tile cache path.
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import os
 import sqlite3
@@ -30,6 +31,12 @@ class SarAsset:
     min_zoom: int
     max_zoom: int
     status: str
+    vv_size_bytes: int | None = None
+    vv_sha256: str | None = None
+    vh_size_bytes: int | None = None
+    vh_sha256: str | None = None
+    water_mask_size_bytes: int | None = None
+    water_mask_sha256: str | None = None
 
 
 @dataclass(frozen=True)
@@ -72,6 +79,7 @@ def init_catalog(db_path: Path = _CATALOG_PATH) -> None:
             )
             """
         )
+        _ensure_catalog_columns(conn)
 
 
 def upsert_asset(
@@ -98,8 +106,14 @@ def upsert_asset(
                 min_zoom,
                 max_zoom,
                 status,
+                vv_size_bytes,
+                vv_sha256,
+                vh_size_bytes,
+                vh_sha256,
+                water_mask_size_bytes,
+                water_mask_sha256,
                 updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             ON CONFLICT (reservoir_id, acquisition_date, scene_id) DO UPDATE SET
                 vv_path = excluded.vv_path,
                 vh_path = excluded.vh_path,
@@ -111,6 +125,12 @@ def upsert_asset(
                 min_zoom = excluded.min_zoom,
                 max_zoom = excluded.max_zoom,
                 status = excluded.status,
+                vv_size_bytes = excluded.vv_size_bytes,
+                vv_sha256 = excluded.vv_sha256,
+                vh_size_bytes = excluded.vh_size_bytes,
+                vh_sha256 = excluded.vh_sha256,
+                water_mask_size_bytes = excluded.water_mask_size_bytes,
+                water_mask_sha256 = excluded.water_mask_sha256,
                 updated_at = CURRENT_TIMESTAMP
             """,
             (
@@ -124,6 +144,12 @@ def upsert_asset(
                 asset.min_zoom,
                 asset.max_zoom,
                 asset.status,
+                asset.vv_size_bytes,
+                asset.vv_sha256,
+                asset.vh_size_bytes,
+                asset.vh_sha256,
+                asset.water_mask_size_bytes,
+                asset.water_mask_sha256,
             ),
         )
 
@@ -137,6 +163,7 @@ def find_asset(
     """Return a ready local asset if the files needed by ``composite`` exist."""
     if not db_path.exists():
         return None
+    init_catalog(db_path)
     with sqlite3.connect(db_path) as conn:
         conn.row_factory = sqlite3.Row
         row = conn.execute(
@@ -151,7 +178,7 @@ def find_asset(
     if row is None:
         return None
     asset = _row_to_asset(row)
-    return asset if _has_composite_files(asset, composite) else None
+    return asset if _has_composite_files(asset, composite) and validate_asset_files(asset) else None
 
 
 def list_manifest(
@@ -162,6 +189,7 @@ def list_manifest(
     db_path = db_path or _CATALOG_PATH
     if not db_path.exists():
         return []
+    init_catalog(db_path)
     where = "WHERE status = 'ready'"
     params: tuple[str, ...] = ()
     if reservoir_id is not None:
@@ -185,7 +213,7 @@ def list_manifest(
             for composite in ("vh", "vv", "false_color", "water_class", "vv_vh_contrast")
             if _has_composite_files(asset, composite)
         )
-        if composites:
+        if composites and validate_asset_files(asset):
             entries.append(
                 SarAssetManifestEntry(
                     reservoir_id=asset.reservoir_id,
@@ -296,6 +324,51 @@ def configure_rasterio_environment() -> None:
         os.environ["PROJ_LIB"] = str(proj_data)
 
 
+def file_metadata(path: Path) -> tuple[int, str]:
+    """Return byte size and SHA-256 for a local SAR raster."""
+    digest = hashlib.sha256()
+    size = 0
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            size += len(chunk)
+            digest.update(chunk)
+    return size, digest.hexdigest()
+
+
+def validate_asset_files(asset: SarAsset) -> bool:
+    """Check recorded size/checksum metadata against files on disk when present."""
+    checks = (
+        (asset.vv_path, asset.vv_size_bytes, asset.vv_sha256),
+        (asset.vh_path, asset.vh_size_bytes, asset.vh_sha256),
+        (asset.water_mask_path, asset.water_mask_size_bytes, asset.water_mask_sha256),
+    )
+    for path, expected_size, expected_sha in checks:
+        if path is None or expected_size is None or expected_sha is None:
+            continue
+        try:
+            actual_size, actual_sha = file_metadata(path)
+        except OSError:
+            return False
+        if actual_size != expected_size or actual_sha != expected_sha:
+            return False
+    return True
+
+
+def _ensure_catalog_columns(conn: sqlite3.Connection) -> None:
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(sar_asset)")}
+    columns = {
+        "vv_size_bytes": "INTEGER",
+        "vv_sha256": "TEXT",
+        "vh_size_bytes": "INTEGER",
+        "vh_sha256": "TEXT",
+        "water_mask_size_bytes": "INTEGER",
+        "water_mask_sha256": "TEXT",
+    }
+    for name, column_type in columns.items():
+        if name not in existing:
+            conn.execute(f"ALTER TABLE sar_asset ADD COLUMN {name} {column_type}")
+
+
 def _xyz_bounds_3857(z: int, x: int, y: int) -> tuple[float, float, float, float]:
     origin = 20037508.342789244
     tile_size = origin * 2 / (2**z)
@@ -339,11 +412,21 @@ def _row_to_asset(row: sqlite3.Row) -> SarAsset:
         min_zoom=int(row["min_zoom"]),
         max_zoom=int(row["max_zoom"]),
         status=str(row["status"]),
+        vv_size_bytes=_int_or_none(row["vv_size_bytes"]),
+        vv_sha256=row["vv_sha256"],
+        vh_size_bytes=_int_or_none(row["vh_size_bytes"]),
+        vh_sha256=row["vh_sha256"],
+        water_mask_size_bytes=_int_or_none(row["water_mask_size_bytes"]),
+        water_mask_sha256=row["water_mask_sha256"],
     )
 
 
 def _path_or_none(value: str | None) -> Path | None:
     return Path(value) if value else None
+
+
+def _int_or_none(value: int | None) -> int | None:
+    return int(value) if value is not None else None
 
 
 def _has_composite_files(asset: SarAsset, composite: str) -> bool:
