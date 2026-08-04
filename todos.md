@@ -180,6 +180,83 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 ---
 
+## Phase 8A — Hydrological Flow Visualization
+
+*Goal: turn HydroBASINS/HydroSHEDS catchments from static boundaries into an explainable upstream-to-reservoir flow view showing how rainfall and snowmelt contribute to reservoir rise and release-risk.*
+
+### 8A.1 Data Model + Contracts
+
+- [ ] Add hydrology attribution contract for sub-basins: `area_km2`, `upstream_area_km2`, `stream_order`, `distance_to_reservoir_km`, `routing_lag_days`, `precip_24h_mm`, `precip_7d_mm`, `snow_cover_pct`, `degree_day_melt_mm_day`, `contribution_score`
+- [ ] Add flowline contract for river/drainage network features clipped to each reservoir catchment
+- [ ] Decide v1 routing model: simple topology/routing-lag visualization first, no calibrated distributed hydrological model
+- [ ] Keep terminology aligned: rainfall/snowmelt are catchment-forcing features; they explain forecast/release-risk, not directly observed release events
+
+### 8A.2 Backend Persistence
+
+- [ ] Add `catchment_flowline` table keyed by `(reservoir_id, flowline_id)` with geometry, upstream area, stream order, downstream id, and provenance
+- [ ] Add optional hydrology columns or companion table for per-sub-basin time-varying forcing summaries
+- [ ] Add migration with PostGIS indexes for sub-basin and flowline geometries
+- [ ] Add repository queries for selected-reservoir hydrology GeoJSON
+
+### 8A.3 Data Extraction Pipeline
+
+- [ ] Clip HydroRIVERS/MERIT Hydro flowlines to each reservoir catchment
+- [ ] Derive sub-basin centroids and `NEXT_DOWN` topology edges from `catchment_subbasin`
+- [ ] Compute approximate downstream distance from each sub-basin to reservoir
+- [ ] Compute first-pass routing lag from distance/slope/stream order or configurable velocity assumptions
+- [ ] Aggregate catchment forcing per sub-basin where source resolution supports it
+- [ ] Fall back honestly to catchment-level forcing when per-sub-basin forcing is unavailable
+
+### 8A.4 API
+
+- [ ] Add `/geojson/subbasins/hydrology?reservoir_id={rid}&date={date}` endpoint
+- [ ] Add `/geojson/flowlines?reservoir_id={rid}` endpoint
+- [ ] Add `/geojson/flow-edges?reservoir_id={rid}&date={date}` endpoint for topology-derived animation paths
+- [ ] Add Pydantic GeoJSON property schemas for hydrology sub-basins, flowlines, and flow edges
+- [ ] Add API tests for empty-data degradation, selected-reservoir filtering, and stable GeoJSON shape
+
+### 8A.5 Frontend Map Layers
+
+- [ ] Add `HydrologySubBasinLayer` choropleth for rainfall, snowmelt, antecedent precipitation index, and contribution score
+- [ ] Add `FlowLineLayer` with river width proportional to upstream area / stream order
+- [ ] Add `FlowTransportLayer` for animated downstream movement from headwaters toward the selected reservoir
+- [ ] Add layer chips: `Rainfall`, `Snowmelt`, `Flow`, `Forecast impact`
+- [ ] Add legend for hydrology modes with units and data freshness
+- [ ] Add hover tooltips for sub-basins: basin id, 7d rainfall, snow cover, melt potential, lag, contribution score
+- [ ] Preserve existing catchment, sub-basin, water extent, and SAR tile layers
+
+### 8A.6 Animated Downstream Transport Plan
+
+- [ ] Build topology edges from each sub-basin centroid to its `next_down` sub-basin centroid; terminate at the reservoir marker when `next_down = 0` or exits the selected catchment
+- [ ] Start with centroid-to-centroid SVG polylines for the first implementation; later snap paths to HydroRIVERS/MERIT flowlines for more realistic river-following movement
+- [ ] Render static faint flow edges under animated pulses so direction remains visible when animation is paused or disabled
+- [ ] Render animated pulses moving downstream using SVG/CSS stroke animation or deterministic `requestAnimationFrame` interpolation along path length
+- [ ] Encode pulse width/opacity by `contribution_score`, with mode colors: rainfall blue, snowmelt cyan/white, forecast impact amber/purple
+- [ ] Offset pulse start time by `routing_lag_days` so distant headwater contribution visibly arrives later than near-reservoir contribution
+- [ ] Derive first-pass `routing_lag_days = distance_to_reservoir_km / assumed_flow_velocity_km_per_day`, clamped to a useful display range such as 0.25-7 days
+- [ ] Mark routing lag as a visualization/inflow proxy, not a calibrated hydrological process model
+- [ ] Respect `prefers-reduced-motion`: disable pulses and show static arrows/flow intensity instead
+- [ ] Keep the animation selected-reservoir scoped and mobile-safe; avoid rendering fleet-wide flow animations at once
+
+### 8A.7 Forecast/Release-Risk Integration
+
+- [ ] Add reservoir-side explanation panel: recent rainfall, snowmelt, lagged inflow proxy, and forecast fill response
+- [ ] Link highlighted contributing basins to release-risk contributing factors
+- [ ] Show expected arrival window for active upstream forcing
+- [ ] Avoid implying direct release-event observation; frame the layer as upstream forcing influencing the forecast trajectory and inherited release-risk
+
+### 8A.8 Verification
+
+- [ ] Unit-test topology edge derivation, headwater ordering, and routing-lag calculation
+- [ ] API contract tests for hydrology GeoJSON schemas
+- [ ] Frontend tests for layer toggles and reduced-motion fallback
+- [ ] Manual QA: Gobind Sagar, Pong, Thein render without blocking existing map layers
+- [ ] Performance check: selected reservoir map remains responsive with all hydrology layers enabled
+
+**Exit:** selected reservoir map can explain upstream rainfall/snowmelt transport using HydroBASINS/HydroSHEDS-derived topology, flowlines, animated downstream movement, and forecast-impact context without pretending to run a full physical hydrological model.
+
+---
+
 ## Phase 9 — Hardening & automation
 
 *Goal: the lights-out, observable, reproducible system.*
