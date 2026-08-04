@@ -44,10 +44,22 @@ export interface Acquisition {
   is_extrapolated: boolean;
 }
 
-/** Live EE tile template for one acquisition (`/reservoirs/{id}/sar-tiles`). */
+/** SAR tile template for one acquisition (`/reservoirs/{id}/sar-tiles`). */
 export interface SarTile {
   tile_url: string;
   expires_at: string;
+  composite: string;
+  source: "local" | "earth_engine";
+}
+
+export interface SarAssetManifestEntry {
+  reservoir_id: string;
+  acquisition_date: string;
+  scene_id: string;
+  composites: string[];
+  bounds: number[] | null;
+  min_zoom: number;
+  max_zoom: number;
 }
 
 /** One day of catchment rainfall (`/reservoirs/{id}/rainfall`). */
@@ -86,6 +98,12 @@ export interface WaterExtentProperties {
   name: string;
   surface_area_km2: number;
   acquisition_date: string;
+}
+
+/** Properties on `/geojson/districts` features. */
+export interface DistrictBoundaryProperties {
+  district_id: number;
+  bbox: number[];
 }
 
 /** Properties on `/geojson/reservoirs` marker features. */

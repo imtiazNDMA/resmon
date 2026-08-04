@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api, ApiError } from "./api";
+import type { SarCompositeId } from "./sarComposites";
 
 export const useMarkers = () =>
   useQuery({
@@ -23,6 +24,13 @@ export const useCatchment = () =>
     queryKey: ["catchment"],
     queryFn: ({ signal }) => api.catchment(signal),
     staleTime: Infinity, // catchment geometry is static, same contract as useAoi
+  });
+
+export const useDistricts = () =>
+  useQuery({
+    queryKey: ["districts"],
+    queryFn: ({ signal }) => api.districts(signal),
+    staleTime: Infinity,
   });
 
 export const useWaterExtent = () =>
@@ -49,16 +57,16 @@ export const useAcquisitions = (rid: string | null) =>
     staleTime: 10 * 60_000,
   });
 
-export const sarTileQuery = (rid: string, date: string) => ({
-  queryKey: ["sarTile", rid, date],
-  queryFn: ({ signal }: { signal: AbortSignal }) => api.sarTile(rid, date, signal),
+export const sarTileQuery = (rid: string, date: string, composite: SarCompositeId) => ({
+  queryKey: ["sarTile", rid, date, composite],
+  queryFn: ({ signal }: { signal: AbortSignal }) => api.sarTile(rid, date, composite, signal),
   staleTime: 3 * 60 * 60_000, // matches the server-side mint TTL
   retry: (count: number, err: Error) => !(err instanceof ApiError && err.status === 503) && count < 2,
 });
 
-export const useSarTile = (rid: string | null, date: string | null) =>
+export const useSarTile = (rid: string | null, date: string | null, composite: SarCompositeId) =>
   useQuery({
-    ...sarTileQuery(rid ?? "", date ?? ""),
+    ...sarTileQuery(rid ?? "", date ?? "", composite),
     enabled: rid !== null && date !== null,
   });
 

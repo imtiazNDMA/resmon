@@ -70,7 +70,9 @@ def list_reservoirs(s: Session) -> list[dict]:
         s.execute(
             text(
                 "SELECT reservoir_id, name, basin, frl_m, live_capacity_bcm, is_active "
-                "FROM reservoir ORDER BY reservoir_id"
+                "FROM reservoir "
+                "WHERE frl_m IS NOT NULL AND live_capacity_bcm IS NOT NULL "
+                "ORDER BY reservoir_id"
             )
         )
         .mappings()
@@ -84,7 +86,9 @@ def get_reservoir(s: Session, rid: str) -> dict | None:
         s.execute(
             text(
                 "SELECT reservoir_id, name, basin, frl_m, live_capacity_bcm, orbit_relative, "
-                "pass_direction, aoi_version, is_active FROM reservoir WHERE reservoir_id = :r"
+                "pass_direction, aoi_version, is_active FROM reservoir "
+                "WHERE reservoir_id = :r "
+                "AND frl_m IS NOT NULL AND live_capacity_bcm IS NOT NULL"
             ),
             {"r": rid},
         )
@@ -515,6 +519,7 @@ def reservoir_features(s: Session) -> list[dict]:
                 SELECT risk_level, release_probability FROM release_risk
                 WHERE reservoir_id = r.reservoir_id ORDER BY run_timestamp DESC LIMIT 1
             ) rr ON true
+            WHERE r.frl_m IS NOT NULL AND r.live_capacity_bcm IS NOT NULL
             ORDER BY r.reservoir_id
             """
             )

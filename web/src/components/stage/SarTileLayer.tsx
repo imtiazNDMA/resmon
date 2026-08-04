@@ -3,18 +3,25 @@ import L from "leaflet";
 import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import { useSarTile } from "../../lib/queries";
-import type { ReservoirId } from "../../lib/store";
+import { useAppStore, type ReservoirId } from "../../lib/store";
 
 /** Crossfading Sentinel-1 tile pair: on each date change the new layer fades in
  *  over the old one, then the old layer is removed (spec: scrub crossfade 300ms). */
 export default function SarTileLayer(props: { rid: ReservoirId; date: string | null }) {
   const map = useMap();
+  const composite = useAppStore((s) => s.sarComposite);
   const currentRef = useRef<L.TileLayer | null>(null);
-  const { data, error } = useSarTile(props.rid, props.date);
+  const { data, error } = useSarTile(props.rid, props.date, composite);
 
   useEffect(() => {
     if (!data?.tile_url) return;
-    const next = L.tileLayer(data.tile_url, { opacity: 0, maxZoom: 14, pane: "overlayPane" });
+    const next = L.tileLayer(data.tile_url, {
+      opacity: 0.18,
+      maxZoom: 14,
+      pane: "overlayPane",
+      updateWhenIdle: false,
+      keepBuffer: 3,
+    });
     next.addTo(map);
     const prev = currentRef.current;
     currentRef.current = next;
@@ -34,15 +41,18 @@ export default function SarTileLayer(props: { rid: ReservoirId; date: string | n
       },
     });
     const startFade = () => {
+      if (loaded) return;
       loaded = true;
       tween.play();
     };
+    next.once("tileload", startFade);
     next.once("load", startFade);
     const fallback = window.setTimeout(() => {
       if (!loaded) startFade();
-    }, 1200);
+    }, 250);
     return () => {
       window.clearTimeout(fallback);
+      next.off("tileload", startFade);
       next.off("load", startFade);
       tween.kill();
       if (map.hasLayer(next)) next.setOpacity(0.85);

@@ -20,21 +20,21 @@ def clear_cache(monkeypatch, tmp_path):
 def test_cache_hit_within_ttl(monkeypatch):
     calls = []
 
-    def fake_mint(scene_id: str):
-        calls.append(scene_id)
+    def fake_mint(scene_id: str, composite: str = gee_tiles.DEFAULT_COMPOSITE):
+        calls.append((scene_id, composite))
         return ("https://tiles/x/{z}/{x}/{y}", datetime.now(UTC) + timedelta(hours=3))
 
     monkeypatch.setattr(gee_tiles, "mint_tile", fake_mint)
     url1, _ = gee_tiles.get_cached_tile("gobind_sagar", "2020-01-05", "S1A_X")
     url2, _ = gee_tiles.get_cached_tile("gobind_sagar", "2020-01-05", "S1A_X")
     assert url1 == url2
-    assert calls == ["S1A_X"]  # second call served from cache
+    assert calls == [("S1A_X", "vh")]  # second call served from cache
 
 
 def test_expired_entry_reminted(monkeypatch):
     when = [datetime.now(UTC) - timedelta(minutes=1)]  # already expired
 
-    def fake_mint(scene_id: str):
+    def fake_mint(scene_id: str, composite: str = gee_tiles.DEFAULT_COMPOSITE):
         return ("https://tiles/x/{z}/{x}/{y}", when[0])
 
     monkeypatch.setattr(gee_tiles, "mint_tile", fake_mint)
@@ -45,7 +45,7 @@ def test_expired_entry_reminted(monkeypatch):
 
 
 def test_gee_unavailable_raises(monkeypatch):
-    def broken_mint(scene_id: str):
+    def broken_mint(scene_id: str, composite: str = gee_tiles.DEFAULT_COMPOSITE):
         raise gee_tiles.GeeUnavailable("no credentials")
 
     monkeypatch.setattr(gee_tiles, "mint_tile", broken_mint)
@@ -56,9 +56,9 @@ def test_gee_unavailable_raises(monkeypatch):
 def test_cache_is_bounded(monkeypatch):
     monkeypatch.setattr(gee_tiles, "_CACHE_MAX", 2)
 
-    def fake_mint(scene_id: str):
+    def fake_mint(scene_id: str, composite: str = gee_tiles.DEFAULT_COMPOSITE):
         return (
-            f"https://tiles/{scene_id}/{{z}}/{{x}}/{{y}}",
+            f"https://tiles/{scene_id}/{composite}/{{z}}/{{x}}/{{y}}",
             datetime.now(UTC) + timedelta(hours=3),
         )
 
@@ -67,16 +67,16 @@ def test_cache_is_bounded(monkeypatch):
     gee_tiles.get_cached_tile("gobind_sagar", "2020-01-02", "S1A_2")
     gee_tiles.get_cached_tile("gobind_sagar", "2020-01-03", "S1A_3")
     assert len(gee_tiles._CACHE) == 2
-    assert ("gobind_sagar", "2020-01-01", "S1A_1") not in gee_tiles._CACHE
+    assert ("gobind_sagar", "2020-01-01", "S1A_1", "vh") not in gee_tiles._CACHE
 
 
 def test_disk_cache_loaded_without_remint(monkeypatch):
     calls = []
 
-    def fake_mint(scene_id: str):
-        calls.append(scene_id)
+    def fake_mint(scene_id: str, composite: str = gee_tiles.DEFAULT_COMPOSITE):
+        calls.append((scene_id, composite))
         return (
-            f"https://tiles/{scene_id}/{{z}}/{{x}}/{{y}}",
+            f"https://tiles/{scene_id}/{composite}/{{z}}/{{x}}/{{y}}",
             datetime.now(UTC) + timedelta(hours=3),
         )
 
@@ -88,7 +88,26 @@ def test_disk_cache_loaded_without_remint(monkeypatch):
     url2, _ = gee_tiles.get_cached_tile("pong", "2020-01-05", "S1A_DISK")
 
     assert url1 == url2
-    assert calls == ["S1A_DISK"]
+    assert calls == [("S1A_DISK", "vh")]
+
+
+def test_cache_separates_composites(monkeypatch):
+    calls = []
+
+    def fake_mint(scene_id: str, composite: str = gee_tiles.DEFAULT_COMPOSITE):
+        calls.append((scene_id, composite))
+        return (
+            f"https://tiles/{scene_id}/{composite}/{{z}}/{{x}}/{{y}}",
+            datetime.now(UTC) + timedelta(hours=3),
+        )
+
+    monkeypatch.setattr(gee_tiles, "mint_tile", fake_mint)
+
+    vh, _ = gee_tiles.get_cached_tile("pong", "2020-01-05", "S1A_COMP", "vh")
+    vv, _ = gee_tiles.get_cached_tile("pong", "2020-01-05", "S1A_COMP", "vv")
+
+    assert vh != vv
+    assert calls == [("S1A_COMP", "vh"), ("S1A_COMP", "vv")]
 
 
 def test_raster_cache_loaded_without_refetch(monkeypatch, tmp_path):
@@ -118,11 +137,32 @@ def test_raster_cache_loaded_without_refetch(monkeypatch, tmp_path):
     monkeypatch.setattr(gee_tiles.httpx, "Client", FakeClient)
 
     first = gee_tiles.get_cached_raster(
-        "https://tiles/{z}/{x}/{y}", "pong", "2020-01-05", 8, 10, 20
+        "https://tiles/{z}/{x}/{y}", "pong", "2020-01-05", "vh", 8, 10, 20
     )
     second = gee_tiles.get_cached_raster(
-        "https://tiles/{z}/{x}/{y}", "pong", "2020-01-05", 8, 10, 20
+        "https://tiles/{z}/{x}/{y}", "pong", "2020-01-05", "vh", 8, 10, 20
     )
 
     assert first == second == b"tile-bytes"
     assert calls == ["https://tiles/8/10/20"]
+
+
+def test_cached_raster_content_reads_without_fetch(monkeypatch, tmp_path):
+    monkeypatch.setattr(gee_tiles, "_RASTER_CACHE_ROOT", tmp_path / "rasters")
+    path = gee_tiles._raster_path("pong", "2020-01-05", "vh", 8, 10, 20)
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"cached-tile")
+
+    assert (
+        gee_tiles.get_cached_raster_content("pong", "2020-01-05", "vh", 8, 10, 20)
+        == b"cached-tile"
+    )
+    assert gee_tiles.get_cached_raster_content("pong", "2020-01-05", "vh", 8, 10, 21) is None
+
+
+def test_put_cached_raster_content_persists_tile(monkeypatch, tmp_path):
+    monkeypatch.setattr(gee_tiles, "_RASTER_CACHE_ROOT", tmp_path / "rasters")
+
+    gee_tiles.put_cached_raster_content("pong", "2020-01-05", "vh", 8, 10, 20, b"rendered")
+
+    assert gee_tiles.get_cached_raster_content("pong", "2020-01-05", "vh", 8, 10, 20) == b"rendered"

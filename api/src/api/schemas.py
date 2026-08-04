@@ -85,6 +85,18 @@ class CurrentEstimateOut(BaseModel):
 class SarTileOut(BaseModel):
     tile_url: str
     expires_at: str
+    composite: str
+    source: Literal["local", "earth_engine"]
+
+
+class SarAssetManifestEntryOut(BaseModel):
+    reservoir_id: str
+    acquisition_date: date
+    scene_id: str
+    composites: list[str]
+    bounds: list[float] | None
+    min_zoom: int
+    max_zoom: int
 
 
 class RainfallPointOut(BaseModel):
@@ -177,6 +189,11 @@ class WaterExtentProperties(BaseModel):
     name: str
     surface_area_km2: float
     acquisition_date: date
+
+
+class DistrictBoundaryProperties(BaseModel):
+    district_id: int
+    bbox: list[float]
 
 
 class ReservoirMarkerProperties(BaseModel):
