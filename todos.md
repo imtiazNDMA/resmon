@@ -180,25 +180,106 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 ---
 
-## Phase 8A — Hydrological Flow Visualization
+## Phase 8A — Expert Hydrologic Map Foundations
+
+*Goal: create a HydroSHEDS-style hydrologic map for each dam/reservoir that is scientifically defensible, visually legible, and ready to support downstream flow animation and forecast explanation.*
+
+### 8A.1 GIS/Hydrology Design Decisions
+
+- [ ] Define the map products: fleet overview, selected-reservoir catchment view, printable/exportable static hydrologic map, and interactive analysis map
+- [ ] Select authoritative source hierarchy: MERIT Hydro for dam-specific contributing area and routing where available; HydroBASINS/HydroSHEDS for basin display units; HydroRIVERS/MERIT lines for drainage visualization
+- [ ] Choose HydroBASINS levels per use case: level 5-6 for national/regional context, level 7 for reservoir catchment overview, level 8-9 only for zoomed analysis if performance permits
+- [ ] Record that HydroBASINS polygons are cartographic/aggregation units; true contributing area should be validated against MERIT Hydro flow direction/accumulation and published basin areas
+- [ ] Define hydrologic styling rules before implementation: upstream catchment boundary, sub-basin hierarchy, main stem, tributaries, reservoir waterbody, dam point, and transboundary/context boundaries
+- [ ] Define acceptable simplification tolerances by zoom/export scale so drainage structure remains legible without distorting catchment topology
+
+### 8A.2 Required Datasets
+
+- [ ] DEM/elevation: use MERIT DEM or SRTM/Copernicus DEM for terrain, hillshade, slope, aspect, and elevation tint
+- [ ] Basin polygons: HydroBASINS `HYBAS_ID`, `NEXT_DOWN`, `MAIN_BAS`, area, and Pfafstetter/topology attributes where available
+- [ ] Flow network: HydroRIVERS or MERIT Hydro-derived stream vectors with upstream area, stream order, and main-stem/tributary classification
+- [ ] Reservoir geometry: JRC Global Surface Water max extent, existing AOI polygons, latest Sentinel-1 water extent, and dam/reservoir points
+- [ ] Hydromet context for dynamic maps: ERA5-Land precipitation/temperature/SWE, GPM IMERG cross-check precipitation, MODIS snow cover, GLDAS snow variables where useful, and NOAA GFS forecast forcing
+- [ ] Political/context layers: country/state/district boundaries and major settlements only at low opacity so hydrology remains primary
+- [ ] Provenance metadata for every layer: source dataset, version/date, resolution, processing date, simplification tolerance, projection, and known limitations
+
+### 8A.3 Data Preparation Pipeline
+
+- [ ] Build a reproducible `prepare_hydrologic_map_layers` pipeline step separate from live SAR extraction
+- [ ] Reproject and validate all source geometries to WGS84 for web serving; use equal-area projection for area/length calculations before returning to WGS84
+- [ ] Derive DEM hillshade, slope, and elevation color raster tiles for the pilot region
+- [ ] Delineate or validate each reservoir's upstream contributing area from the dam point using MERIT Hydro flow direction/accumulation where possible
+- [ ] Clip HydroBASINS sub-basins to each validated reservoir catchment and retain `HYBAS_ID`/`NEXT_DOWN` topology
+- [ ] Clip drainage network to each reservoir catchment and classify streams by Strahler/order or upstream contributing area
+- [ ] Compute sub-basin summary attributes: area, mean/min/max elevation, mean slope, distance to reservoir, upstream/downstream ids, headwater flag, and downstream path length
+- [ ] Compute flowline summary attributes: length, order, upstream area, main-stem flag, downstream id, and whether it intersects/terminates near the reservoir
+- [ ] Generate multiple geometry resolutions: raw/internal, web-simplified, and export-quality
+- [ ] Store layer-preparation quality flags: invalid geometry repaired, clipped slivers removed, missing topology, disconnected flowline, and low-confidence catchment boundary
+
+### 8A.4 Database + API Contracts
+
+- [ ] Add or extend tables for persistent hydrologic map layers: `catchment_subbasin`, `catchment_flowline`, `catchment_terrain_tile`, and `hydrologic_layer_provenance`
+- [ ] Keep static map attributes separate from time-varying forcing so base cartography can be cached indefinitely
+- [ ] Add spatial indexes and reservoir-scoped indexes for all hydrologic map tables
+- [ ] Add `/geojson/hydrologic/subbasins?reservoir_id={rid}&resolution=web|export` endpoint
+- [ ] Add `/geojson/hydrologic/flowlines?reservoir_id={rid}&min_order={n}` endpoint
+- [ ] Add `/tiles/hydrologic/terrain/{z}/{x}/{y}` or equivalent static terrain tile endpoint if local terrain tiles are generated
+- [ ] Add `/hydrologic/layers/provenance?reservoir_id={rid}` endpoint so users can inspect source versions and limitations
+- [ ] Add typed Pydantic and TypeScript contracts for all hydrologic map properties
+
+### 8A.5 Cartographic Rendering
+
+- [ ] Add a terrain/hillshade basemap option under the existing satellite and street layers
+- [ ] Render catchment boundary with a strong but non-water color so it reads as a drainage divide, not a river
+- [ ] Render HydroBASINS sub-basins with subtle elevation/physiographic tint and hover emphasis
+- [ ] Render rivers with width proportional to upstream area or stream order; show only major streams at low zoom and progressively reveal tributaries at higher zoom
+- [ ] Render reservoir waterbody and current SAR water extent distinctly: max extent as muted outline, current extent as high-confidence water fill
+- [ ] Add labels/tooltips for dam point, reservoir name, basin name, main stem, and selected sub-basin statistics
+- [ ] Add a professional legend explaining terrain tint, stream hierarchy, catchment boundary, reservoir extent, and data source/date
+- [ ] Add print/export-friendly styling for static PNG/PDF map exports later, but keep v1 focused on interactive Leaflet rendering
+
+### 8A.6 Hydrologic QA + Validation
+
+- [ ] Compare computed catchment area for Gobind Sagar, Pong, and Thein against published basin/catchment area references
+- [ ] Verify dam point placement relative to flow accumulation and reservoir outlet; correct with manual snap/override if the point falls off-network
+- [ ] Check that upstream traversal includes known transboundary headwaters where hydrologically correct
+- [ ] Check that flowlines terminate consistently at or upstream of each reservoir, not downstream of the dam
+- [ ] Check for disconnected tributaries, reversed lines, duplicate flowlines, basin slivers, and invalid polygons
+- [ ] Visually QA each reservoir map at overview, catchment, and tributary zoom levels
+- [ ] Document limitations: HydroBASINS resolution, dam-not-at-outlet issue, DEM voids/errors, glacier/snow uncertainty, and rainfall/snow product limitations in high mountains
+
+### 8A.7 Implementation Order
+
+- [ ] Milestone 1: static selected-reservoir map with terrain, catchment boundary, dam point, reservoir extent, and major rivers
+- [ ] Milestone 2: HydroBASINS sub-basin hierarchy with topology-aware hover and legend
+- [ ] Milestone 3: flowline hierarchy with stream-order/upstream-area styling and zoom-dependent detail
+- [ ] Milestone 4: provenance panel and QA flags surfaced in the UI
+- [ ] Milestone 5: export-quality map snapshot path for reports/situation briefings
+- [ ] Milestone 6: handoff to Phase 8B animated flow visualization using the validated topology and flowline layers
+
+**Exit:** each pilot reservoir has a defensible HydroSHEDS-style hydrologic map: shaded terrain, validated upstream catchment, HydroBASINS sub-basins, hierarchical drainage network, reservoir extent, dam point, legend, provenance, and QA notes.
+
+---
+
+## Phase 8B — Hydrological Flow Visualization
 
 *Goal: turn HydroBASINS/HydroSHEDS catchments from static boundaries into an explainable upstream-to-reservoir flow view showing how rainfall and snowmelt contribute to reservoir rise and release-risk.*
 
-### 8A.1 Data Model + Contracts
+### 8B.1 Data Model + Contracts
 
 - [ ] Add hydrology attribution contract for sub-basins: `area_km2`, `upstream_area_km2`, `stream_order`, `distance_to_reservoir_km`, `routing_lag_days`, `precip_24h_mm`, `precip_7d_mm`, `snow_cover_pct`, `degree_day_melt_mm_day`, `contribution_score`
 - [ ] Add flowline contract for river/drainage network features clipped to each reservoir catchment
 - [ ] Decide v1 routing model: simple topology/routing-lag visualization first, no calibrated distributed hydrological model
 - [ ] Keep terminology aligned: rainfall/snowmelt are catchment-forcing features; they explain forecast/release-risk, not directly observed release events
 
-### 8A.2 Backend Persistence
+### 8B.2 Backend Persistence
 
 - [ ] Add `catchment_flowline` table keyed by `(reservoir_id, flowline_id)` with geometry, upstream area, stream order, downstream id, and provenance
 - [ ] Add optional hydrology columns or companion table for per-sub-basin time-varying forcing summaries
 - [ ] Add migration with PostGIS indexes for sub-basin and flowline geometries
 - [ ] Add repository queries for selected-reservoir hydrology GeoJSON
 
-### 8A.3 Data Extraction Pipeline
+### 8B.3 Data Extraction Pipeline
 
 - [ ] Clip HydroRIVERS/MERIT Hydro flowlines to each reservoir catchment
 - [ ] Derive sub-basin centroids and `NEXT_DOWN` topology edges from `catchment_subbasin`
@@ -207,7 +288,7 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 - [ ] Aggregate catchment forcing per sub-basin where source resolution supports it
 - [ ] Fall back honestly to catchment-level forcing when per-sub-basin forcing is unavailable
 
-### 8A.4 API
+### 8B.4 API
 
 - [ ] Add `/geojson/subbasins/hydrology?reservoir_id={rid}&date={date}` endpoint
 - [ ] Add `/geojson/flowlines?reservoir_id={rid}` endpoint
@@ -215,7 +296,7 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 - [ ] Add Pydantic GeoJSON property schemas for hydrology sub-basins, flowlines, and flow edges
 - [ ] Add API tests for empty-data degradation, selected-reservoir filtering, and stable GeoJSON shape
 
-### 8A.5 Frontend Map Layers
+### 8B.5 Frontend Map Layers
 
 - [ ] Add `HydrologySubBasinLayer` choropleth for rainfall, snowmelt, antecedent precipitation index, and contribution score
 - [ ] Add `FlowLineLayer` with river width proportional to upstream area / stream order
@@ -225,7 +306,7 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 - [ ] Add hover tooltips for sub-basins: basin id, 7d rainfall, snow cover, melt potential, lag, contribution score
 - [ ] Preserve existing catchment, sub-basin, water extent, and SAR tile layers
 
-### 8A.6 Animated Downstream Transport Plan
+### 8B.6 Animated Downstream Transport Plan
 
 - [ ] Build topology edges from each sub-basin centroid to its `next_down` sub-basin centroid; terminate at the reservoir marker when `next_down = 0` or exits the selected catchment
 - [ ] Start with centroid-to-centroid SVG polylines for the first implementation; later snap paths to HydroRIVERS/MERIT flowlines for more realistic river-following movement
@@ -238,14 +319,14 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 - [ ] Respect `prefers-reduced-motion`: disable pulses and show static arrows/flow intensity instead
 - [ ] Keep the animation selected-reservoir scoped and mobile-safe; avoid rendering fleet-wide flow animations at once
 
-### 8A.7 Forecast/Release-Risk Integration
+### 8B.7 Forecast/Release-Risk Integration
 
 - [ ] Add reservoir-side explanation panel: recent rainfall, snowmelt, lagged inflow proxy, and forecast fill response
 - [ ] Link highlighted contributing basins to release-risk contributing factors
 - [ ] Show expected arrival window for active upstream forcing
 - [ ] Avoid implying direct release-event observation; frame the layer as upstream forcing influencing the forecast trajectory and inherited release-risk
 
-### 8A.8 Verification
+### 8B.8 Verification
 
 - [ ] Unit-test topology edge derivation, headwater ordering, and routing-lag calculation
 - [ ] API contract tests for hydrology GeoJSON schemas
