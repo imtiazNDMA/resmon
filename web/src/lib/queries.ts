@@ -26,6 +26,20 @@ export const useCatchment = () =>
     staleTime: Infinity, // catchment geometry is static, same contract as useAoi
   });
 
+export const useSubBasins = () =>
+  useQuery({
+    queryKey: ["subbasins"],
+    queryFn: ({ signal }) => api.subbasins(signal),
+    staleTime: Infinity, // basin geometry is static, same contract as useCatchment
+  });
+
+export const useFlowEdges = () =>
+  useQuery({
+    queryKey: ["flowEdges"],
+    queryFn: ({ signal }) => api.flowEdges(signal),
+    staleTime: Infinity, // topology-derived geometry changes only when catchments refresh
+  });
+
 export const useDistricts = () =>
   useQuery({
     queryKey: ["districts"],

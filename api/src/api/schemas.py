@@ -193,6 +193,24 @@ class CatchmentProperties(BaseModel):
     version: str | None
 
 
+class SubBasinProperties(BaseModel):
+    reservoir_id: str
+    hybas_id: int
+    next_down: int
+    is_headwater: bool
+    version: str
+
+
+class FlowEdgeProperties(BaseModel):
+    reservoir_id: str
+    from_hybas_id: int
+    to_hybas_id: int | None
+    is_headwater: bool
+    distance_to_reservoir_km: float | None
+    routing_lag_days: float | None
+    version: str
+
+
 class WaterExtentProperties(BaseModel):
     reservoir_id: str
     name: str

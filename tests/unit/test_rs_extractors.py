@@ -27,7 +27,7 @@ from remote_sensing.extractors import (
     otsu_from_histogram,
     valley_ratio,
 )
-from remote_sensing.gee_real import GeeExtractionError, _upstream_basin_ids
+from remote_sensing.gee_real import GeeExtractionError, _headwater_ids, _upstream_basin_ids
 from remote_sensing.harness import regime_mae, select_robust
 from remote_sensing.pipeline import synth_scene
 from scipy.ndimage import uniform_filter
@@ -237,6 +237,35 @@ def test_upstream_traversal_collects_all_upstream_basins():
     assert _upstream_basin_ids(basins, 1) == {1, 2, 4, 5, 6}
     assert _upstream_basin_ids(basins, 2) == {2, 4, 5}
     assert _upstream_basin_ids(basins, 7) == {7, 1, 2, 4, 5, 6}  # everything drains in
+
+
+def test_headwater_ids_are_the_basins_nothing_drains_into():
+    #   4   5
+    #    \ /
+    # 6   2
+    #  \ /
+    #   1 -> 7 -> 0
+    basins = [
+        _basin(1, 7),
+        _basin(2, 1),
+        _basin(4, 2),
+        _basin(5, 2),
+        _basin(6, 1),
+        _basin(7, 0),
+    ]
+    upstream = _upstream_basin_ids(basins, 1)  # {1, 2, 4, 5, 6}
+    assert _headwater_ids(basins, upstream) == {4, 5, 6}
+    # Seeding higher up re-classifies: 2's own feeders are now the top of the catchment.
+    assert _headwater_ids(basins, _upstream_basin_ids(basins, 2)) == {4, 5}
+
+
+def test_headwater_ids_ignore_feeders_outside_the_catchment():
+    # 3 drains into 2, but 2 is downstream of the seed, so neither is in the catchment
+    # and 3 must not suppress anything. A lone seed is its own headwater.
+    basins = [_basin(1, 2), _basin(2, 0), _basin(3, 2)]
+    upstream = _upstream_basin_ids(basins, 1)
+    assert upstream == {1}
+    assert _headwater_ids(basins, upstream) == {1}
 
 
 def test_upstream_traversal_is_cycle_safe_and_bounded():

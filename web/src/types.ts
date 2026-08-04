@@ -92,6 +92,28 @@ export interface CatchmentProperties {
   version: string | null;
 }
 
+/** Properties on `/geojson/subbasins` features — the un-dissolved form of the catchment.
+ *  `is_headwater` marks a basin nothing drains into, i.e. the upper catchment. */
+export interface SubBasinProperties {
+  reservoir_id: string;
+  hybas_id: number;
+  next_down: number;
+  is_headwater: boolean;
+  version: string;
+}
+
+/** Properties on `/geojson/flow-edges` features — topology-derived display paths
+ *  from each sub-basin toward its downstream neighbour or the dam point. */
+export interface FlowEdgeProperties {
+  reservoir_id: string;
+  from_hybas_id: number;
+  to_hybas_id: number | null;
+  is_headwater: boolean;
+  distance_to_reservoir_km: number | null;
+  routing_lag_days: number | null;
+  version: string;
+}
+
 /** Properties on `/geojson/water-extent` features (latest real SAR mask per reservoir). */
 export interface WaterExtentProperties {
   reservoir_id: string;

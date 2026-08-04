@@ -186,35 +186,35 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 ### 8A.1 GIS/Hydrology Design Decisions
 
-- [ ] Define the map products: fleet overview, selected-reservoir catchment view, printable/exportable static hydrologic map, and interactive analysis map
-- [ ] Select authoritative source hierarchy: MERIT Hydro for dam-specific contributing area and routing where available; HydroBASINS/HydroSHEDS for basin display units; HydroRIVERS/MERIT lines for drainage visualization
-- [ ] Choose HydroBASINS levels per use case: level 5-6 for national/regional context, level 7 for reservoir catchment overview, level 8-9 only for zoomed analysis if performance permits
-- [ ] Record that HydroBASINS polygons are cartographic/aggregation units; true contributing area should be validated against MERIT Hydro flow direction/accumulation and published basin areas
-- [ ] Define hydrologic styling rules before implementation: upstream catchment boundary, sub-basin hierarchy, main stem, tributaries, reservoir waterbody, dam point, and transboundary/context boundaries
-- [ ] Define acceptable simplification tolerances by zoom/export scale so drainage structure remains legible without distorting catchment topology
+- [x] Define the map products: fleet overview, selected-reservoir catchment view, printable/exportable static hydrologic map, and interactive analysis map — ADR-0008 + `hydrologicMapPolicy.ts`
+- [x] Select authoritative source hierarchy: MERIT Hydro for dam-specific contributing area and routing where available; HydroBASINS/HydroSHEDS for basin display units; HydroRIVERS/MERIT lines for drainage visualization — ADR-0008 + `HYDROLOGIC_SOURCE_HIERARCHY`
+- [x] Choose HydroBASINS levels per use case: level 5-6 for national/regional context, level 7 for reservoir catchment overview, level 8-9 only for zoomed analysis if performance permits — `HYDROBASINS_LEVEL_POLICY`
+- [x] Record that HydroBASINS polygons are cartographic/aggregation units; true contributing area should be validated against MERIT Hydro flow direction/accumulation and published basin areas — ADR-0008 + `HYDROBASINS_CARTOGRAPHIC_WARNING`
+- [x] Define hydrologic styling rules before implementation: upstream catchment boundary, sub-basin hierarchy, main stem, tributaries, reservoir waterbody, dam point, and transboundary/context boundaries — `HYDROLOGIC_LAYER_STYLES`
+- [x] Define acceptable simplification tolerances by zoom/export scale so drainage structure remains legible without distorting catchment topology — `HYDROLOGIC_SIMPLIFICATION_POLICY`
 
 ### 8A.2 Required Datasets
 
-- [ ] DEM/elevation: use MERIT DEM or SRTM/Copernicus DEM for terrain, hillshade, slope, aspect, and elevation tint
-- [ ] Basin polygons: HydroBASINS `HYBAS_ID`, `NEXT_DOWN`, `MAIN_BAS`, area, and Pfafstetter/topology attributes where available
-- [ ] Flow network: HydroRIVERS or MERIT Hydro-derived stream vectors with upstream area, stream order, and main-stem/tributary classification
-- [ ] Reservoir geometry: JRC Global Surface Water max extent, existing AOI polygons, latest Sentinel-1 water extent, and dam/reservoir points
-- [ ] Hydromet context for dynamic maps: ERA5-Land precipitation/temperature/SWE, GPM IMERG cross-check precipitation, MODIS snow cover, GLDAS snow variables where useful, and NOAA GFS forecast forcing
-- [ ] Political/context layers: country/state/district boundaries and major settlements only at low opacity so hydrology remains primary
-- [ ] Provenance metadata for every layer: source dataset, version/date, resolution, processing date, simplification tolerance, projection, and known limitations
+- [x] DEM/elevation: use MERIT DEM or SRTM/Copernicus DEM for terrain, hillshade, slope, aspect, and elevation tint — `hydrologic-map-datasets.md` + `hydrologicDatasets.ts`
+- [x] Basin polygons: HydroBASINS `HYBAS_ID`, `NEXT_DOWN`, `MAIN_BAS`, area, and Pfafstetter/topology attributes where available — dataset catalog requires topology fields
+- [x] Flow network: HydroRIVERS or MERIT Hydro-derived stream vectors with upstream area, stream order, and main-stem/tributary classification — dataset catalog requires stream order/upstream area/downstream id
+- [x] Reservoir geometry: JRC Global Surface Water max extent, existing AOI polygons, latest Sentinel-1 water extent, and dam/reservoir points — dataset catalog separates max extent from current SAR extent
+- [x] Hydromet context for dynamic maps: ERA5-Land precipitation/temperature/SWE, GPM IMERG cross-check precipitation, MODIS snow cover, GLDAS snow variables where useful, and NOAA GFS forecast forcing — dataset catalog records primary/cross-check roles
+- [x] Political/context layers: country/state/district boundaries and major settlements only at low opacity so hydrology remains primary — dataset catalog marks context-only layers
+- [x] Provenance metadata for every layer: source dataset, version/date, resolution, processing date, simplification tolerance, projection, and known limitations — `layer_provenance` contract added
 
 ### 8A.3 Data Preparation Pipeline
 
-- [ ] Build a reproducible `prepare_hydrologic_map_layers` pipeline step separate from live SAR extraction
+- [~] Build a reproducible `prepare_hydrologic_map_layers` pipeline step separate from live SAR extraction — pure prep spine added in `remote_sensing.hydrologic_map`; external DEM/flowline extraction still open
 - [ ] Reproject and validate all source geometries to WGS84 for web serving; use equal-area projection for area/length calculations before returning to WGS84
 - [ ] Derive DEM hillshade, slope, and elevation color raster tiles for the pilot region
 - [ ] Delineate or validate each reservoir's upstream contributing area from the dam point using MERIT Hydro flow direction/accumulation where possible
 - [ ] Clip HydroBASINS sub-basins to each validated reservoir catchment and retain `HYBAS_ID`/`NEXT_DOWN` topology
 - [ ] Clip drainage network to each reservoir catchment and classify streams by Strahler/order or upstream contributing area
-- [ ] Compute sub-basin summary attributes: area, mean/min/max elevation, mean slope, distance to reservoir, upstream/downstream ids, headwater flag, and downstream path length
+- [~] Compute sub-basin summary attributes: area, mean/min/max elevation, mean slope, distance to reservoir, upstream/downstream ids, headwater flag, and downstream path length — topology-derived headwater/downstream path length implemented; DEM/elevation/area enrichment still open
 - [ ] Compute flowline summary attributes: length, order, upstream area, main-stem flag, downstream id, and whether it intersects/terminates near the reservoir
-- [ ] Generate multiple geometry resolutions: raw/internal, web-simplified, and export-quality
-- [ ] Store layer-preparation quality flags: invalid geometry repaired, clipped slivers removed, missing topology, disconnected flowline, and low-confidence catchment boundary
+- [x] Generate multiple geometry resolutions: raw/internal, web-simplified, and export-quality — `GEOMETRY_RESOLUTIONS` policy added
+- [~] Store layer-preparation quality flags: invalid geometry repaired, clipped slivers removed, missing topology, disconnected flowline, and low-confidence catchment boundary — topology flags added (`duplicate_hybas_id`, `missing_downstream`, `cycle_detected`, `outlet_basin`); geometry/flowline QA still open
 
 ### 8A.4 Database + API Contracts
 
@@ -269,22 +269,22 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 - [ ] Add hydrology attribution contract for sub-basins: `area_km2`, `upstream_area_km2`, `stream_order`, `distance_to_reservoir_km`, `routing_lag_days`, `precip_24h_mm`, `precip_7d_mm`, `snow_cover_pct`, `degree_day_melt_mm_day`, `contribution_score`
 - [ ] Add flowline contract for river/drainage network features clipped to each reservoir catchment
-- [ ] Decide v1 routing model: simple topology/routing-lag visualization first, no calibrated distributed hydrological model
-- [ ] Keep terminology aligned: rainfall/snowmelt are catchment-forcing features; they explain forecast/release-risk, not directly observed release events
+- [x] Decide v1 routing model: simple topology/routing-lag visualization first, no calibrated distributed hydrological model
+- [x] Keep terminology aligned: rainfall/snowmelt are catchment-forcing features; they explain forecast/release-risk, not directly observed release events
 
 ### 8B.2 Backend Persistence
 
 - [ ] Add `catchment_flowline` table keyed by `(reservoir_id, flowline_id)` with geometry, upstream area, stream order, downstream id, and provenance
 - [ ] Add optional hydrology columns or companion table for per-sub-basin time-varying forcing summaries
 - [ ] Add migration with PostGIS indexes for sub-basin and flowline geometries
-- [ ] Add repository queries for selected-reservoir hydrology GeoJSON
+- [x] Add repository queries for selected-reservoir hydrology GeoJSON — first slice: topology-derived `/geojson/flow-edges`
 
 ### 8B.3 Data Extraction Pipeline
 
 - [ ] Clip HydroRIVERS/MERIT Hydro flowlines to each reservoir catchment
-- [ ] Derive sub-basin centroids and `NEXT_DOWN` topology edges from `catchment_subbasin`
-- [ ] Compute approximate downstream distance from each sub-basin to reservoir
-- [ ] Compute first-pass routing lag from distance/slope/stream order or configurable velocity assumptions
+- [x] Derive sub-basin centroids and `NEXT_DOWN` topology edges from `catchment_subbasin`
+- [x] Compute approximate downstream distance from each sub-basin to reservoir
+- [x] Compute first-pass routing lag from distance/slope/stream order or configurable velocity assumptions — first slice uses distance / 75 km/day, clamped 0.25-7 days
 - [ ] Aggregate catchment forcing per sub-basin where source resolution supports it
 - [ ] Fall back honestly to catchment-level forcing when per-sub-basin forcing is unavailable
 
@@ -292,32 +292,32 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 - [ ] Add `/geojson/subbasins/hydrology?reservoir_id={rid}&date={date}` endpoint
 - [ ] Add `/geojson/flowlines?reservoir_id={rid}` endpoint
-- [ ] Add `/geojson/flow-edges?reservoir_id={rid}&date={date}` endpoint for topology-derived animation paths
-- [ ] Add Pydantic GeoJSON property schemas for hydrology sub-basins, flowlines, and flow edges
-- [ ] Add API tests for empty-data degradation, selected-reservoir filtering, and stable GeoJSON shape
+- [x] Add `/geojson/flow-edges?reservoir_id={rid}&date={date}` endpoint for topology-derived animation paths — implemented as `/geojson/flow-edges` fleet collection, frontend filters by selected reservoir
+- [x] Add Pydantic GeoJSON property schemas for hydrology sub-basins, flowlines, and flow edges — first slice covers sub-basins and flow edges
+- [~] Add API tests for empty-data degradation, selected-reservoir filtering, and stable GeoJSON shape — flow-edge contract test added; local run skipped without DB fixture
 
 ### 8B.5 Frontend Map Layers
 
 - [ ] Add `HydrologySubBasinLayer` choropleth for rainfall, snowmelt, antecedent precipitation index, and contribution score
 - [ ] Add `FlowLineLayer` with river width proportional to upstream area / stream order
-- [ ] Add `FlowTransportLayer` for animated downstream movement from headwaters toward the selected reservoir
-- [ ] Add layer chips: `Rainfall`, `Snowmelt`, `Flow`, `Forecast impact`
+- [x] Add `FlowTransportLayer` for animated downstream movement from headwaters toward the selected reservoir — implemented as `FlowEdgeLayer` on topology-derived paths
+- [~] Add layer chips: `Rainfall`, `Snowmelt`, `Flow`, `Forecast impact` — first slice adds `Flow paths`
 - [ ] Add legend for hydrology modes with units and data freshness
-- [ ] Add hover tooltips for sub-basins: basin id, 7d rainfall, snow cover, melt potential, lag, contribution score
-- [ ] Preserve existing catchment, sub-basin, water extent, and SAR tile layers
+- [~] Add hover tooltips for sub-basins: basin id, 7d rainfall, snow cover, melt potential, lag, contribution score — first slice adds flow-path tooltips with basin id, distance, and lag proxy
+- [x] Preserve existing catchment, sub-basin, water extent, and SAR tile layers
 
 ### 8B.6 Animated Downstream Transport Plan
 
-- [ ] Build topology edges from each sub-basin centroid to its `next_down` sub-basin centroid; terminate at the reservoir marker when `next_down = 0` or exits the selected catchment
-- [ ] Start with centroid-to-centroid SVG polylines for the first implementation; later snap paths to HydroRIVERS/MERIT flowlines for more realistic river-following movement
-- [ ] Render static faint flow edges under animated pulses so direction remains visible when animation is paused or disabled
-- [ ] Render animated pulses moving downstream using SVG/CSS stroke animation or deterministic `requestAnimationFrame` interpolation along path length
+- [x] Build topology edges from each sub-basin centroid to its `next_down` sub-basin centroid; terminate at the reservoir marker when `next_down = 0` or exits the selected catchment
+- [x] Start with centroid-to-centroid SVG polylines for the first implementation; later snap paths to HydroRIVERS/MERIT flowlines for more realistic river-following movement
+- [x] Render static faint flow edges under animated pulses so direction remains visible when animation is paused or disabled
+- [x] Render animated pulses moving downstream using SVG/CSS stroke animation or deterministic `requestAnimationFrame` interpolation along path length
 - [ ] Encode pulse width/opacity by `contribution_score`, with mode colors: rainfall blue, snowmelt cyan/white, forecast impact amber/purple
-- [ ] Offset pulse start time by `routing_lag_days` so distant headwater contribution visibly arrives later than near-reservoir contribution
-- [ ] Derive first-pass `routing_lag_days = distance_to_reservoir_km / assumed_flow_velocity_km_per_day`, clamped to a useful display range such as 0.25-7 days
-- [ ] Mark routing lag as a visualization/inflow proxy, not a calibrated hydrological process model
-- [ ] Respect `prefers-reduced-motion`: disable pulses and show static arrows/flow intensity instead
-- [ ] Keep the animation selected-reservoir scoped and mobile-safe; avoid rendering fleet-wide flow animations at once
+- [x] Offset pulse start time by `routing_lag_days` so distant headwater contribution visibly arrives later than near-reservoir contribution
+- [x] Derive first-pass `routing_lag_days = distance_to_reservoir_km / assumed_flow_velocity_km_per_day`, clamped to a useful display range such as 0.25-7 days
+- [x] Mark routing lag as a visualization/inflow proxy, not a calibrated hydrological process model
+- [x] Respect `prefers-reduced-motion`: disable pulses and show static arrows/flow intensity instead
+- [x] Keep the animation selected-reservoir scoped and mobile-safe; avoid rendering fleet-wide flow animations at once
 
 ### 8B.7 Forecast/Release-Risk Integration
 
@@ -328,9 +328,9 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 ### 8B.8 Verification
 
-- [ ] Unit-test topology edge derivation, headwater ordering, and routing-lag calculation
-- [ ] API contract tests for hydrology GeoJSON schemas
-- [ ] Frontend tests for layer toggles and reduced-motion fallback
+- [~] Unit-test topology edge derivation, headwater ordering, and routing-lag calculation — API integration coverage added; pure unit extraction still open
+- [x] API contract tests for hydrology GeoJSON schemas
+- [~] Frontend tests for layer toggles and reduced-motion fallback — layer toggle covered; reduced-motion remains CSS/manual QA
 - [ ] Manual QA: Gobind Sagar, Pong, Thein render without blocking existing map layers
 - [ ] Performance check: selected reservoir map remains responsive with all hydrology layers enabled
 

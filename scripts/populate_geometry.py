@@ -1,6 +1,7 @@
 """Populate REAL map geometry from live GEE and commit it:
   - reservoir.aoi_geom        ← JRC Global Surface Water max-extent footprint (dam-connected)
   - reservoir.catchment_geom  ← HydroSHEDS HydroBASINS full upstream union
+  - catchment_subbasin rows   ← the same upstream set, un-dissolved, headwaters flagged
   - a real Sentinel-1 water-extent observation (water_mask_geom + true area), thresholded
     per scene (Otsu on the server-side VH histogram) with honest confidence
 
@@ -22,6 +23,7 @@ from remote_sensing.extractors import OtsuVH  # noqa: E402
 from remote_sensing.gee_real import (  # noqa: E402
     GeeExtractionError,
     delineate_catchment,
+    delineate_subbasins,
     derive_aoi,
     latest_water_extent,
 )
@@ -46,6 +48,20 @@ _UPD_RESERVOIR = text(
 )
 
 _SEL_ORBIT = text("SELECT orbit_relative, pass_direction FROM reservoir WHERE reservoir_id = :r")
+
+# Sub-basins are rewritten wholesale per reservoir: a re-delineation can drop or add
+# basins, so a delete-then-insert keeps the table in step with catchment_geom rather
+# than leaving orphans from an earlier run.
+_DEL_SUBBASINS = text("DELETE FROM catchment_subbasin WHERE reservoir_id = :r")
+_INS_SUBBASIN = text(
+    """
+    INSERT INTO catchment_subbasin
+      (reservoir_id, hybas_id, next_down, is_headwater, geom, catchment_version)
+    VALUES
+      (:r, :hybas_id, :next_down, :is_headwater,
+       ST_Multi(ST_GeomFromGeoJSON(:geom)), 'hybas7_v1')
+    """
+)
 
 # observation.layover_shadow_fraction is NOT NULL (core/src/core/models/observation.py),
 # and no DEM layover/shadow mask exists yet (deferred: needs GEE terrain execution).
@@ -82,6 +98,30 @@ def main() -> None:
             )
             s.execute(_UPD_RESERVOIR, {"r": m.slug, "aoi": json.dumps(aoi), "cat": json.dumps(cat)})
             s.commit()  # AOI/catchment are useful even if the S1 extraction below skips
+
+            # Sub-basins are a map nicety, not a pipeline input — a failure here must not
+            # cost the AOI/catchment/observation work already committed above.
+            print(f"[{m.slug}] HydroBASINS sub-basins ...", flush=True)
+            try:
+                subs = delineate_subbasins(m.dam_lon, m.dam_lat)
+            except GeeExtractionError as exc:
+                log.warning("[%s] skipping sub-basin write: %s", m.slug, exc)
+            else:
+                s.execute(_DEL_SUBBASINS, {"r": m.slug})
+                for b in subs:
+                    s.execute(
+                        _INS_SUBBASIN,
+                        {
+                            "r": m.slug,
+                            "hybas_id": b["hybas_id"],
+                            "next_down": b["next_down"],
+                            "is_headwater": b["is_headwater"],
+                            "geom": json.dumps(b["geom"]),
+                        },
+                    )
+                s.commit()
+                heads = sum(1 for b in subs if b["is_headwater"])
+                print(f"  OK {m.slug}: {len(subs)} sub-basins ({heads} headwater)", flush=True)
 
             # Frozen acquisition geometry comes from the reservoir config row (FR-RS-1).
             row = s.execute(_SEL_ORBIT, {"r": m.slug}).one_or_none()

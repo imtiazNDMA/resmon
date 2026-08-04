@@ -32,6 +32,7 @@ _CLEAN_TABLES = (
     "analytical_base_table",
     "forecast_forcing",
     "catchment_forcing",
+    "catchment_subbasin",
     "ground_truth",
     "rating_curve",
     "reservoir_capacity_history",
