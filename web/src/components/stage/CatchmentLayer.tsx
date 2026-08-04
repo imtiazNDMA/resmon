@@ -1,6 +1,9 @@
 import { GeoJSON } from "react-leaflet";
+import type { LeafletMouseEvent, Path } from "leaflet";
 import { useCatchment } from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
+
+const CATCHMENT_STYLE = { color: "#d9a45b", weight: 1.5, dashArray: "6 4", fillOpacity: 0.04 };
 
 /** Upstream catchment (HydroBASINS) for the selected reservoir. Dashed sand
  *  outline so it reads as a terrain boundary, not water. Degrades to nothing
@@ -16,7 +19,17 @@ export default function CatchmentLayer() {
     <GeoJSON
       key={`catchment-${selected}`}
       data={f}
-      style={{ color: "#d9a45b", weight: 1.5, dashArray: "6 4", fillOpacity: 0.04 }}
+      style={CATCHMENT_STYLE}
+      onEachFeature={(_, layer) => {
+        layer.on({
+          mouseover: (event: LeafletMouseEvent) => {
+            (event.target as Path).setStyle({ fillOpacity: 1 });
+          },
+          mouseout: (event: LeafletMouseEvent) => {
+            (event.target as Path).setStyle(CATCHMENT_STYLE);
+          },
+        });
+      }}
     />
   );
 }

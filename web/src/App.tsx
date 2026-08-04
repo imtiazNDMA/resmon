@@ -9,6 +9,7 @@ export default function App() {
   const view = useAppStore((s) => s.view);
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const didMountRef = useRef(false);
 
   // Cleanups revert (not just kill) the tweens: StrictMode double-mounts effects,
   // and a re-run gsap.from() would otherwise record the in-flight opacity-0 state
@@ -23,6 +24,10 @@ export default function App() {
 
   useEffect(() => {
     if (!stageRef.current) return;
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
     const tl = viewSwap(stageRef.current, view);
     return () => {
       tl.revert();

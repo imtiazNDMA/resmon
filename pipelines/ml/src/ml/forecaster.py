@@ -21,7 +21,26 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-FEATURES = ["current_pct", "rate", "doy_sin", "doy_cos", "normal_pct", "horizon", "log_capacity"]
+FORCING_FEATURES = [
+    "catchment_precip",
+    "antecedent_precip_index",
+    "snow_cover_area",
+    "swe",
+    "degree_day_melt",
+    "evaporation",
+    "forecast_precip",
+    "forecast_degree_day_melt",
+]
+FEATURES = [
+    "current_pct",
+    "rate",
+    "doy_sin",
+    "doy_cos",
+    "normal_pct",
+    *FORCING_FEATURES,
+    "horizon",
+    "log_capacity",
+]
 MAX_HORIZON = 14
 # Below this many calibration residuals a horizon falls back to the pooled halfwidth.
 _MIN_CAL_PER_HORIZON = 5
@@ -36,6 +55,10 @@ def build_examples(df: pd.DataFrame) -> pd.DataFrame:
         pct = g["pct_filled"].to_numpy(dtype=float)
         normal = g["normal_storage_pct"].to_numpy(dtype=float)
         cap = float(g["live_capacity_bcm"].iloc[0])
+        forcing = {
+            name: g[name].to_numpy(dtype=float) if name in g.columns else np.full(len(g), np.nan)
+            for name in FORCING_FEATURES
+        }
         for i in range(len(g)):
             if i == 0:
                 rate = 0.0
@@ -65,6 +88,7 @@ def build_examples(df: pd.DataFrame) -> pd.DataFrame:
                         "log_capacity": np.log(cap),
                         "normal_pct_target": norm_j,
                         "delta": pct[j] - pct[i],
+                        **{name: forcing[name][i] for name in FORCING_FEATURES},
                     }
                 )
     return pd.DataFrame(rows)
@@ -90,6 +114,7 @@ def finite_sample_quantile(abs_residuals: np.ndarray, coverage: float) -> float:
 class Forecaster:
     interval_quantile: float = 0.9
     model: object = field(default=None, repr=False)
+    active_features: list[str] = field(default_factory=lambda: FEATURES.copy())
     # Pooled (all-horizon) halfwidth — the fallback for thin per-horizon groups.
     conformal_halfwidth: float = 0.0
     # Per-horizon halfwidths keyed by the calibration horizons actually observed.
@@ -102,6 +127,8 @@ class Forecaster:
         # Small-data regime (§8.5): regularize hard so the model shrinks toward "no
         # change" when there's no real inflow signal, rather than over-predicting deltas
         # (which loses to persistence at short horizons).
+        x = ex[FEATURES]
+        self.active_features = [name for name in FEATURES if not x[name].isna().all()]
         self.model = HistGradientBoostingRegressor(
             max_depth=2,
             max_iter=80,
@@ -109,12 +136,16 @@ class Forecaster:
             min_samples_leaf=20,
             l2_regularization=1.0,
             random_state=0,
-        ).fit(ex[FEATURES], ex["delta"])
+        ).fit(x[self.active_features], ex["delta"])
         self.trained_horizons = sorted(int(h) for h in ex["horizon"].unique())
         return self
 
     def predict_delta(self, ex: pd.DataFrame) -> np.ndarray:
-        return self.model.predict(ex[FEATURES])  # type: ignore[attr-defined]
+        x = ex.copy()
+        for name in self.active_features:
+            if name not in x.columns:
+                x[name] = np.nan
+        return self.model.predict(x[self.active_features])  # type: ignore[attr-defined]
 
     def conformalize(self, ex_cal: pd.DataFrame) -> None:
         """Split-conformal calibration with PER-HORIZON halfwidths.
@@ -167,7 +198,10 @@ class Forecaster:
         return pred_pct, pred_pct - hw, pred_pct + hw
 
     def predict_fill_trajectory(
-        self, base_features: dict, horizons: Sequence[int]
+        self,
+        base_features: dict,
+        horizons: Sequence[int],
+        horizon_features: dict[int, dict] | None = None,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Serve arbitrary (daily) horizons honestly from a weekly-trained model.
 
@@ -184,7 +218,15 @@ class Forecaster:
         """
         if not self.trained_horizons:
             raise ValueError("fit() must run before predict_fill_trajectory()")
-        anchor_rows = pd.DataFrame([{**base_features, "horizon": h} for h in self.trained_horizons])
+        horizon_features = horizon_features or {}
+
+        def row_for(h: int) -> dict:
+            row = {**base_features, **horizon_features.get(h, {}), "horizon": h}
+            for name in FORCING_FEATURES:
+                row.setdefault(name, np.nan)
+            return row
+
+        anchor_rows = pd.DataFrame([row_for(h) for h in self.trained_horizons])
         anchor_delta = self.predict_delta(anchor_rows)
         hs = np.asarray(list(horizons), dtype=float)
         delta = np.interp(

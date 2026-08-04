@@ -19,6 +19,21 @@ def test_release_risk_persists_per_reservoir(session):
     ingest_bulletins(session, DEFAULT_CSV)
     run_forecasting(session, version="fc_rel")
 
+    # Regression: release-risk must anchor to the saved prediction trajectory, not the
+    # latest bulletin available at risk time. A newer bulletin after forecasting used to
+    # shift base_date forward and filter every saved horizon out.
+    session.execute(
+        text(
+            """
+            INSERT INTO ground_truth
+              (reservoir_id, date, pct_filled, frl_m, live_capacity_bcm, normal_storage_pct)
+            SELECT reservoir_id, (SELECT max(date) FROM ground_truth) + INTERVAL '30 days',
+                   50.0, frl_m, live_capacity_bcm, 50.0
+            FROM reservoir
+            """
+        )
+    )
+
     res = run_release_risk(session, abt_version="abt_v1")
     assert res["count"] == 3
 

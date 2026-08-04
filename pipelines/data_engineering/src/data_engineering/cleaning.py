@@ -58,23 +58,40 @@ def quality_label(row: pd.Series) -> str:
     return "ok"
 
 
+def _source_column(raw: pd.DataFrame, name: str) -> pd.Series:
+    """Read a canonical bulletin column or the suffixed spreadsheet export variant."""
+    for candidate in (name, f"{name} - NAN"):
+        if candidate in raw:
+            return raw[candidate]
+    raise KeyError(f"missing bulletin column {name!r}")
+
+
 def clean_bulletins(raw: pd.DataFrame) -> pd.DataFrame:
     """Standardise the unified bulletin CSV (§6.2 columns) into the silver frame keyed
     by ``(reservoir_id, date)`` with a ``row_quality`` label. Unmatched names / dates
     are marked ``quarantine`` (kept, never silently dropped)."""
     df = pd.DataFrame(
         {
-            "bulletin_name": raw["RESERVOIR NAME"].map(canonical_name),
-            "date": raw["DATE"].map(parse_ist_date),
-            "level_m": pd.to_numeric(raw["CURRENT RESERVOIR LEVEL (M)"], errors="coerce"),
-            "live_storage_bcm": pd.to_numeric(raw["CURRENT LIVE STORAGE (BCM)"], errors="coerce"),
-            "pct_filled": pd.to_numeric(raw["pct_filled"], errors="coerce"),
-            "normal_storage_pct": pd.to_numeric(
-                raw["STORAGE AS % OF LIVE CAPACITY AT FRL - NORMAL STORAGE"], errors="coerce"
+            "bulletin_name": _source_column(raw, "RESERVOIR NAME").map(canonical_name),
+            "date": _source_column(raw, "DATE").map(parse_ist_date),
+            "level_m": pd.to_numeric(
+                _source_column(raw, "CURRENT RESERVOIR LEVEL (M)"), errors="coerce"
             ),
-            "benefits_irr_cca": pd.to_numeric(raw["BENEFITS - IRR-CCA"], errors="coerce"),
-            "benefits_hydel_mw": pd.to_numeric(raw["BENEFITS - HYDEL IN MW"], errors="coerce"),
-            "source_pdf": raw["SOURCE_PDF"],
+            "live_storage_bcm": pd.to_numeric(
+                _source_column(raw, "CURRENT LIVE STORAGE (BCM)"), errors="coerce"
+            ),
+            "pct_filled": pd.to_numeric(_source_column(raw, "pct_filled"), errors="coerce"),
+            "normal_storage_pct": pd.to_numeric(
+                _source_column(raw, "STORAGE AS % OF LIVE CAPACITY AT FRL - NORMAL STORAGE"),
+                errors="coerce",
+            ),
+            "benefits_irr_cca": pd.to_numeric(
+                _source_column(raw, "BENEFITS - IRR-CCA"), errors="coerce"
+            ),
+            "benefits_hydel_mw": pd.to_numeric(
+                _source_column(raw, "BENEFITS - HYDEL IN MW"), errors="coerce"
+            ),
+            "source_pdf": _source_column(raw, "SOURCE_PDF"),
         }
     )
     df["reservoir_id"] = df["bulletin_name"].map(

@@ -6,7 +6,7 @@ once per reservoir and cached (``data/backfill/aoi_<slug>.geojson``) so the seri
 geometry can never drift between runs.
 
 Run:  uv run python scripts/backfill_extraction.py [--reservoir SLUG] [--chunk-size N]
-      [--limit N]   (--limit is for smoke tests: process at most N scenes per reservoir)
+       [--limit N] [--reset]   (--limit is for smoke tests; --reset re-extracts a reservoir)
 """
 
 from __future__ import annotations
@@ -50,12 +50,16 @@ def append_rows(csv_path: Path, rows: list[dict]) -> None:
             writer.writerow({k: ("" if row.get(k) is None else row.get(k)) for k in CSV_COLUMNS})
 
 
-def run_reservoir(slug: str, chunk_size: int, limit: int | None) -> dict[str, int]:
+def run_reservoir(
+    slug: str, chunk_size: int, limit: int | None, *, reset: bool = False
+) -> dict[str, int]:
     meta = next(m for m in REGISTRY.values() if m.slug == slug)
     csv_path = OUT_DIR / f"area_series_{slug}.csv"
+    if reset and csv_path.exists():
+        csv_path.unlink()
     aoi = load_or_derive_aoi(slug, meta.dam_lon, meta.dam_lat, OUT_DIR)
 
-    ids = list_scene_ids(aoi, meta.orbit_relative, meta.pass_direction)
+    ids = list_scene_ids(aoi, meta.orbit_relative, meta.pass_direction, slug)
     done = done_scene_ids(csv_path)
     todo = [i for i in ids if i not in done]
     if limit is not None:
@@ -72,7 +76,7 @@ def run_reservoir(slug: str, chunk_size: int, limit: int | None) -> dict[str, in
     for start in range(0, len(todo), chunk_size):
         chunk = todo[start : start + chunk_size]
         t0 = time.monotonic()
-        results = process_chunk(aoi, meta.orbit_relative, meta.pass_direction, chunk)
+        results = process_chunk(aoi, meta.orbit_relative, meta.pass_direction, chunk, slug)
         append_rows(csv_path, [asdict(r) for r in results])
         for r in results:
             tally[r.status] = tally.get(r.status, 0) + 1
@@ -95,6 +99,11 @@ def main() -> int:
     parser.add_argument("--reservoir", choices=sorted(m.slug for m in REGISTRY.values()))
     parser.add_argument("--chunk-size", type=int, default=20)
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="discard the selected reservoir's existing area CSV and re-extract it",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -103,7 +112,7 @@ def main() -> int:
     slugs = [args.reservoir] if args.reservoir else sorted(m.slug for m in REGISTRY.values())
     grand = {"ok": 0, "abstain": 0, "error": 0}
     for slug in slugs:
-        tally = run_reservoir(slug, args.chunk_size, args.limit)
+        tally = run_reservoir(slug, args.chunk_size, args.limit, reset=args.reset)
         for k, v in tally.items():
             grand[k] = grand.get(k, 0) + v
     log.info("backfill pass complete: %s", grand)

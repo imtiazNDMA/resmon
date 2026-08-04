@@ -54,18 +54,73 @@ class TimeseriesPoint(BaseModel):
 
 class AcquisitionOut(BaseModel):
     date: str
+    historical_date: str | None
     area_km2: float
     confidence: float
+    live_storage_bcm: float | None
+    level_m: float | None
+    pct_filled: float | None
+    surface_area_correlation: float | None
+    is_extrapolated: bool
+
+
+class CurrentEstimateOut(BaseModel):
+    reservoir_id: str
+    acquisition_date: str
+    area_km2: float
+    confidence: float
+    live_storage_bcm: float
+    level_m: float
+    pct_filled: float
+    is_extrapolated: bool
+    rating_curve_version: str | None
+    rating_curve_fit_type: str | None
+    catchment_precip: float | None
+    antecedent_precip_index: float | None
+    snow_cover_area: float | None
+    degree_day_melt: float | None
+    evaporation: float | None
 
 
 class SarTileOut(BaseModel):
     tile_url: str
     expires_at: str
+    composite: str
+    source: Literal["local", "earth_engine"]
+
+
+class SarAssetManifestEntryOut(BaseModel):
+    reservoir_id: str
+    acquisition_date: date
+    scene_id: str
+    composites: list[str]
+    bounds: list[float] | None
+    min_zoom: int
+    max_zoom: int
+
+
+class SarTileMetricsOut(BaseModel):
+    rendered_cache_hits: int
+    local_asset_hits: int
+    local_renders: int
+    earth_engine_fallbacks: int
+    tile_render_latency_ms_total: float
+    tile_render_latency_ms_avg: float
 
 
 class RainfallPointOut(BaseModel):
     date: str
     precip_mm: float | None
+
+
+class MetForcingOut(BaseModel):
+    reservoir_id: str
+    as_of: str | None
+    precip_7d_mm: float | None
+    antecedent_precip_index_mm: float | None
+    snow_cover_pct: float | None
+    degree_day_melt_mm_day: float | None
+    evaporation_mm_day: float | None
 
 
 # --- Forecast / risk --------------------------------------------------------------
@@ -143,6 +198,11 @@ class WaterExtentProperties(BaseModel):
     name: str
     surface_area_km2: float
     acquisition_date: date
+
+
+class DistrictBoundaryProperties(BaseModel):
+    district_id: int
+    bbox: list[float]
 
 
 class ReservoirMarkerProperties(BaseModel):

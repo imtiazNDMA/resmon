@@ -1,8 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { api, ApiError } from "./api";
+import type { SarCompositeId } from "./sarComposites";
 
 export const useMarkers = () =>
-  useQuery({ queryKey: ["markers"], queryFn: ({ signal }) => api.markers(signal) });
+  useQuery({
+    queryKey: ["markers"],
+    queryFn: ({ signal }) => api.markers(signal),
+    staleTime: 10 * 60_000,
+  });
+
+export const useReservoirs = () =>
+  useQuery({
+    queryKey: ["reservoirs"],
+    queryFn: ({ signal }) => api.reservoirs(signal),
+    staleTime: 10 * 60_000,
+  });
 
 export const useAoi = () =>
   useQuery({ queryKey: ["aoi"], queryFn: ({ signal }) => api.aoi(signal), staleTime: Infinity });
@@ -12,6 +24,13 @@ export const useCatchment = () =>
     queryKey: ["catchment"],
     queryFn: ({ signal }) => api.catchment(signal),
     staleTime: Infinity, // catchment geometry is static, same contract as useAoi
+  });
+
+export const useDistricts = () =>
+  useQuery({
+    queryKey: ["districts"],
+    queryFn: ({ signal }) => api.districts(signal),
+    staleTime: Infinity,
   });
 
 export const useWaterExtent = () =>
@@ -27,6 +46,7 @@ export const useStatus = (rid: string | null) =>
     queryFn: ({ signal }) => api.status(rid!, signal),
     enabled: rid !== null,
     refetchInterval: 90_000,
+    staleTime: 60_000,
   });
 
 export const useAcquisitions = (rid: string | null) =>
@@ -37,13 +57,17 @@ export const useAcquisitions = (rid: string | null) =>
     staleTime: 10 * 60_000,
   });
 
-export const useSarTile = (rid: string | null, date: string | null) =>
+export const sarTileQuery = (rid: string, date: string, composite: SarCompositeId) => ({
+  queryKey: ["sarTile", rid, date, composite],
+  queryFn: ({ signal }: { signal: AbortSignal }) => api.sarTile(rid, date, composite, signal),
+  staleTime: 3 * 60 * 60_000, // matches the server-side mint TTL
+  retry: (count: number, err: Error) => !(err instanceof ApiError && err.status === 503) && count < 2,
+});
+
+export const useSarTile = (rid: string | null, date: string | null, composite: SarCompositeId) =>
   useQuery({
-    queryKey: ["sarTile", rid, date],
-    queryFn: ({ signal }) => api.sarTile(rid!, date!, signal),
+    ...sarTileQuery(rid ?? "", date ?? "", composite),
     enabled: rid !== null && date !== null,
-    staleTime: 3 * 60 * 60_000, // matches the server-side mint TTL
-    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
   });
 
 export const useRainfall = (rid: string | null) =>
@@ -51,4 +75,13 @@ export const useRainfall = (rid: string | null) =>
     queryKey: ["rainfall", rid],
     queryFn: ({ signal }) => api.rainfall(rid!, signal),
     enabled: rid !== null,
+    staleTime: 10 * 60_000,
+  });
+
+export const useMetForcings = (rid: string | null) =>
+  useQuery({
+    queryKey: ["metForcings", rid],
+    queryFn: ({ signal }) => api.metForcings(rid!, signal),
+    enabled: rid !== null,
+    staleTime: 10 * 60_000,
   });

@@ -42,6 +42,14 @@ def test_ground_truthing_passes_ac2_and_backfills(session):
         )
     ).scalar_one()
     assert n_flagged == 3
+    metrics = conn.execute(
+        text(
+            "SELECT fit_metrics FROM rating_curve WHERE reservoir_id = 'gobind_sagar' AND is_active"
+        )
+    ).scalar_one()
+    assert metrics["n_pairs"] >= 5
+    assert 0.0 <= metrics["area_storage_pearson_r"] <= 1.0
+    assert 0.0 <= metrics["area_level_pearson_r"] <= 1.0
 
     # Pass-2 backfill landed on both the match table and observations.
     n_match_derived = conn.execute(

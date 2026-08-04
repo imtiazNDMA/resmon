@@ -64,4 +64,5 @@ class RatingCurve(Base):
             unique=True,
             postgresql_where=text("is_active"),
         ),
+        Index("idx_rating_curve_reservoir", "reservoir_id"),
     )

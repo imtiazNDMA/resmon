@@ -7,7 +7,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, Double, ForeignKey, Text, Uuid, func
+from sqlalchemy import CheckConstraint, DateTime, Double, ForeignKey, Index, Text, Uuid, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -38,4 +38,5 @@ class ReleaseRisk(Base):
             "release_probability >= 0 AND release_probability <= 1", name="ck_release_prob"
         ),
         CheckConstraint("risk_level IN ('Low','Watch','Warning','Imminent')", name="ck_risk_level"),
+        Index("idx_release_risk_model_version", "model_version_id"),
     )

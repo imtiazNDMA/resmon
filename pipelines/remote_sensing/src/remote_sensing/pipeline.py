@@ -9,6 +9,8 @@ confidence path runs end to end and emits non-stub Observations that replace the
 
 from __future__ import annotations
 
+import json
+
 import numpy as np
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -107,7 +109,12 @@ def run_rs_pipeline(session: Session, extractor_name: str = "otsu_vh") -> dict:
                     "pass_direction": pass_dir,
                     "aoi_version": aoi_version,
                     "layover_shadow_fraction": 0.0,
-                    "processing_params": f'{{"separability": {res.separability:.3f}}}',
+                    "processing_params": json.dumps(
+                        {
+                            "separability": res.separability,
+                            "provenance": "synthetic_framework",
+                        }
+                    ),
                 }
             )
     if rows:

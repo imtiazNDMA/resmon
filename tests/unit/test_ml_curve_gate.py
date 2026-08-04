@@ -18,12 +18,38 @@ def test_curve_fit_recovers_linear():
     # storage at area 60 = 6.0 BCM = 100% of capacity.
     assert fit.pct_filled_for_area(60.0) == pytest.approx(100.0, abs=1e-6)
     assert fit.is_extrapolated(50.0) is True  # above observed area_max=40
+    assert fit.is_extrapolated(5.0) is True  # below observed area_min=10
     assert fit.is_extrapolated(35.0) is False
 
 
 def test_curve_needs_enough_pairs():
     with pytest.raises(ValueError, match="need"):
         fit_empirical("r", "v", np.array([1.0]), np.array([1.0]), np.array([1.0]), 6.0)
+
+
+def test_curve_needs_unique_area_values():
+    with pytest.raises(ValueError, match="unique area"):
+        fit_empirical(
+            "r",
+            "v",
+            np.array([1.0, 1.0, 1.0]),
+            np.array([1.0, 1.2, 1.4]),
+            np.array([400.0, 401.0, 402.0]),
+            6.0,
+            degree=1,
+        )
+
+
+def test_curve_requires_positive_capacity():
+    with pytest.raises(ValueError, match="capacity_bcm"):
+        fit_empirical(
+            "r",
+            "v",
+            np.array([1.0, 2.0]),
+            np.array([1.0, 2.0]),
+            np.array([400.0, 401.0]),
+            0.0,
+        )
 
 
 def test_ac2_gate_pass_and_fail():

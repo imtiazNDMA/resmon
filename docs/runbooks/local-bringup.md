@@ -8,10 +8,10 @@ start.bat
 
 This: starts Postgres+PostGIS (Docker, host port **55432**), `uv sync`, applies
 migrations, runs the full pipeline to populate data (fixture backend — no GEE needed),
-then launches the API (`:18000`) and the web dashboard (`:5173`) and opens the browser.
+then launches the API (`:18001`) and the web dashboard (`:5173`) and opens the browser.
 
-- **Dashboard:** http://localhost:5173
-- **API + OpenAPI docs:** http://localhost:18000/docs
+- **Dashboard:** http://localhost:5173 or `http://<machine-ip>:5173`
+- **API + OpenAPI docs:** http://localhost:18001/docs or `http://<machine-ip>:18001/docs`
 - Re-running `start.bat` is safe (idempotent upserts).
 
 ## Manual / cross-platform
@@ -25,8 +25,8 @@ export DATA_ACCESS_BACKEND=fixture
 docker compose -f infra/compose/docker-compose.yml up -d postgres
 uv run alembic -c db/alembic.ini upgrade head
 uv run python scripts/bootstrap.py                       # populate (commits)
-uv run uvicorn api.main:app --port 18000 &               # API
-cd web && npm install && npm run dev                     # dashboard on :5173
+uv run uvicorn api.main:app --host 0.0.0.0 --port 18001 & # API
+cd web && npm install && npm run dev                     # dashboard on 0.0.0.0:5173
 ```
 
 ## Notes

@@ -2,14 +2,18 @@ import type {
   Acquisition,
   AoiProperties,
   CatchmentProperties,
+  DistrictBoundaryProperties,
   GeoFC,
+  MetForcing,
   RainfallPoint,
   Reservoir,
   ReservoirMarkerProperties,
+  SarAssetManifestEntry,
   SarTile,
   Status,
   WaterExtentProperties,
 } from "../types";
+import type { SarCompositeId } from "./sarComposites";
 
 const BASE = "/api";
 
@@ -33,14 +37,20 @@ export const api = {
   status: (rid: string, s?: AbortSignal) => getJson<Status>(`/reservoirs/${rid}/status`, s),
   acquisitions: (rid: string, s?: AbortSignal) =>
     getJson<Acquisition[]>(`/reservoirs/${rid}/acquisitions`, s),
-  sarTile: (rid: string, date: string, s?: AbortSignal) =>
-    getJson<SarTile>(`/reservoirs/${rid}/sar-tiles?date=${date}`, s),
+  sarTile: (rid: string, date: string, composite: SarCompositeId, s?: AbortSignal) =>
+    getJson<SarTile>(`/reservoirs/${rid}/sar-tiles?date=${date}&composite=${composite}`, s),
+  sarAssets: (rid: string, s?: AbortSignal) =>
+    getJson<SarAssetManifestEntry[]>(`/reservoirs/${rid}/sar-assets`, s),
   rainfall: (rid: string, s?: AbortSignal) =>
     getJson<RainfallPoint[]>(`/reservoirs/${rid}/rainfall?window=90`, s),
+  metForcings: (rid: string, s?: AbortSignal) =>
+    getJson<MetForcing>(`/reservoirs/${rid}/met-forcings`, s),
   markers: (s?: AbortSignal) =>
     getJson<GeoFC<ReservoirMarkerProperties>>("/geojson/reservoirs", s),
   aoi: (s?: AbortSignal) => getJson<GeoFC<AoiProperties>>("/geojson/aoi", s),
   catchment: (s?: AbortSignal) => getJson<GeoFC<CatchmentProperties>>("/geojson/catchment", s),
+  districts: (s?: AbortSignal) =>
+    getJson<GeoFC<DistrictBoundaryProperties>>("/geojson/districts", s),
   waterExtent: (s?: AbortSignal) =>
     getJson<GeoFC<WaterExtentProperties>>("/geojson/water-extent", s),
 };

@@ -11,6 +11,7 @@ def test_settings_defaults_load():
     assert s.app_env in {"dev", "prod"}
     assert s.data_staleness_threshold_days == 14  # D8
     assert s.data_access_backend in {"gee", "fixture", "openeo", "planetary"}
+    assert s.sar_cog_root == "data/sar_cog"
 
 
 def test_get_settings_is_cached():

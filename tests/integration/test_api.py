@@ -96,24 +96,38 @@ def seeded_observation_rows(client, session):
         ("2020-01-29", 118.2, 0.91, "S1A_TEST_0003"),
         ("2026-01-01", 999.0, 0.80, "synthetic"),
     ):
+        derived_volume = area / 100
+        derived_level = 400 + area / 10
         session.execute(
             text(
                 """
                 INSERT INTO observation
                     (reservoir_id, acquisition_date, surface_area, area_confidence,
+                     derived_volume, derived_level,
                      water_mask_ref, extraction_method, extraction_version, scene_ids,
                      orbit_relative, pass_direction, aoi_version, layover_shadow_fraction,
                      processing_params)
                 VALUES
-                    ('gobind_sagar', :d, :area, :conf, :ref, 'otsu_vh', 'v1',
+                    ('gobind_sagar', :d, :area, :conf, :derived_volume, :derived_level,
+                     :ref, 'otsu_vh', 'v1',
                      ARRAY[:sid], 27, 'ASC', 'v1', 0, CAST('{}' AS jsonb))
                 ON CONFLICT (reservoir_id, acquisition_date) DO UPDATE SET
                     surface_area = EXCLUDED.surface_area,
+                    derived_volume = EXCLUDED.derived_volume,
+                    derived_level = EXCLUDED.derived_level,
                     extraction_method = EXCLUDED.extraction_method,
                     scene_ids = EXCLUDED.scene_ids
                 """
             ),
-            {"d": d, "area": area, "conf": conf, "ref": f"backfill://{sid}", "sid": sid},
+            {
+                "d": d,
+                "area": area,
+                "conf": conf,
+                "derived_volume": derived_volume,
+                "derived_level": derived_level,
+                "ref": f"backfill://{sid}",
+                "sid": sid,
+            },
         )
 
 
@@ -123,8 +137,26 @@ def test_acquisitions_endpoint_serves_real_series(client, seeded_observation_row
     body = r.json()
     assert len(body) >= 2
     first = body[0]
-    assert set(first) == {"date", "area_km2", "confidence"}
+    assert set(first) == {
+        "date",
+        "historical_date",
+        "area_km2",
+        "confidence",
+        "live_storage_bcm",
+        "level_m",
+        "pct_filled",
+        "surface_area_correlation",
+        "is_extrapolated",
+    }
     assert isinstance(first["area_km2"], (int, float))
+    # The fixture observations predate the historical bulletin corpus, so no
+    # predicted curve values may leak into this ground-truth-backed endpoint.
+    assert first["historical_date"] is None
+    assert first["live_storage_bcm"] is None
+    assert first["level_m"] is None
+    assert first["pct_filled"] is None
+    assert first["surface_area_correlation"] is None
+    assert isinstance(first["is_extrapolated"], bool)
     dates = [row["date"] for row in body]
     assert dates == sorted(dates)
     # C5 provenance: synthetic rows never reach the timeline, even with a real
@@ -132,9 +164,99 @@ def test_acquisitions_endpoint_serves_real_series(client, seeded_observation_row
     assert "2026-01-01" not in dates
 
 
+def test_current_estimate_endpoint_serves_selected_imagery_state(client, seeded_observation_rows):
+    r = client.get("/reservoirs/gobind_sagar/current-estimate?date=2020-01-05")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["acquisition_date"] == "2020-01-05"
+    assert body["area_km2"] == 120.5
+    assert body["live_storage_bcm"] > 0
+    assert body["level_m"] > 0
+    assert body["pct_filled"] > 0
+    assert isinstance(body["is_extrapolated"], bool)
+
+
+def test_acquisitions_use_latest_historical_value_not_curve_value(
+    client, session, seeded_observation_rows
+):
+    session.execute(
+        text(
+            """
+            INSERT INTO observation
+                (reservoir_id, acquisition_date, surface_area, area_confidence,
+                 water_mask_ref, extraction_method, extraction_version, scene_ids,
+                 orbit_relative, pass_direction, aoi_version, layover_shadow_fraction,
+                 processing_params)
+            VALUES
+                ('thein', '2026-07-15', 57.65, 0.88, 'backfill://historical-check',
+                 'otsu_vh', 'v1', ARRAY['S1A_HISTORICAL_CHECK'], 27, 'ASC', 'v1', 0,
+                 CAST('{}' AS jsonb))
+            """
+        )
+    )
+    row = next(
+        x for x in client.get("/reservoirs/thein/acquisitions").json() if x["date"] == "2026-07-15"
+    )
+    assert row["historical_date"] == "2026-07-16"
+    assert row["level_m"] == 501.89
+    assert row["live_storage_bcm"] == 0.695
+    assert row["pct_filled"] == pytest.approx(29.650170648464165, abs=0.001)
+
+
+def test_current_estimate_can_compute_from_curve_when_observation_not_backfilled(
+    client, session, seeded_observation_rows
+):
+    session.execute(
+        text(
+            """
+            INSERT INTO rating_curve
+              (reservoir_id, version, fit_type, area_to_storage_params, area_to_level_params,
+               frl_anchor, observed_range, fit_metrics, valid_from, is_active)
+            VALUES
+              ('gobind_sagar', 'rc_api_read', 'empirical',
+               '{"coeffs": [0.01, 0]}'::jsonb, '{"coeffs": [0.1, 400]}'::jsonb,
+               '{"frl_m": 512, "capacity_bcm": 6.229}'::jsonb,
+               '{"area_min": 0, "area_max": 300}'::jsonb, '{}'::jsonb,
+               CURRENT_DATE, true)
+            """
+        )
+    )
+    session.execute(
+        text(
+            """
+            INSERT INTO observation
+                (reservoir_id, acquisition_date, surface_area, area_confidence,
+                 water_mask_ref, extraction_method, extraction_version, scene_ids,
+                 orbit_relative, pass_direction, aoi_version, layover_shadow_fraction,
+                 processing_params)
+            VALUES
+                ('gobind_sagar', '2020-02-05', 150.0, 0.88, 'backfill://curve-read',
+                 'otsu_vh', 'v1', ARRAY['S1A_TEST_0004'], 27, 'ASC', 'v1', 0,
+                 CAST('{}' AS jsonb))
+            """
+        )
+    )
+
+    r = client.get("/reservoirs/gobind_sagar/current-estimate?date=2020-02-05")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["live_storage_bcm"] == 1.5
+    assert body["level_m"] == 415.0
+    assert body["pct_filled"] > 0
+
+    acq = client.get("/reservoirs/gobind_sagar/acquisitions").json()
+    row = next(x for x in acq if x["date"] == "2020-02-05")
+    # This timeline endpoint intentionally shows historical ground truth only;
+    # the curve remains available through current-estimate for production inference.
+    assert row["live_storage_bcm"] is None
+    assert row["level_m"] is None
+    assert row["is_extrapolated"] is False
+
+
 def test_synthetic_rows_never_mint_tiles_or_freshen_staleness(client, seeded_observation_rows):
     # sar-tiles: the synthetic date has no real scene to mint -> 404, not a fake tile
     assert client.get("/reservoirs/gobind_sagar/sar-tiles?date=2026-01-01").status_code == 404
+    assert client.get("/reservoirs/gobind_sagar/sar-tiles?date=not-a-date").status_code == 422
     # status: last_acquisition_date must come from real rows only, so the synthetic
     # 2026 row cannot make stale data look fresh
     status = client.get("/reservoirs/gobind_sagar/status").json()

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 
+import numpy as np
 import pandas as pd
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -24,10 +25,27 @@ MIN_PAIRS = 5
 TRAIN_FRACTION = 0.8
 
 
-def _read_pairs(conn, reservoir_id: str, extraction_method: str) -> pd.DataFrame:
+def _pearson(left: np.ndarray, right: np.ndarray) -> float:
+    """Return a JSON-safe Pearson coefficient, including for constant fixtures."""
+    if left.size < 2 or right.size < 2 or np.std(left) == 0 or np.std(right) == 0:
+        return 0.0
+    return float(np.corrcoef(left, right)[0, 1])
+
+
+def _read_pairs(
+    conn, reservoir_id: str, extraction_method: str, *, include_synthetic: bool
+) -> pd.DataFrame:
+    synthetic_filter = (
+        ""
+        if include_synthetic
+        else """
+              AND NOT ('synthetic' = ANY(m.scene_ids) OR 'stub' = ANY(m.scene_ids))
+              AND m.extraction_method <> 'stub'
+    """
+    )
     return pd.read_sql(
         text(
-            """
+            f"""
             SELECT m.gt_date, m.acquisition_date, m.extraction_version, m.extracted_area,
                    m.scene_ids, m.extraction_method,
                    g.pct_filled, g.live_storage_bcm, g.level_m, g.live_capacity_bcm
@@ -37,6 +55,7 @@ def _read_pairs(conn, reservoir_id: str, extraction_method: str) -> pd.DataFrame
             WHERE m.reservoir_id = :r AND m.extraction_method = :em
               AND m.extracted_area IS NOT NULL AND g.pct_filled IS NOT NULL
               AND g.live_storage_bcm IS NOT NULL AND g.level_m IS NOT NULL
+              {synthetic_filter}
             ORDER BY m.gt_date
             """
         ),
@@ -54,6 +73,9 @@ def _persist_curve(
     n_train: int,
     n_test: int,
     on_synthetic_data: bool,
+    area_storage_correlation: float,
+    area_level_correlation: float,
+    n_pairs: int,
 ) -> None:
     session.execute(
         text("UPDATE rating_curve SET is_active = false WHERE reservoir_id = :r AND is_active"),
@@ -71,7 +93,11 @@ def _persist_curve(
                CURRENT_DATE, true)
             ON CONFLICT (reservoir_id, version) DO UPDATE SET
                area_to_storage_params = EXCLUDED.area_to_storage_params,
-               fit_metrics = EXCLUDED.fit_metrics, is_active = true
+               area_to_level_params = EXCLUDED.area_to_level_params,
+               frl_anchor = EXCLUDED.frl_anchor,
+               observed_range = EXCLUDED.observed_range,
+               fit_metrics = EXCLUDED.fit_metrics,
+               is_active = true
             """
         ),
         {
@@ -86,6 +112,9 @@ def _persist_curve(
                     "fill_pct_mae_holdout": mae,
                     "n_train": n_train,
                     "n_test": n_test,
+                    "n_pairs": n_pairs,
+                    "area_storage_pearson_r": area_storage_correlation,
+                    "area_level_pearson_r": area_level_correlation,
                     "on_synthetic_data": on_synthetic_data,
                 }
             ),
@@ -155,7 +184,9 @@ def run_ground_truthing(
     curves = 0
     on_synthetic = False
     for rid, frl_m in reservoirs:
-        df = _read_pairs(conn, rid, extraction_method)
+        df = _read_pairs(conn, rid, extraction_method, include_synthetic=False)
+        if len(df) < MIN_PAIRS:
+            df = _read_pairs(conn, rid, extraction_method, include_synthetic=True)
         if len(df) < MIN_PAIRS:
             skipped.append(rid)
             continue
@@ -176,7 +207,21 @@ def run_ground_truthing(
         derived_pct = fit.pct_filled_for_area(test["extracted_area"].to_numpy())
         mae = fill_pct_mae(derived_pct, test["pct_filled"].to_numpy())
         maes[rid] = mae
-        _persist_curve(session, fit, float(frl_m), mae, len(train), len(test), rid_synthetic)
+        area_values = df["extracted_area"].to_numpy(dtype=float)
+        storage_values = df["live_storage_bcm"].to_numpy(dtype=float)
+        level_values = df["level_m"].to_numpy(dtype=float)
+        _persist_curve(
+            session,
+            fit,
+            float(frl_m),
+            mae,
+            len(train),
+            len(test),
+            rid_synthetic,
+            _pearson(area_values, storage_values),
+            _pearson(area_values, level_values),
+            len(df),
+        )
         _backfill(session, fit, df)
         curves += 1
 

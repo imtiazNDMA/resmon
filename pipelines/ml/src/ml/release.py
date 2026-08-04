@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -40,27 +40,29 @@ def run_release_risk(
         ).scalar()
         if latest is None:
             continue
-        gt = conn.execute(
-            text(
-                "SELECT date, pct_filled, normal_storage_pct FROM ground_truth "
-                "WHERE reservoir_id = :r AND pct_filled IS NOT NULL ORDER BY date DESC LIMIT 1"
-            ),
-            {"r": rid},
-        ).first()
-        if gt is None:
-            continue
-        base_date = gt[0]  # the forecast base: predictions target base_date + horizon
-        current_pct = float(gt[1])
-        normal_pct = float(gt[2]) if gt[2] is not None else current_pct
-
         preds = conn.execute(
             text(
                 "SELECT horizon_date, predicted_pct_filled, interval_low, interval_high, "
                 "model_version_id FROM prediction "
-                "WHERE reservoir_id = :r AND run_timestamp = :t"
+                "WHERE reservoir_id = :r AND run_timestamp = :t ORDER BY horizon_date"
             ),
             {"r": rid, "t": latest},
         ).all()
+        if not preds:
+            continue
+        base_date = min(p[0] for p in preds) - timedelta(days=1)
+        gt = conn.execute(
+            text(
+                "SELECT date, pct_filled, normal_storage_pct FROM ground_truth "
+                "WHERE reservoir_id = :r AND pct_filled IS NOT NULL AND date <= :base "
+                "ORDER BY date DESC LIMIT 1"
+            ),
+            {"r": rid, "base": base_date},
+        ).first()
+        if gt is None:
+            continue
+        current_pct = float(gt[1])
+        normal_pct = float(gt[2]) if gt[2] is not None else current_pct
         # Key horizons by the horizon_date column relative to the forecast base —
         # never by row order (C7); rows are not guaranteed contiguous or ordered.
         traj = sorted(

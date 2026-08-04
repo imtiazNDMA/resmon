@@ -41,6 +41,25 @@ def test_clean_bulletins_maps_and_quarantines():
     assert (out["row_quality"] == "quarantine").any()
 
 
+def test_clean_bulletins_accepts_historical_spreadsheet_headers():
+    raw = pd.DataFrame(
+        {
+            "RESERVOIR NAME - NAN": ["GOBIND SAGAR"],
+            "DATE": ["2025-05-29"],
+            "CURRENT RESERVOIR LEVEL (M) - NAN": [476.22],
+            "CURRENT LIVE STORAGE (BCM) - NAN": [1.387],
+            "pct_filled": [22.27],
+            "STORAGE AS % OF LIVE CAPACITY AT FRL - NORMAL STORAGE": [27.48],
+            "BENEFITS - IRR-CCA": [676.0],
+            "BENEFITS - HYDEL IN MW": [1379.0],
+            "SOURCE_PDF": ["bulletin.pdf"],
+        }
+    )
+    out = clean_bulletins(raw)
+    assert out.iloc[0]["reservoir_id"] == "gobind_sagar"
+    assert out.iloc[0]["live_storage_bcm"] == 1.387
+
+
 def test_backward_recency_no_future_leak():
     spine = pd.DataFrame({"date": pd.date_range("2025-01-01", "2025-01-10", freq="D")})
     events = pd.Series(pd.to_datetime(["2025-01-03", "2025-01-07"]))

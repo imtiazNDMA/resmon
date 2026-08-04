@@ -20,6 +20,9 @@ def make_engine(readonly: bool = False) -> Engine:
     """
     settings = get_settings()
     url = settings.database_url_ro if readonly else settings.database_url_rw
+    if not url:
+        role = "DATABASE_URL_RO" if readonly else "DATABASE_URL_RW"
+        raise RuntimeError(f"{role} must be set before opening a database connection")
     return create_engine(
         url,
         pool_pre_ping=True,

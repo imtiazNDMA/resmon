@@ -184,9 +184,21 @@ class FixtureBackend(DataAccessBackend):
         ]
 
 
+class OpenMeteoBackend(FixtureBackend):
+    """Selector backend for Open-Meteo catchment forcing.
+
+    The forcing pipeline handles Open-Meteo directly because it returns tabular daily
+    catchment aggregates, not xarray rasters. Other data-access methods inherit the
+    fixture implementation so non-forcing pipeline smoke tests remain credential-free.
+    """
+
+    name = "openmeteo"
+
+
 _BACKENDS: dict[str, type[DataAccessBackend]] = {
     "gee": GEEBackend,
     "fixture": FixtureBackend,
+    "openmeteo": OpenMeteoBackend,
 }
 
 

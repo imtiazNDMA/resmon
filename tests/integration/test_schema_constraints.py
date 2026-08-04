@@ -17,6 +17,21 @@ def test_geometry_srid_is_4326(conn, add_reservoir):
     assert srid == 4326
 
 
+def test_reservoir_updated_at_changes_on_raw_sql_update(conn, add_reservoir):
+    rid = add_reservoir("updated_res")
+    before = conn.execute(
+        text("SELECT updated_at FROM reservoir WHERE reservoir_id = :rid"), {"rid": rid}
+    ).scalar_one()
+    conn.execute(text("SELECT pg_sleep(0.01)"))
+    conn.execute(
+        text("UPDATE reservoir SET name = 'updated' WHERE reservoir_id = :rid"), {"rid": rid}
+    )
+    after = conn.execute(
+        text("SELECT updated_at FROM reservoir WHERE reservoir_id = :rid"), {"rid": rid}
+    ).scalar_one()
+    assert after > before
+
+
 def test_idempotent_observation_upsert(conn, add_reservoir):
     rid = add_reservoir("ups_res")
     stmt = text(

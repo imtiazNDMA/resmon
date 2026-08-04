@@ -25,12 +25,8 @@ class Settings(BaseSettings):
     api_root_path: str = Field(default="/api")
 
     # --- Database ---
-    database_url_rw: str = Field(
-        default="postgresql+psycopg://app_rw:app_rw@localhost:5432/reservoir"
-    )
-    database_url_ro: str = Field(
-        default="postgresql+psycopg://app_ro:app_ro@localhost:5432/reservoir"
-    )
+    database_url_rw: str = Field(default="")
+    database_url_ro: str = Field(default="")
 
     # --- MLflow / Prefect ---
     mlflow_tracking_uri: str = Field(default="http://localhost:5000")
@@ -40,6 +36,9 @@ class Settings(BaseSettings):
     data_access_backend: str = Field(default="gee")  # gee | fixture | openeo | planetary
     gee_project: str | None = Field(default=None)
     gee_sa_key_file: str | None = Field(default=None)  # file-mounted, never inlined
+
+    # --- Local SAR serving ---
+    sar_cog_root: str = Field(default="data/sar_cog")
 
 
 @lru_cache

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from ml.baselines import climatology_delta, mae, persistence_delta
-from ml.forecaster import Forecaster, build_examples, finite_sample_quantile
+from ml.forecaster import FORCING_FEATURES, Forecaster, build_examples, finite_sample_quantile
 
 
 def _recession_series() -> pd.DataFrame:
@@ -47,6 +47,22 @@ def test_build_examples_delta_is_negative_in_recession():
     assert len(ex) > 0
     assert (ex["delta"] < 0).all()  # falling fill → negative Δ
     assert set(["current_pct", "horizon", "delta"]).issubset(ex.columns)
+
+
+def test_build_examples_carries_met_forcing_features():
+    df = _recession_series().assign(
+        catchment_precip=np.arange(30, dtype=float),
+        antecedent_precip_index=10.0,
+        snow_cover_area=0.2,
+        swe=3.0,
+        degree_day_melt=4.0,
+        evaporation=1.0,
+    )
+    ex = build_examples(df)
+    assert set(FORCING_FEATURES).issubset(ex.columns)
+    first = ex.iloc[0]
+    assert first["catchment_precip"] == 0.0
+    assert first["degree_day_melt"] == 4.0
 
 
 def test_model_beats_persistence_on_trend():

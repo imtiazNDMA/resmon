@@ -21,13 +21,32 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
 .rbtn.active { background: #12314a; border-color: var(--water); }
 .rbtn-name { display: block; font-size: 13px; font-weight: 600; }
 .rbtn-sub { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.date-range-card {
+  margin-top: auto; background: rgba(21,27,35,.72); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 10px; display: grid; gap: 8px;
+}
+.date-range-title {
+  font-size: 10px; color: var(--muted); letter-spacing: 1.4px; text-transform: uppercase;
+}
+.date-range-card label { display: grid; gap: 4px; }
+.date-range-card label span { font-size: 10px; color: var(--muted); }
+.date-range-card input {
+  width: 100%; color: var(--text); background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 7px 8px; font-family: var(--mono); color-scheme: dark;
+}
+.date-range-card button {
+  cursor: pointer; color: var(--text); background: transparent; border: 1px solid var(--line);
+  border-radius: 8px; padding: 7px 8px; font-family: var(--font); font-size: 11px;
+}
+.date-range-card button:disabled { opacity: .4; cursor: default; }
+.date-range-hint { font-family: var(--mono); font-size: 9px; color: var(--muted); }
 .sweep {
   position: absolute; inset: 0;
   background: linear-gradient(105deg, transparent 30%, rgba(89,183,255,.25) 50%, transparent 70%);
   pointer-events: none;
 }
 .dbtn {
-  margin-top: auto; cursor: pointer; font-weight: 700; font-size: 13px;
+  cursor: pointer; font-weight: 700; font-size: 13px;
   color: #0e1116; background: var(--water); border: none;
   border-radius: var(--radius); padding: 11px 12px;
 }
@@ -42,11 +61,17 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
   background: rgba(21,27,35,.9); border: 1px solid var(--warn); color: var(--warn);
   font-size: 11px; padding: 6px 10px; border-radius: 16px;
 }
+.empty-range-chip {
+  position: absolute; left: 50%; bottom: calc(var(--dock-h) + 18px); transform: translateX(-50%);
+  z-index: 1100; background: rgba(21,27,35,.9); border: 1px solid var(--warn);
+  color: var(--warn); font-size: 12px; padding: 8px 12px; border-radius: 16px;
+}
 
 /* ---- Layer chips (map overlay toggles + extent date) ---- */
 .layer-chips {
   position: absolute; top: 12px; right: 12px; z-index: 1100;
-  display: flex; gap: 8px; align-items: center;
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end;
+  max-width: min(760px, calc(100vw - var(--sidebar-w) - 24px));
 }
 .layer-chip {
   background: rgba(21,27,35,.9); border: 1px solid var(--line); color: var(--muted);
@@ -61,6 +86,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
 }
 .extent-date-chip.stale { border-color: var(--warn); color: var(--warn); }
 
+
 /* ---- Timeline dock ---- */
 .dock {
   position: absolute; left: 0; right: 0; bottom: 0; height: var(--dock-h);
@@ -70,20 +96,42 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
 .dock-spark { width: 100%; height: 30px; display: block; }
 .dock-controls { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
 .dock-controls input[type="range"] { flex: 1; accent-color: var(--water); }
-.playbtn {
+.timeline-btn {
   cursor: pointer; width: 30px; height: 30px; border-radius: 50%;
   border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0; font-size: 14px; line-height: 1;
 }
+.timeline-btn:first-child, .timeline-btn:last-of-type { font-size: 24px; }
+.timeline-btn:hover:not(:disabled) { border-color: var(--water); color: var(--water); }
+.timeline-btn:disabled { opacity: .35; cursor: default; }
+.timeline-btn:focus-visible { outline: 2px solid var(--water); outline-offset: 2px; }
+.timeline-btn + .timeline-btn { margin-left: -6px; }
+.timeline-btn:first-child { margin-left: 0; }
+.dock-controls input[type="range"] { min-width: 0; }
 .dock-date { font-family: var(--mono); font-size: 12px; color: var(--text); min-width: 86px; }
 
-/* ---- Area meter ---- */
-.meter {
-  position: absolute; top: 6%; right: 16px; z-index: 1050; width: 44px;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
+/* ---- Current estimate ---- */
+.estimate-panel {
+  position: absolute; top: 6%; right: 16px; z-index: 1050; width: min(300px, calc(100% - 32px));
+  background: rgba(13,18,23,.88); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 10px; backdrop-filter: blur(4px);
 }
-.meter-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+.estimate-head {
+  display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px;
+  font-size: 13px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+}
+.estimate-head span:last-child { font-family: var(--mono); color: var(--text); letter-spacing: 0; }
+.estimate-warning {
+  margin: -4px 0 10px; color: var(--warn); border: 1px solid rgba(255,193,7,.35);
+  border-radius: 999px; width: fit-content; padding: 3px 7px; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.estimate-body { display: flex; gap: 12px; align-items: stretch; }
+.meter { width: 44px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.meter-label { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
 .meter-tube {
-  width: 30px; height: 46vh; background: var(--panel);
+  width: 30px; height: 32vh; max-height: 360px; min-height: 180px; background: var(--panel);
   border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
   display: flex; align-items: flex-end;
 }
@@ -92,8 +140,15 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
   background: linear-gradient(180deg, var(--water), var(--water-deep));
   background-size: 100% 200%;
 }
-.meter-num { font-size: 13px; font-weight: 700; font-family: var(--mono); }
-.meter-minmax { font-size: 9px; color: var(--muted); }
+.meter-num { font-size: 17px; font-weight: 700; font-family: var(--mono); }
+.meter-minmax { font-size: 12px; color: var(--muted); }
+.estimate-kpis { flex: 1; display: grid; gap: 10px; align-content: start; }
+.estimate-kpis div {
+  border-bottom: 1px solid rgba(255,255,255,.08); padding-bottom: 7px;
+}
+.estimate-kpis div:last-child { border-bottom: 0; }
+.estimate-kpis span { display: block; font-size: 13px; color: var(--muted); margin-bottom: 3px; }
+.estimate-kpis strong { display: block; font-family: var(--mono); font-size: 18px; color: var(--text); }
 
 /* ---- Dashboard view ---- */
 .dashview {

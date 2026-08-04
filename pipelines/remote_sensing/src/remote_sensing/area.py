@@ -11,12 +11,11 @@ import math
 
 import numpy as np
 
-S1_PIXEL_AREA_M2 = 100.0  # 10 m × 10 m; in GEE this is ee.Image.pixelArea()
 _EARTH_R_M = 6_371_000.0
 
 
-def surface_area_km2(mask: np.ndarray, pixel_area_m2: float = S1_PIXEL_AREA_M2) -> float:
-    """True water area in km² from a binary mask and the per-pixel ground area."""
+def surface_area_km2(mask: np.ndarray, pixel_area_m2: float) -> float:
+    """True water area in km² from a binary mask and an explicit per-pixel ground area."""
     return float(mask.sum()) * pixel_area_m2 / 1e6
 
 
@@ -73,10 +72,10 @@ def polygon_compactness(geojson: dict) -> float:
     rings = _outer_rings(geojson)
     if not rings:
         return 0.0
-    lat0 = float(np.mean([p[1] for p in rings[0]])) if rings[0] else 0.0
     total_area = 0.0
     total_perim = 0.0
     for ring in rings:
+        lat0 = float(np.mean([p[1] for p in ring])) if ring else 0.0
         a, p = _ring_area_perimeter_m(ring, lat0)
         total_area += a
         total_perim += p
