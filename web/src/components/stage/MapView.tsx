@@ -1,15 +1,18 @@
 import { useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CircleMarker, GeoJSON, MapContainer, TileLayer, useMap } from "react-leaflet";
+import { CircleMarker, GeoJSON, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
 import { BASEMAPS } from "../../lib/basemaps";
 import { sarTileQuery, useAcquisitions, useAoi, useMarkers } from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
 import AreaMeter from "./AreaMeter";
 import CatchmentLayer from "./CatchmentLayer";
 import DistrictBoundaryLayer from "./DistrictBoundaryLayer";
+import FlowLineLayer from "./FlowLineLayer";
+import HydrologicLegend from "./HydrologicLegend";
 import LayerChips from "./LayerChips";
 import SarTileLayer from "./SarTileLayer";
 import SarTilePreloader from "./SarTilePreloader";
+import SubBasinLayer from "./SubBasinLayer";
 import TimelineDock from "./TimelineDock";
 import WaterExtentLayer from "./WaterExtentLayer";
 
@@ -122,6 +125,8 @@ export default function MapView() {
         )}
         <DistrictBoundaryLayer />
         <CatchmentLayer />
+        <SubBasinLayer />
+        <FlowLineLayer />
         <WaterExtentLayer />
         {markers?.features.map((f) => {
           if (f.geometry?.type !== "Point") return null;
@@ -131,9 +136,21 @@ export default function MapView() {
             <CircleMarker
               key={f.properties.reservoir_id}
               center={[lat!, lon!]}
-              radius={8}
-              pathOptions={{ color: "#dff0ff", fillColor: "#59b7ff", fillOpacity: 0.9 }}
-            />
+              radius={f.properties.reservoir_id === selected ? 10 : 8}
+              pathOptions={{
+                color: f.properties.reservoir_id === selected ? "#ffffff" : "#dff0ff",
+                fillColor: "#59b7ff",
+                fillOpacity: 0.9,
+                weight: f.properties.reservoir_id === selected ? 2.5 : 1.5,
+              }}
+            >
+              {f.properties.reservoir_id === selected && (
+                <Tooltip permanent direction="top" offset={[0, -12]} className="dam-label">
+                  <strong>{f.properties.name}</strong>
+                  <span>Dam point</span>
+                </Tooltip>
+              )}
+            </CircleMarker>
           );
         })}
         {selected && activeDate && <SarTileLayer rid={selected} date={activeDate} />}
@@ -142,6 +159,7 @@ export default function MapView() {
         )}
       </MapContainer>
       <LayerChips />
+      <HydrologicLegend />
       {selected && filteredAcqs && filteredAcqs.length > 0 && <AreaMeter acquisitions={filteredAcqs} />}
       {selected && filteredAcqs && filteredAcqs.length > 0 && (
         <TimelineDock acquisitions={filteredAcqs} />

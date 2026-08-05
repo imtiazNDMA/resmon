@@ -114,6 +114,35 @@ export interface FlowEdgeProperties {
   version: string;
 }
 
+/** Properties on `/geojson/hydrologic/flowlines` features — clipped river/drainage
+ * vectors for the selected reservoir catchment. */
+export interface FlowlineProperties {
+  reservoir_id: string;
+  flowline_id: number;
+  downstream_id: number | null;
+  stream_order: number | null;
+  upstream_area_km2: number | null;
+  length_km: number | null;
+  is_main_stem: boolean;
+  source_dataset: string;
+  version: string;
+}
+
+export interface HydrologicLayerProvenance {
+  reservoir_id: string;
+  layer_name: string;
+  source_dataset: string;
+  source_version: string | null;
+  source_date: string | null;
+  resolution_m: number | null;
+  processed_at: string;
+  processing_version: string;
+  simplification_tolerance_deg: number | null;
+  projection: string;
+  limitations: string;
+  metadata: Record<string, unknown>;
+}
+
 /** Properties on `/geojson/water-extent` features (latest real SAR mask per reservoir). */
 export interface WaterExtentProperties {
   reservoir_id: string;

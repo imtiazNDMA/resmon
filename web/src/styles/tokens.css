@@ -12,7 +12,7 @@
   --danger: #e0654f;
   --radius: 10px;
   --sidebar-w: 280px;
-  --dock-h: 84px;
+  --dock-h: 112px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-1: 200ms; /* micro */
   --dur-2: 450ms; /* panel */

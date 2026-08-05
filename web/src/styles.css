@@ -116,27 +116,83 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
 }
 .extent-date-chip.stale { border-color: var(--warn); color: var(--warn); }
 
-/* Topology-derived hydrologic flow paths. The path geometry is ordered upstream
-   to downstream, so dash-offset animation reads as transport toward the dam. */
-.flow-edge-path {
-  stroke-dasharray: 7 7;
-  animation: flow-dash 1.8s linear infinite;
-  animation-delay: calc(var(--flow-delay, 0s) * -0.18);
-  filter: drop-shadow(0 0 4px rgba(99, 215, 255, .65));
+.flowline-path {
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, .75)) drop-shadow(0 0 3px rgba(0, 32, 255, .5));
 }
-.flow-edge-path-headwater {
-  stroke-dasharray: 9 7;
-  animation-duration: 2.2s;
-  filter: drop-shadow(0 0 6px rgba(189, 244, 255, .82));
+.flowline-main {
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, .85)) drop-shadow(0 0 5px rgba(0, 20, 255, .65));
 }
-@keyframes flow-dash {
-  from { stroke-dashoffset: 32; }
-  to { stroke-dashoffset: 0; }
+.hydro-legend {
+  position: absolute; right: 14px; bottom: calc(var(--dock-h) + 18px); z-index: 1100;
+  width: min(260px, calc(100vw - var(--sidebar-w) - 28px));
+  background: rgba(13,18,23,.86); border: 1px solid var(--line); color: #fff;
+  border-radius: 14px; padding: 11px 12px; backdrop-filter: blur(6px);
+  display: grid; gap: 8px; box-shadow: 0 16px 40px rgba(0,0,0,.25);
 }
-@media (prefers-reduced-motion: reduce) {
-  .flow-edge-path {
-    animation: none;
-    stroke-dashoffset: 0;
+.hydro-legend-title {
+  font-size: 11px; font-weight: 850; letter-spacing: 1.4px; text-transform: uppercase;
+}
+.hydro-legend-row { display: flex; align-items: center; gap: 9px; font-size: 12px; }
+.legend-swatch { width: 18px; height: 12px; border-radius: 4px; border: 1px solid currentColor; }
+.legend-swatch.catchment { color: #ff1e1e; background: rgba(217,213,165,.35); border-width: 2px; }
+.legend-swatch.subbasin-headwater { color: #526b48; background: rgba(143,155,100,.45); }
+.legend-swatch.subbasin { color: #667260; background: rgba(181,178,123,.26); }
+.legend-swatch.water { color: #45f0df; background: rgba(24,191,193,.45); }
+.legend-line { width: 22px; height: 0; border-top: 3px solid currentColor; border-radius: 999px; }
+.legend-line.river { color: #001eff; }
+.hydro-legend-note { color: #c7d3df; font-size: 10px; line-height: 1.35; }
+.hydro-legend-sources {
+  border-top: 1px solid rgba(255,255,255,.12); padding-top: 7px;
+  color: #c7d3df; font-size: 10px; line-height: 1.35; display: grid; gap: 3px;
+}
+.hydro-legend-sources strong { color: #fff; font-weight: 800; }
+.dam-label {
+  background: rgba(13,18,23,.9); border: 1px solid rgba(89,183,255,.55);
+  color: #fff; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.28);
+  padding: 5px 8px; font-family: var(--font);
+}
+.dam-label::before { display: none; }
+.dam-label strong { display: block; font-size: 12px; line-height: 1.15; }
+.dam-label span { display: block; color: #dcefff; font-size: 10px; margin-top: 2px; }
+@media (max-width: 760px) {
+  .hydro-legend {
+    left: 12px; right: 12px; bottom: calc(var(--dock-h) + 10px);
+    width: auto; grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hydro-legend-title, .hydro-legend-note { grid-column: 1 / -1; }
+}
+
+@media print {
+  :root { --sidebar-w: 0px; --dock-h: 0px; }
+  body { background: #fff; }
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar,
+  .map-control-panel,
+  .dock,
+  .area-meter,
+  .empty-range-chip {
+    display: none !important;
+  }
+  .mapview,
+  .leaflet-root {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+  }
+  .hydro-legend {
+    right: 12mm;
+    bottom: 12mm;
+    width: 70mm;
+    background: rgba(255,255,255,.9);
+    color: #111;
+    border-color: #333;
+    box-shadow: none;
+  }
+  .hydro-legend-sources,
+  .hydro-legend-note,
+  .hydro-legend-sources strong {
+    color: #111;
   }
 }
 
@@ -145,45 +201,60 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
 .dock {
   position: absolute; left: 0; right: 0; bottom: 0; height: var(--dock-h);
   z-index: 1050; background: rgba(13,18,23,.92); border-top: 1px solid var(--line);
-  padding: 8px 16px; backdrop-filter: blur(4px);
+  padding: 12px 18px; backdrop-filter: blur(4px);
 }
-.dock-spark { width: 100%; height: 30px; display: block; }
-.dock-controls { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
-.dock-controls input[type="range"] { flex: 1; accent-color: var(--water); }
+.dock-spark { width: 100%; height: 46px; display: block; }
+.dock-controls { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+.dock-controls input[type="range"] {
+  flex: 1; min-width: 0; height: 18px; accent-color: var(--water);
+}
+.dock-controls input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px; border-radius: 999px;
+}
+.dock-controls input[type="range"]::-webkit-slider-thumb {
+  width: 18px; height: 18px; margin-top: -5px;
+}
+.dock-controls input[type="range"]::-moz-range-track {
+  height: 8px; border-radius: 999px;
+}
+.dock-controls input[type="range"]::-moz-range-thumb {
+  width: 18px; height: 18px; border: 0;
+}
 .timeline-btn {
-  cursor: pointer; width: 30px; height: 30px; border-radius: 50%;
+  cursor: pointer; width: 38px; height: 38px; border-radius: 50%;
   border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
   display: inline-flex; align-items: center; justify-content: center;
-  padding: 0; font-size: 14px; line-height: 1;
+  padding: 0; font-size: 16px; line-height: 1;
 }
-.timeline-btn:first-child, .timeline-btn:last-of-type { font-size: 24px; }
+.timeline-btn:first-child, .timeline-btn:last-of-type { font-size: 28px; }
 .timeline-btn:hover:not(:disabled) { border-color: var(--water); color: var(--water); }
 .timeline-btn:disabled { opacity: .35; cursor: default; }
 .timeline-btn:focus-visible { outline: 2px solid var(--water); outline-offset: 2px; }
 .timeline-btn + .timeline-btn { margin-left: -6px; }
 .timeline-btn:first-child { margin-left: 0; }
-.dock-controls input[type="range"] { min-width: 0; }
-.dock-date { font-family: var(--mono); font-size: 12px; color: var(--text); min-width: 86px; }
+.dock-date { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--text); min-width: 104px; }
 
 /* ---- Current estimate ---- */
 .estimate-panel {
-  position: absolute; top: 6%; right: 16px; z-index: 1050; width: min(300px, calc(100% - 32px));
-  background: rgba(13,18,23,.88); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 10px; backdrop-filter: blur(4px);
+  position: absolute; top: 6%; right: 16px; z-index: 1050; width: min(320px, calc(100% - 32px));
+  background: rgba(10,14,18,.9); border: 1px solid rgba(255,255,255,.2);
+  border-radius: var(--radius); padding: 12px; backdrop-filter: blur(5px);
+  color: #fff;
 }
 .estimate-head {
   display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px;
-  font-size: 13px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+  font-size: 14px; color: #fff; letter-spacing: 1px; text-transform: uppercase;
+  font-weight: 700;
 }
-.estimate-head span:last-child { font-family: var(--mono); color: var(--text); letter-spacing: 0; }
+.estimate-head span:last-child { font-family: var(--mono); color: #fff; letter-spacing: 0; }
 .estimate-warning {
   margin: -4px 0 10px; color: var(--warn); border: 1px solid rgba(255,193,7,.35);
   border-radius: 999px; width: fit-content; padding: 3px 7px; font-size: 10px;
   text-transform: uppercase; letter-spacing: 1px;
 }
-.estimate-body { display: flex; gap: 12px; align-items: stretch; }
+.estimate-body { display: flex; gap: 14px; align-items: stretch; }
 .meter { width: 44px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.meter-label { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+.meter-label { font-size: 13px; color: rgba(255,255,255,.78); letter-spacing: 1px; }
 .meter-tube {
   width: 30px; height: 32vh; max-height: 360px; min-height: 180px; background: var(--panel);
   border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
@@ -194,15 +265,15 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
   background: linear-gradient(180deg, var(--water), var(--water-deep));
   background-size: 100% 200%;
 }
-.meter-num { font-size: 17px; font-weight: 700; font-family: var(--mono); }
-.meter-minmax { font-size: 12px; color: var(--muted); }
+.meter-num { font-size: 20px; font-weight: 850; font-family: var(--mono); color: #fff; }
+.meter-minmax { font-size: 13px; color: rgba(255,255,255,.68); }
 .estimate-kpis { flex: 1; display: grid; gap: 10px; align-content: start; }
 .estimate-kpis div {
   border-bottom: 1px solid rgba(255,255,255,.08); padding-bottom: 7px;
 }
 .estimate-kpis div:last-child { border-bottom: 0; }
-.estimate-kpis span { display: block; font-size: 13px; color: var(--muted); margin-bottom: 3px; }
-.estimate-kpis strong { display: block; font-family: var(--mono); font-size: 18px; color: var(--text); }
+.estimate-kpis span { display: block; font-size: 14px; color: rgba(255,255,255,.76); margin-bottom: 4px; }
+.estimate-kpis strong { display: block; font-family: var(--mono); font-size: 20px; color: #fff; font-weight: 850; }
 
 /* ---- Dashboard view ---- */
 .dashview {

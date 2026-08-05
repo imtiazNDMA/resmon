@@ -18,7 +18,6 @@ from sqlalchemy.orm import Session
 import api.gee_tiles as gee_tiles
 import api.repositories as repo
 import api.sar_assets as sar_assets
-from api.boundaries import district_boundaries
 from api.db import get_db
 from api.schemas import (
     AccuracyReport,
@@ -29,7 +28,9 @@ from api.schemas import (
     DistrictBoundaryProperties,
     FeatureCollection,
     FlowEdgeProperties,
+    FlowlineProperties,
     ForecastResponse,
+    HydrologicLayerProvenanceOut,
     MetForcingOut,
     RainfallPointOut,
     ReleaseRiskEntry,
@@ -323,6 +324,73 @@ def geojson_subbasins(db: Session = Depends(get_db)) -> dict:
 
 
 @router.get(
+    "/geojson/hydrologic/subbasins",
+    tags=["geojson"],
+    response_model=FeatureCollection[SubBasinProperties],
+)
+def geojson_hydrologic_subbasins(
+    reservoir_id: str | None = Query(default=None),
+    resolution: str = Query(default="web", pattern="^(web|export)$"),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Reservoir-scoped hydrologic sub-basins.
+
+    ``resolution`` is accepted as the public contract; the repository currently serves
+    the web-bounded geometry until export-quality storage is added.
+    """
+    _ = resolution
+    return _feature_collection(
+        repo.subbasin_features(db, reservoir_id=reservoir_id),
+        lambda r: {
+            "reservoir_id": r["reservoir_id"],
+            "hybas_id": r["hybas_id"],
+            "next_down": r["next_down"],
+            "is_headwater": r["is_headwater"],
+            "version": r["catchment_version"],
+        },
+    )
+
+
+@router.get(
+    "/geojson/hydrologic/flowlines",
+    tags=["geojson"],
+    response_model=FeatureCollection[FlowlineProperties],
+)
+def geojson_hydrologic_flowlines(
+    reservoir_id: str | None = Query(default=None),
+    min_order: int | None = Query(default=None, ge=1),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Clipped drainage network vectors for hydrologic map rendering."""
+    return _feature_collection(
+        repo.flowline_features(db, reservoir_id=reservoir_id, min_order=min_order),
+        lambda r: {
+            "reservoir_id": r["reservoir_id"],
+            "flowline_id": r["flowline_id"],
+            "downstream_id": r["downstream_id"],
+            "stream_order": r["stream_order"],
+            "upstream_area_km2": r["upstream_area_km2"],
+            "length_km": r["length_km"],
+            "is_main_stem": r["is_main_stem"],
+            "source_dataset": r["source_dataset"],
+            "version": r["version"],
+        },
+    )
+
+
+@router.get(
+    "/hydrologic/layers/provenance",
+    tags=["geojson"],
+    response_model=list[HydrologicLayerProvenanceOut],
+)
+def hydrologic_layer_provenance(
+    reservoir_id: str | None = Query(default=None), db: Session = Depends(get_db)
+) -> list[dict]:
+    """Source/version/limitation metadata for static hydrologic map layers."""
+    return repo.hydrologic_layer_provenance(db, reservoir_id=reservoir_id)
+
+
+@router.get(
     "/geojson/flow-edges", tags=["geojson"], response_model=FeatureCollection[FlowEdgeProperties]
 )
 def geojson_flow_edges(db: Session = Depends(get_db)) -> dict:
@@ -369,9 +437,15 @@ def geojson_water_extent(db: Session = Depends(get_db)) -> dict:
     tags=["geojson"],
     response_model=FeatureCollection[DistrictBoundaryProperties],
 )
-def geojson_districts() -> dict:
+def geojson_districts(db: Session = Depends(get_db)) -> dict:
     """Administrative district boundaries for the map overlay."""
-    return district_boundaries()
+    return _feature_collection(
+        repo.district_boundary_features(db),
+        lambda r: {
+            "district_id": r["district_id"],
+            "bbox": [float(x) for x in r["bbox"]],
+        },
+    )
 
 
 @router.get(

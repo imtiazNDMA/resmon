@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 import geopandas as gpd
-from shapely.geometry import Point, Polygon
+from shapely.geometry import LineString, Point, Polygon
 
 from remote_sensing.hydrologic_map import (
     prepare_subbasin_topology,
@@ -21,6 +21,7 @@ from remote_sensing.hydrologic_map import (
     add_flowline_summary_attributes,
     compute_geometry_quality_flags,
     add_geometry_quality_flags,
+    prepare_hydrologic_map_layers,
 )
 
 
@@ -64,7 +65,7 @@ def test_prepare_subbasin_topology_flags_missing_downstream_and_duplicates():
     topology = prepare_subbasin_topology(
         [
             {"hybas_id": 1, "next_down": 99},
-            {"hybas_id": 2, "next_down": 1},
+            {"hybas_id": 2, "next_down": 98},
             {"hybas_id": 2, "next_down": 1},
         ]
     )
@@ -74,6 +75,20 @@ def test_prepare_subbasin_topology_flags_missing_downstream_and_duplicates():
     by_id = {basin.hybas_id: basin for basin in topology.subbasins}
     assert "missing_downstream" in by_id[1].quality_flags
     assert "duplicate_hybas_id" in by_id[2].quality_flags
+
+
+def test_prepare_subbasin_topology_classifies_single_external_link_as_outlet():
+    topology = prepare_subbasin_topology(
+        [
+            {"hybas_id": 1, "next_down": 99},
+            {"hybas_id": 2, "next_down": 1},
+        ]
+    )
+
+    assert topology.outlet_ids == frozenset({1})
+    assert "missing_downstream" not in topology.quality_flags
+    by_id = {basin.hybas_id: basin for basin in topology.subbasins}
+    assert by_id[1].quality_flags == ("outlet_basin", "external_outlet")
 
 
 def test_prepare_subbasin_topology_flags_cycles():
@@ -345,3 +360,44 @@ def test_add_geometry_quality_flags():
     assert "quality_flags" in result.columns
     assert len(result) == 2
     assert isinstance(result["quality_flags"][0], tuple)
+
+
+def test_prepare_hydrologic_map_layers_orchestrates_vector_prep():
+    catchment = Polygon([(0, 0), (2, 0), (2, 2), (0, 2)])
+    dam_point = Point(1.9, 0.1)
+    subbasins = gpd.GeoDataFrame(
+        {"HYBAS_ID": [1, 2], "NEXT_DOWN": [0, 1]},
+        geometry=[
+            Polygon([(0, 0), (1, 0), (1, 1), (0, 1)]),
+            Polygon([(1, 0), (2, 0), (2, 1), (1, 1)]),
+        ],
+        crs="EPSG:4326",
+    )
+    flowlines = gpd.GeoDataFrame(
+        {"HYRIV_ID": [10], "NEXT_DOWN": [0], "ORDER": [2], "UPLAND_SKM": [250.0]},
+        geometry=[LineString([(0.2, 0.2), (1.8, 0.2)])],
+        crs="EPSG:4326",
+    )
+
+    prepared = prepare_hydrologic_map_layers(
+        catchment_geom=catchment,
+        subbasins_gdf=subbasins,
+        flowlines_gdf=flowlines,
+        dam_point=dam_point,
+    )
+
+    assert set(prepared.subbasins) == {"raw", "web", "export"}
+    web_subbasins = prepared.subbasins["web"]
+    assert web_subbasins.crs.to_epsg() == 4326
+    assert web_subbasins["hybas_id"].tolist() == [1, 2]
+    assert web_subbasins["is_headwater"].tolist() == [False, True]
+    assert "area_km2" in web_subbasins.columns
+    assert "distance_to_reservoir_km" in web_subbasins.columns
+    assert "outlet_basin" in web_subbasins["quality_flags"][0]
+
+    web_flowlines = prepared.flowlines["web"]
+    assert web_flowlines["flowline_id"].tolist() == [10]
+    assert web_flowlines["stream_order"].tolist() == [2]
+    assert web_flowlines["upstream_area_km2"].tolist() == [250.0]
+    assert web_flowlines["length_km"][0] > 0
+    assert web_flowlines["is_main_stem"].tolist() == [False]

@@ -156,6 +156,124 @@ def test_geojson_subbasins_serves_topology_and_headwater_flag(client, conn, add_
     assert by_id[4070000010]["version"] == "hybas7_v1"
 
 
+def test_geojson_subbasins_stays_empty_when_topology_missing(client, conn, add_reservoir):
+    rid = add_reservoir("subbasin_fallback_res")
+    conn.execute(
+        text(
+            """
+            UPDATE reservoir
+            SET catchment_geom = ST_GeomFromText(
+                  'MULTIPOLYGON(((75.9 30.9,76.3 30.9,76.3 31.3,75.9 31.3,75.9 30.9)))',
+                  4326
+                )
+            WHERE reservoir_id = :rid
+            """
+        ),
+        {"rid": rid},
+    )
+
+    gj = client.get("/geojson/subbasins").json()
+    feats = [f for f in gj["features"] if f["properties"]["reservoir_id"] == rid]
+
+    assert feats == []
+
+
+def test_geojson_hydrologic_subbasins_can_filter_by_reservoir(client, conn, add_reservoir):
+    rid = add_reservoir("hydro_subbasin_res")
+    other = add_reservoir("other_hydro_subbasin_res")
+    conn.execute(
+        text(
+            """
+            INSERT INTO catchment_subbasin
+              (reservoir_id, hybas_id, next_down, is_headwater, geom, catchment_version)
+            VALUES
+              (:rid, 4070000010, 0, true,
+               ST_GeomFromText('MULTIPOLYGON(((76 31,76.1 31,76.1 31.1,76 31.1,76 31)))', 4326),
+               'hybas7_v1'),
+              (:other, 4070000020, 0, true,
+               ST_GeomFromText('MULTIPOLYGON(((77 31,77.1 31,77.1 31.1,77 31.1,77 31)))', 4326),
+               'hybas7_v1')
+            """
+        ),
+        {"rid": rid, "other": other},
+    )
+
+    gj = client.get(f"/geojson/hydrologic/subbasins?reservoir_id={rid}&resolution=web").json()
+    assert gj["type"] == "FeatureCollection"
+    assert len(gj["features"]) == 1
+    assert gj["features"][0]["properties"]["reservoir_id"] == rid
+
+
+def test_geojson_hydrologic_flowlines_serves_clipped_network(client, conn, add_reservoir):
+    rid = add_reservoir("flowline_res")
+    conn.execute(
+        text(
+            """
+            INSERT INTO catchment_flowline
+              (reservoir_id, flowline_id, downstream_id, stream_order, upstream_area_km2,
+               length_km, is_main_stem, geom, source_dataset, version)
+            VALUES
+              (:rid, 1001, NULL, 3, 1200.5, 42.25, true,
+               ST_Multi(ST_GeomFromText('LINESTRING(76 31,76.1 31.1)', 4326)),
+               'hydrorivers', 'hydrorivers_v1'),
+              (:rid, 1002, 1001, 1, 120.0, 12.0, false,
+               ST_Multi(ST_GeomFromText('LINESTRING(76.2 31,76.1 31.1)', 4326)),
+               'hydrorivers', 'hydrorivers_v1')
+            """
+        ),
+        {"rid": rid},
+    )
+
+    gj = client.get(f"/geojson/hydrologic/flowlines?reservoir_id={rid}&min_order=2").json()
+    assert gj["type"] == "FeatureCollection"
+    assert len(gj["features"]) == 1
+    feat = gj["features"][0]
+    assert feat["geometry"]["type"] in ("LineString", "MultiLineString")
+    assert feat["properties"] == {
+        "reservoir_id": rid,
+        "flowline_id": 1001,
+        "downstream_id": None,
+        "stream_order": 3,
+        "upstream_area_km2": 1200.5,
+        "length_km": 42.25,
+        "is_main_stem": True,
+        "source_dataset": "hydrorivers",
+        "version": "hydrorivers_v1",
+    }
+
+
+def test_hydrologic_layer_provenance_endpoint_filters_by_reservoir(client, conn, add_reservoir):
+    rid = add_reservoir("provenance_res")
+    other = add_reservoir("other_provenance_res")
+    conn.execute(
+        text(
+            """
+            INSERT INTO hydrologic_layer_provenance
+              (reservoir_id, layer_name, source_dataset, source_version, source_date,
+               resolution_m, processed_at, processing_version, simplification_tolerance_deg,
+               projection, limitations, metadata_json)
+            VALUES
+              (:rid, 'subbasins', 'HydroBASINS', 'hybas7_v1', DATE '2026-08-05',
+               500, now(), 'prepare_hydrologic_map_layers_v1', 0.0001,
+               'EPSG:4326', 'HydroBASINS polygons are cartographic aggregation units.',
+               '{"level": 7}'::jsonb),
+              (:other, 'subbasins', 'HydroBASINS', 'hybas7_v1', DATE '2026-08-05',
+               500, now(), 'prepare_hydrologic_map_layers_v1', 0.0001,
+               'EPSG:4326', 'other', '{}'::jsonb)
+            """
+        ),
+        {"rid": rid, "other": other},
+    )
+
+    rows = client.get(f"/hydrologic/layers/provenance?reservoir_id={rid}").json()
+
+    assert len(rows) == 1
+    assert rows[0]["reservoir_id"] == rid
+    assert rows[0]["layer_name"] == "subbasins"
+    assert rows[0]["source_dataset"] == "HydroBASINS"
+    assert rows[0]["metadata"] == {"level": 7}
+
+
 def test_geojson_flow_edges_serves_downstream_display_paths(client, conn, add_reservoir):
     rid = add_reservoir("flow_edge_res")
     conn.execute(
@@ -186,6 +304,33 @@ def test_geojson_flow_edges_serves_downstream_display_paths(client, conn, add_re
     assert by_from[4070000020]["distance_to_reservoir_km"] >= 0
     assert by_from[4070000020]["routing_lag_days"] >= 0.25
     assert by_from[4070000010]["to_hybas_id"] is None
+
+
+def test_geojson_flow_edges_falls_back_to_catchment_centroid_path(client, conn, add_reservoir):
+    rid = add_reservoir("flow_edge_fallback_res")
+    conn.execute(
+        text(
+            """
+            UPDATE reservoir
+            SET catchment_geom = ST_GeomFromText(
+                  'MULTIPOLYGON(((75.9 30.9,76.3 30.9,76.3 31.3,75.9 31.3,75.9 30.9)))',
+                  4326
+                )
+            WHERE reservoir_id = :rid
+            """
+        ),
+        {"rid": rid},
+    )
+
+    gj = client.get("/geojson/flow-edges").json()
+    feats = [f for f in gj["features"] if f["properties"]["reservoir_id"] == rid]
+
+    assert len(feats) == 1
+    assert feats[0]["geometry"]["type"] == "LineString"
+    assert feats[0]["properties"]["from_hybas_id"] == 0
+    assert feats[0]["properties"]["to_hybas_id"] is None
+    assert feats[0]["properties"]["is_headwater"] is True
+    assert feats[0]["properties"]["routing_lag_days"] >= 0.25
 
 
 @pytest.fixture

@@ -19,10 +19,21 @@ export default function WaterExtentLayer() {
   if (!isExtentVisible(activeDate, latest)) return null;
   const stale = isExtentStale(f.properties.acquisition_date);
   return (
-    <GeoJSON
-      key={`extent-${selected}-${f.properties.acquisition_date}`}
-      data={f}
-      style={{ color: "#39d5c8", weight: 2, opacity: stale ? 0.5 : 1, fillOpacity: 0.25 }}
-    />
+      <GeoJSON
+        key={`extent-${selected}-${f.properties.acquisition_date}`}
+        data={f}
+        style={{
+          color: "#45f0df",
+          weight: 2.2,
+          opacity: stale ? 0.5 : 1,
+          fillColor: "#18bfc1",
+          fillOpacity: stale ? 0.14 : 0.3,
+        }}
+        onEachFeature={(_, layer) => {
+          layer.bindTooltip(
+            `Current SAR water extent<br/>${f.properties.acquisition_date}<br/>${f.properties.surface_area_km2.toFixed(1)} km2`,
+          );
+        }}
+      />
   );
 }

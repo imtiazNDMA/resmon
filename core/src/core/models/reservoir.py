@@ -27,8 +27,8 @@ class Reservoir(Base):
     dam_point: Mapped[object] = mapped_column(
         Geometry("POINT", srid=4326, spatial_index=False), nullable=False
     )  # seed coordinate (FR-RS-1); GIST index defined explicitly below
-    frl_m: Mapped[float] = mapped_column(Numeric(8, 3), nullable=False)
-    live_capacity_bcm: Mapped[float] = mapped_column(Numeric(10, 4), nullable=False)
+    frl_m: Mapped[float | None] = mapped_column(Numeric(8, 3), nullable=True)
+    live_capacity_bcm: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
     aoi_geom: Mapped[object] = mapped_column(
         Geometry("MULTIPOLYGON", srid=4326, spatial_index=False), nullable=False
     )  # FRL-extent AOI (FR-RS-1)
@@ -37,8 +37,8 @@ class Reservoir(Base):
         Geometry("MULTIPOLYGON", srid=4326, spatial_index=False), nullable=True
     )  # upstream area (FR-DE-7); NULL until delineated
     catchment_version: Mapped[str | None] = mapped_column(Text, nullable=True)
-    orbit_relative: Mapped[int] = mapped_column(Integer, nullable=False)  # fixed (FR-RS-1)
-    pass_direction: Mapped[str] = mapped_column(Text, nullable=False)  # ASC/DESC
+    orbit_relative: Mapped[int | None] = mapped_column(Integer, nullable=True)  # fixed (FR-RS-1)
+    pass_direction: Mapped[str | None] = mapped_column(Text, nullable=True)  # ASC/DESC
     release_thresholds: Mapped[dict] = mapped_column(JSONB, nullable=False)  # FR-ML-3 (D7)
     rating_curve_config: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")

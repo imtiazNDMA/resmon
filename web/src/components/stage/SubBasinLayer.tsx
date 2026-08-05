@@ -4,11 +4,10 @@ import { useSubBasins } from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
 import type { GeoFC, SubBasinProperties } from "../../types";
 
-/** Headwaters — the upper catchment — carry the purple fill; everything downstream is a
- *  faint outline so the eye lands on the top of the basin, not the whole drainage. */
-const HEADWATER_STYLE = { color: "#c9a0f0", weight: 1, fillColor: "#a06bd4", fillOpacity: 0.28 };
-const DOWNSTREAM_STYLE = { color: "#8c93a8", weight: 0.6, fillColor: "#8c93a8", fillOpacity: 0.04 };
-const HOVER_STYLE = { color: "#a06bd4", fillColor: "#a06bd4", fillOpacity: 0.8 };
+/** Sub-basins sit below the river network as a restrained terrain wash. */
+const HEADWATER_STYLE = { color: "#526b48", weight: 0.85, fillColor: "#8f9b64", fillOpacity: 0.18 };
+const DOWNSTREAM_STYLE = { color: "#667260", weight: 0.7, fillColor: "#b5b27b", fillOpacity: 0.1 };
+const HOVER_STYLE = { color: "#ffffff", weight: 1.6, fillColor: "#c8c076", fillOpacity: 0.28 };
 
 const styleFor = (isHeadwater: boolean) => (isHeadwater ? HEADWATER_STYLE : DOWNSTREAM_STYLE);
 
@@ -33,7 +32,11 @@ export default function SubBasinLayer() {
       data={collection}
       style={(feature) => styleFor(!!feature?.properties?.is_headwater)}
       onEachFeature={(feature, layer) => {
+        const props = feature.properties as SubBasinProperties;
         const resting = styleFor(!!feature?.properties?.is_headwater);
+        layer.bindTooltip(
+          `Sub-basin HYBAS ${props.hybas_id}<br/>${props.is_headwater ? "headwater" : "downstream"}<br/>next down ${props.next_down || "outlet"}`,
+        );
         layer.on({
           mouseover: (event: LeafletMouseEvent) => {
             (event.target as Path).setStyle(HOVER_STYLE);

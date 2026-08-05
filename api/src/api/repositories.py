@@ -20,6 +20,8 @@ _IST = ZoneInfo("Asia/Kolkata")
 # coordinate precision at 5 decimal digits (~1 m) so payloads stay small.
 _SIMPLIFY_TOLERANCE_DEG = 0.0001
 _MAX_DECIMAL_DIGITS = 5
+_DISTRICT_SIMPLIFY_TOLERANCE_DEG = 0.005
+_DISTRICT_MAX_DECIMAL_DIGITS = 4
 
 # C5 provenance (mirrors ml.forecasting/ml.gate): the demo bootstrap writes synthetic
 # observations stamped with the REAL extractor name, so `<> 'stub'` alone is not enough
@@ -456,6 +458,15 @@ def _bounded_geojson(geom_expr: str) -> str:
     )
 
 
+def _district_geojson(geom_expr: str) -> str:
+    """Coarser context-layer geometry for administrative boundaries."""
+    return (
+        "ST_AsGeoJSON("
+        f"ST_SimplifyPreserveTopology({geom_expr}, {_DISTRICT_SIMPLIFY_TOLERANCE_DEG}), "
+        f"{_DISTRICT_MAX_DECIMAL_DIGITS})"
+    )
+
+
 def aoi_features(s: Session) -> list[dict]:
     rows = (
         s.execute(
@@ -485,17 +496,108 @@ def catchment_features(s: Session) -> list[dict]:
     return [dict(r) for r in rows]
 
 
-def subbasin_features(s: Session) -> list[dict]:
+def district_boundary_features(s: Session) -> list[dict]:
+    rows = (
+        s.execute(
+            text(
+                f"""
+                SELECT
+                    district_id,
+                    ARRAY[
+                        ST_XMin(Box2D(geom)), ST_YMin(Box2D(geom)),
+                        ST_XMax(Box2D(geom)), ST_YMax(Box2D(geom))
+                    ] AS bbox,
+                    {_district_geojson('geom')} AS g
+                FROM district_boundary
+                ORDER BY district_id
+                """
+            )
+        )
+        .mappings()
+        .all()
+    )
+    return [dict(r) for r in rows]
+
+
+def subbasin_features(s: Session, reservoir_id: str | None = None) -> list[dict]:
     """Un-dissolved upstream basins for every reservoir. Same bounded-GeoJSON treatment
     as the other layers (D4) — it matters more here, since this is N polygons per
     reservoir rather than one."""
     rows = (
         s.execute(
             text(
-                "SELECT reservoir_id, hybas_id, next_down, is_headwater, catchment_version, "
-                f"{_bounded_geojson('geom')} AS g "
-                "FROM catchment_subbasin ORDER BY reservoir_id, hybas_id"
-            )
+                f"""
+                SELECT reservoir_id, hybas_id, next_down, is_headwater, catchment_version,
+                       {_bounded_geojson("geom")} AS g
+                FROM catchment_subbasin
+                WHERE (CAST(:reservoir_id AS text) IS NULL OR reservoir_id = :reservoir_id)
+                ORDER BY reservoir_id, hybas_id
+                """
+            ),
+            {"reservoir_id": reservoir_id},
+        )
+        .mappings()
+        .all()
+    )
+    return [dict(r) for r in rows]
+
+
+def flowline_features(
+    s: Session, reservoir_id: str | None = None, min_order: int | None = None
+) -> list[dict]:
+    rows = (
+        s.execute(
+            text(
+                f"""
+                SELECT
+                    reservoir_id,
+                    flowline_id,
+                    downstream_id,
+                    stream_order,
+                    ROUND(upstream_area_km2::numeric, 3) AS upstream_area_km2,
+                    ROUND(length_km::numeric, 3) AS length_km,
+                    is_main_stem,
+                    source_dataset,
+                    version,
+                    {_bounded_geojson("geom")} AS g
+                FROM catchment_flowline
+                WHERE (CAST(:reservoir_id AS text) IS NULL OR reservoir_id = :reservoir_id)
+                  AND (CAST(:min_order AS integer) IS NULL OR stream_order >= :min_order)
+                ORDER BY reservoir_id, stream_order DESC NULLS LAST, flowline_id
+                """
+            ),
+            {"reservoir_id": reservoir_id, "min_order": min_order},
+        )
+        .mappings()
+        .all()
+    )
+    return [dict(r) for r in rows]
+
+
+def hydrologic_layer_provenance(s: Session, reservoir_id: str | None = None) -> list[dict]:
+    rows = (
+        s.execute(
+            text(
+                """
+                SELECT
+                    reservoir_id,
+                    layer_name,
+                    source_dataset,
+                    source_version,
+                    source_date,
+                    ROUND(resolution_m::numeric, 3) AS resolution_m,
+                    processed_at,
+                    processing_version,
+                    ROUND(simplification_tolerance_deg::numeric, 8) AS simplification_tolerance_deg,
+                    projection,
+                    limitations,
+                    metadata_json AS metadata
+                FROM hydrologic_layer_provenance
+                WHERE (CAST(:reservoir_id AS text) IS NULL OR reservoir_id = :reservoir_id)
+                ORDER BY reservoir_id, layer_name
+                """
+            ),
+            {"reservoir_id": reservoir_id},
         )
         .mappings()
         .all()
@@ -563,6 +665,41 @@ def flow_edge_features(s: Session) -> list[dict]:
                     ST_AsGeoJSON(ST_MakeLine(from_pt, to_pt), {_MAX_DECIMAL_DIGITS}) AS g
                 FROM measured
                 WHERE to_pt IS NOT NULL AND NOT ST_Equals(from_pt, to_pt)
+                UNION ALL
+                SELECT
+                    r.reservoir_id,
+                    0 AS from_hybas_id,
+                    NULL AS to_hybas_id,
+                    true AS is_headwater,
+                    COALESCE(r.catchment_version, 'catchment_fallback') AS catchment_version,
+                    ROUND(
+                        (ST_Distance(ST_PointOnSurface(r.catchment_geom)::geography,
+                                     r.dam_point::geography) / 1000.0)::numeric,
+                        2
+                    ) AS distance_to_reservoir_km,
+                    ROUND(
+                        LEAST(
+                            GREATEST(
+                                (ST_Distance(ST_PointOnSurface(r.catchment_geom)::geography,
+                                             r.dam_point::geography) / 1000.0) / 75.0,
+                                0.25
+                            ),
+                            7.0
+                        )::numeric,
+                        2
+                    ) AS routing_lag_days,
+                    ST_AsGeoJSON(
+                        ST_MakeLine(ST_PointOnSurface(r.catchment_geom), r.dam_point),
+                        {_MAX_DECIMAL_DIGITS}
+                    ) AS g
+                FROM reservoir r
+                WHERE r.catchment_geom IS NOT NULL
+                  AND r.dam_point IS NOT NULL
+                  AND NOT ST_Equals(ST_PointOnSurface(r.catchment_geom), r.dam_point)
+                  AND NOT EXISTS (
+                      SELECT 1 FROM catchment_subbasin s
+                      WHERE s.reservoir_id = r.reservoir_id
+                  )
                 ORDER BY reservoir_id, from_hybas_id
                 """
             )

@@ -3,14 +3,19 @@ import type { LeafletMouseEvent, Path } from "leaflet";
 import { useCatchment } from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
 
-const CATCHMENT_STYLE = { color: "#d9a45b", weight: 1.5, dashArray: "6 4", fillOpacity: 0.04 };
+const CATCHMENT_STYLE = {
+  color: "#ff1e1e",
+  weight: 3.2,
+  opacity: 1,
+  fillColor: "#d9d5a5",
+  fillOpacity: 0.16,
+};
 /** Hover lifts the catchment to a purple wash. mouseout restores CATCHMENT_STYLE
  *  wholesale, so the colour reverts with the opacity. */
-const CATCHMENT_HOVER_STYLE = { color: "#a06bd4", fillOpacity: 0.8 };
+const CATCHMENT_HOVER_STYLE = { color: "#ffffff", weight: 4.2, fillOpacity: 0.24 };
 
-/** Upstream catchment (HydroBASINS) for the selected reservoir. Dashed sand
- *  outline so it reads as a terrain boundary, not water. Degrades to nothing
- *  on query error or missing feature — never blocks the other layers. */
+/** Upstream catchment (HydroBASINS) for the selected reservoir. Drawn as the
+ *  hydroshed boundary: a strong red divide over terrain, like a static GIS map. */
 export default function CatchmentLayer() {
   const selected = useAppStore((s) => s.selected);
   const show = useAppStore((s) => s.showCatchment);
@@ -24,6 +29,7 @@ export default function CatchmentLayer() {
       data={f}
       style={CATCHMENT_STYLE}
       onEachFeature={(_, layer) => {
+        layer.bindTooltip("Upstream catchment divide<br/>HydroBASINS-derived boundary");
         layer.on({
           mouseover: (event: LeafletMouseEvent) => {
             (event.target as Path).setStyle(CATCHMENT_HOVER_STYLE);
