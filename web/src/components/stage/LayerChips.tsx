@@ -6,7 +6,9 @@ import {
   useCatchment,
   useDistricts,
   useFlowlines,
+  usePmdMonsoon,
   usePmdStations,
+  usePmdWarnings,
   useSubBasins,
   useWaterExtent,
 } from "../../lib/queries";
@@ -28,6 +30,8 @@ export default function LayerChips() {
   const showDistricts = useAppStore((s) => s.showDistricts);
   const showWaterExtent = useAppStore((s) => s.showWaterExtent);
   const showPmdStations = useAppStore((s) => s.showPmdStations);
+  const showPmdWarnings = useAppStore((s) => s.showPmdWarnings);
+  const showPmdMonsoon = useAppStore((s) => s.showPmdMonsoon);
   const toggleLayer = useAppStore((s) => s.toggleLayer);
   const { data: catchment } = useCatchment();
   const { data: subbasins } = useSubBasins();
@@ -35,6 +39,8 @@ export default function LayerChips() {
   const { data: districts } = useDistricts();
   const { data: extent } = useWaterExtent();
   const pmdStations = usePmdStations(open || showPmdStations);
+  const pmdWarnings = usePmdWarnings(open || showPmdWarnings);
+  const pmdMonsoon = usePmdMonsoon(open || showPmdMonsoon);
   const hasCatchment = !!selected && !!catchment?.features.some(
     (f) => f.properties.reservoir_id === selected,
   );
@@ -46,7 +52,11 @@ export default function LayerChips() {
   const hasFlowPaths = !!selected && !!flowlines?.features.length;
   const hasDistricts = !!districts?.features.length;
   const pmdDisabled = pmdStations.error instanceof ApiError && pmdStations.error.status === 503;
+  const pmdWarningsDisabled = pmdWarnings.error instanceof ApiError && pmdWarnings.error.status === 503;
+  const pmdMonsoonDisabled = pmdMonsoon.error instanceof ApiError && pmdMonsoon.error.status === 503;
   const hasPmdStations = !!pmdStations.data?.features.length;
+  const hasPmdWarnings = !!pmdWarnings.data?.features.length;
+  const hasPmdMonsoon = !!pmdMonsoon.data?.features.length;
   const stale = extentFeature ? isExtentStale(extentFeature.properties.acquisition_date) : false;
   const activeBasemap = BASEMAPS.find((b) => b.id === basemap)?.name ?? "Basemap";
   const activeComposite = SAR_COMPOSITES.find((c) => c.id === sarComposite)?.name ?? "SAR";
@@ -57,7 +67,10 @@ export default function LayerChips() {
     showDistricts && hasDistricts,
     showWaterExtent && extentFeature,
     showPmdStations && hasPmdStations,
+    showPmdWarnings && hasPmdWarnings,
+    showPmdMonsoon && hasPmdMonsoon,
   ].filter(Boolean).length;
+  const weatherUnavailable = pmdDisabled || pmdWarningsDisabled || pmdMonsoonDisabled;
   return (
     <div className={`map-control-panel ${open ? "open" : "collapsed"}`} aria-label="Map controls">
       <button
@@ -161,15 +174,29 @@ export default function LayerChips() {
               >
                 PMD stations
               </button>
+              <button
+                type="button"
+                className={`map-control-btn ${showPmdWarnings ? "on" : ""}`}
+                disabled={pmdWarningsDisabled || !hasPmdWarnings}
+                onClick={() => toggleLayer("pmdWarnings")}
+              >
+                PMD warnings
+              </button>
+              <button
+                type="button"
+                className={`map-control-btn ${showPmdMonsoon ? "on" : ""}`}
+                disabled={pmdMonsoonDisabled || !hasPmdMonsoon}
+                onClick={() => toggleLayer("pmdMonsoon")}
+              >
+                Monsoon warnings
+              </button>
             </div>
             <small className="map-control-note">
-              {pmdDisabled
+              {weatherUnavailable
                 ? "PMD credentials are not configured on the backend."
-                : hasPmdStations
-                  ? `${pmdStations.data?.features.length ?? 0} stations · ${pmdStations.data?.features[0]?.properties.cache_status ?? "cache"}`
-                  : pmdStations.isLoading
-                    ? "Checking PMD station availability..."
-                    : "No PMD station observations available."}
+                : pmdStations.isLoading || pmdWarnings.isLoading || pmdMonsoon.isLoading
+                  ? "Checking PMD weather availability..."
+                  : `${pmdStations.data?.features.length ?? 0} stations · ${pmdWarnings.data?.features.length ?? 0} warnings · ${pmdMonsoon.data?.features.length ?? 0} monsoon`}
             </small>
           </div>
           {showWaterExtent && extentFeature && (

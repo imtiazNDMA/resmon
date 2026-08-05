@@ -124,3 +124,21 @@ export const usePmdStations = (enabled = true) =>
     staleTime: 5 * 60_000,
     retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
   });
+
+export const usePmdWarnings = (enabled = true) =>
+  useQuery({
+    queryKey: ["pmdWarnings"],
+    queryFn: ({ signal }) => api.pmdWarnings(signal),
+    enabled,
+    staleTime: 2 * 60_000,
+    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
+  });
+
+export const usePmdMonsoon = (enabled = true) =>
+  useQuery({
+    queryKey: ["pmdMonsoon"],
+    queryFn: ({ signal }) => api.pmdMonsoon(signal),
+    enabled,
+    staleTime: 5 * 60_000,
+    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
+  });

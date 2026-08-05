@@ -196,3 +196,23 @@ export interface PmdStationObservationProperties extends PmdFreshnessProperties 
   warn_rain: string | null;
   warn_vis: string | null;
 }
+
+export interface PmdWarningProperties extends PmdFreshnessProperties {
+  warning_id: string | null;
+  severity: string | null;
+  hazard: string | null;
+  model: string | null;
+  forecast_time: string | null;
+  data_time: string | null;
+  message: string | null;
+  area_name: string | null;
+}
+
+export interface PmdMonsoonProperties extends PmdFreshnessProperties {
+  warning_id: string | null;
+  severity: string | null;
+  data_type: string | null;
+  data_time: string | null;
+  message: string | null;
+  forecast: unknown;
+}

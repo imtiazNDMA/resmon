@@ -20,6 +20,8 @@ interface AppState {
   showDistricts: boolean;
   showWaterExtent: boolean;
   showPmdStations: boolean;
+  showPmdWarnings: boolean;
+  showPmdMonsoon: boolean;
   selectReservoir: (id: ReservoirId) => void;
   openDashboard: () => void;
   setActiveDate: (d: string | null) => void;
@@ -28,7 +30,15 @@ interface AppState {
   setSarComposite: (composite: SarCompositeId) => void;
   setPlaying: (p: boolean) => void;
   toggleLayer: (
-    layer: "catchment" | "subBasins" | "flowEdges" | "districts" | "waterExtent" | "pmdStations"
+    layer:
+      | "catchment"
+      | "subBasins"
+      | "flowEdges"
+      | "districts"
+      | "waterExtent"
+      | "pmdStations"
+      | "pmdWarnings"
+      | "pmdMonsoon"
   ) => void;
 }
 
@@ -47,6 +57,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   showDistricts: false,
   showWaterExtent: false,
   showPmdStations: false,
+  showPmdWarnings: false,
+  showPmdMonsoon: false,
   selectReservoir: (id) =>
     set({
       view: "map",
@@ -78,6 +90,10 @@ export const useAppStore = create<AppState>((set, get) => ({
               ? { showDistricts: !state.showDistricts }
               : layer === "waterExtent"
                 ? { showWaterExtent: !state.showWaterExtent }
-                : { showPmdStations: !state.showPmdStations },
+                : layer === "pmdStations"
+                  ? { showPmdStations: !state.showPmdStations }
+                  : layer === "pmdWarnings"
+                    ? { showPmdWarnings: !state.showPmdWarnings }
+                    : { showPmdMonsoon: !state.showPmdMonsoon },
     ),
 }));
