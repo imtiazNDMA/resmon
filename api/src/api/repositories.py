@@ -485,6 +485,94 @@ def catchment_features(s: Session) -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def subbasin_features(s: Session) -> list[dict]:
+    """Un-dissolved upstream basins for every reservoir. Same bounded-GeoJSON treatment
+    as the other layers (D4) — it matters more here, since this is N polygons per
+    reservoir rather than one."""
+    rows = (
+        s.execute(
+            text(
+                "SELECT reservoir_id, hybas_id, next_down, is_headwater, catchment_version, "
+                f"{_bounded_geojson('geom')} AS g "
+                "FROM catchment_subbasin ORDER BY reservoir_id, hybas_id"
+            )
+        )
+        .mappings()
+        .all()
+    )
+    return [dict(r) for r in rows]
+
+
+def flow_edge_features(s: Session) -> list[dict]:
+    """Directed display edges from each sub-basin toward the reservoir.
+
+    The edge geometry uses polygon interior points. HydroRIVERS/MERIT flowlines can
+    replace this later, but this first slice makes the existing HydroBASINS topology
+    visible without adding a new external dataset.
+    """
+    rows = (
+        s.execute(
+            text(
+                f"""
+                WITH basins AS (
+                    SELECT
+                        reservoir_id,
+                        hybas_id,
+                        next_down,
+                        is_headwater,
+                        catchment_version,
+                        ST_PointOnSurface(geom) AS pt
+                    FROM catchment_subbasin
+                ), edges AS (
+                    SELECT
+                        b.reservoir_id,
+                        b.hybas_id AS from_hybas_id,
+                        CASE WHEN d.hybas_id IS NULL THEN NULL ELSE b.next_down END AS to_hybas_id,
+                        b.is_headwater,
+                        b.catchment_version,
+                        b.pt AS from_pt,
+                        COALESCE(d.pt, r.dam_point) AS to_pt,
+                        r.dam_point
+                    FROM basins b
+                    JOIN reservoir r ON r.reservoir_id = b.reservoir_id
+                    LEFT JOIN basins d
+                      ON d.reservoir_id = b.reservoir_id
+                     AND d.hybas_id = b.next_down
+                    WHERE r.dam_point IS NOT NULL
+                ), measured AS (
+                    SELECT
+                        *,
+                        ST_Distance(from_pt::geography, dam_point::geography) / 1000.0
+                            AS distance_to_reservoir_km
+                    FROM edges
+                )
+                SELECT
+                    reservoir_id,
+                    from_hybas_id,
+                    to_hybas_id,
+                    is_headwater,
+                    catchment_version,
+                    ROUND(distance_to_reservoir_km::numeric, 2) AS distance_to_reservoir_km,
+                    ROUND(
+                        LEAST(
+                            GREATEST(distance_to_reservoir_km / 75.0, 0.25),
+                            7.0
+                        )::numeric,
+                        2
+                    ) AS routing_lag_days,
+                    ST_AsGeoJSON(ST_MakeLine(from_pt, to_pt), {_MAX_DECIMAL_DIGITS}) AS g
+                FROM measured
+                WHERE to_pt IS NOT NULL AND NOT ST_Equals(from_pt, to_pt)
+                ORDER BY reservoir_id, from_hybas_id
+                """
+            )
+        )
+        .mappings()
+        .all()
+    )
+    return [dict(r) for r in rows]
+
+
 def water_extent_features(s: Session) -> list[dict]:
     rows = (
         s.execute(

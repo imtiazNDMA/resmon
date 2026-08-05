@@ -8,6 +8,7 @@ from core.models.abt import AnalyticalBaseTable
 from core.models.base import CONTRACT_VERSION, Base
 from core.models.capacity_history import ReservoirCapacityHistory
 from core.models.catchment_forcing import CatchmentForcing
+from core.models.catchment_subbasin import CatchmentSubbasin
 from core.models.forecast_forcing import ForecastForcing
 from core.models.ground_truth import GroundTruth
 from core.models.ground_truth_match import GroundTruthMatch
@@ -29,6 +30,7 @@ __all__ = [
     "GroundTruthMatch",
     "RatingCurve",
     "CatchmentForcing",
+    "CatchmentSubbasin",
     "ForecastForcing",
     "AnalyticalBaseTable",
     "ModelVersion",

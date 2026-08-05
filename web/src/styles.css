@@ -116,6 +116,30 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); }
 }
 .extent-date-chip.stale { border-color: var(--warn); color: var(--warn); }
 
+/* Topology-derived hydrologic flow paths. The path geometry is ordered upstream
+   to downstream, so dash-offset animation reads as transport toward the dam. */
+.flow-edge-path {
+  stroke-dasharray: 7 7;
+  animation: flow-dash 1.8s linear infinite;
+  animation-delay: calc(var(--flow-delay, 0s) * -0.18);
+  filter: drop-shadow(0 0 4px rgba(99, 215, 255, .65));
+}
+.flow-edge-path-headwater {
+  stroke-dasharray: 9 7;
+  animation-duration: 2.2s;
+  filter: drop-shadow(0 0 6px rgba(189, 244, 255, .82));
+}
+@keyframes flow-dash {
+  from { stroke-dashoffset: 32; }
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-edge-path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
 
 /* ---- Timeline dock ---- */
 .dock {

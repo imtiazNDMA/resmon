@@ -3,6 +3,8 @@
 Produces georeferenced GeoJSON from **live GEE** (requires a service-account key):
 - ``derive_aoi`` — reservoir footprint from JRC GSW ``max_extent``, dam-connected (FR-RS-1).
 - ``delineate_catchment`` — full HydroBASINS upstream union at the dam (FR-DE-7).
+- ``delineate_subbasins`` — the same upstream set left **un-dissolved**, one row per
+  HydroBASINS unit with its topology and a headwater flag.
 - ``latest_water_extent`` — current Sentinel-1 VH water mask + true area (FR-RS-2/3),
   thresholded **per scene** via the shared Otsu-on-histogram implementation from
   ``extractors`` (ADR-0007: adaptive, never a fixed global threshold), with the same
@@ -144,14 +146,25 @@ def _upstream_basin_ids(
     return upstream
 
 
-@_gee_retry
-def delineate_catchment(
-    lon: float, lat: float, level: int = 7, expected_km2: float | None = None
-) -> dict:
-    """Full upstream catchment at the dam (FR-DE-7): find the HydroBASINS level-``level``
-    basin containing the dam, walk the ``HYBAS_ID``/``NEXT_DOWN`` graph client-side to
-    collect every upstream basin, and union the geometries. The single seed basin alone
-    is only a small fraction of the true drainage area (Bhakra ≈ 56,900 km²)."""
+def _headwater_ids(basins: Iterable[Mapping], upstream: set[int]) -> set[int]:
+    """The basins at the top of the catchment: those in ``upstream`` that nothing
+    drains into. Pure counterpart to ``_upstream_basin_ids``, unit-testable without GEE.
+
+    ``upstream`` is closed under NEXT_DOWN children (the walk follows every child
+    transitively), so "no feeders at all" and "no feeders inside the catchment" are the
+    same predicate — no need to special-case basins on the catchment edge.
+    """
+    fed = {int(row["NEXT_DOWN"]) for row in basins if int(row["HYBAS_ID"]) in upstream}
+    return {b for b in upstream if b not in fed}
+
+
+def _upstream_selection(lon: float, lat: float, level: int) -> tuple[object, set[int], list[dict]]:
+    """Shared front half of the two catchment extractors: locate the seed basin under
+    the dam, pull the geometry-free topology table for its MAIN_BAS, and walk it upstream.
+
+    Returns the (unfiltered) same-main-basin collection, the upstream id set and the raw
+    topology rows, so callers can either dissolve the geometries or keep them apart.
+    """
     import ee
 
     init_ee()
@@ -175,8 +188,20 @@ def delineate_catchment(
     rows = [feat["properties"] for feat in (table or {}).get("features", [])]
     if not rows:
         raise GeeExtractionError(f"empty HydroBASINS topology table for MAIN_BAS={main_bas}")
-    ids = _upstream_basin_ids(rows, seed_id)
+    return candidates, _upstream_basin_ids(rows, seed_id), rows
 
+
+@_gee_retry
+def delineate_catchment(
+    lon: float, lat: float, level: int = 7, expected_km2: float | None = None
+) -> dict:
+    """Full upstream catchment at the dam (FR-DE-7): find the HydroBASINS level-``level``
+    basin containing the dam, walk the ``HYBAS_ID``/``NEXT_DOWN`` graph client-side to
+    collect every upstream basin, and union the geometries. The single seed basin alone
+    is only a small fraction of the true drainage area (Bhakra ≈ 56,900 km²)."""
+    import ee
+
+    candidates, ids, _rows = _upstream_selection(lon, lat, level)
     upstream = candidates.filter(ee.Filter.inList("HYBAS_ID", sorted(ids)))
     geom = upstream.union(maxError=120).geometry().simplify(300)
     out = ee.Dictionary({"geom": geom, "area_m2": geom.area(maxError=300)}).getInfo()
@@ -196,6 +221,58 @@ def delineate_catchment(
     else:
         log.info("catchment at (%s, %s): %d basins, %.0f km²", lon, lat, len(ids), area_km2)
     return out["geom"]
+
+
+@_gee_retry
+def delineate_subbasins(lon: float, lat: float, level: int = 7) -> list[dict]:
+    """The upstream catchment left **un-dissolved** — the individual HydroBASINS units
+    that ``delineate_catchment`` unions away. One dict per basin::
+
+        {"hybas_id": int, "next_down": int, "is_headwater": bool, "geom": {GeoJSON}}
+
+    ``is_headwater`` marks the top of the catchment (nothing drains into it). Same seed
+    lookup and graph walk as ``delineate_catchment``, so the two stay consistent by
+    construction; the extra cost is one getInfo carrying the polygon geometries.
+    """
+    import ee
+
+    candidates, ids, rows = _upstream_selection(lon, lat, level)
+    headwaters = _headwater_ids(rows, ids)
+
+    # Simplify per basin at the same 300 m tolerance the union uses, and drop every
+    # property but the two we persist, so the single getInfo stays manageable.
+    upstream = (
+        candidates.filter(ee.Filter.inList("HYBAS_ID", sorted(ids)))
+        .map(lambda f: f.setGeometry(f.geometry().simplify(300)))
+        .select(["HYBAS_ID", "NEXT_DOWN"])
+    )
+    fc = upstream.getInfo()
+
+    out: list[dict] = []
+    for feat in (fc or {}).get("features", []):
+        props = feat.get("properties") or {}
+        geom = feat.get("geometry")
+        if geom is None or props.get("HYBAS_ID") is None:
+            continue
+        hybas_id = int(props["HYBAS_ID"])
+        out.append(
+            {
+                "hybas_id": hybas_id,
+                "next_down": int(props.get("NEXT_DOWN") or 0),
+                "is_headwater": hybas_id in headwaters,
+                "geom": geom,
+            }
+        )
+    if not out:
+        raise GeeExtractionError(f"no sub-basin geometries returned at ({lon}, {lat})")
+    log.info(
+        "sub-basins at (%s, %s): %d basins, %d headwaters",
+        lon,
+        lat,
+        len(out),
+        sum(1 for b in out if b["is_headwater"]),
+    )
+    return out
 
 
 @_gee_retry
