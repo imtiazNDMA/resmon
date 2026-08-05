@@ -4,9 +4,12 @@ HTTP layer reads the uncommitted pipeline output in this transaction.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import pytest
 from api.db import get_db
 from api.main import app
+from api.sar_assets import SarAsset, upsert_asset
 from data_engineering.ingest import ingest_bulletins
 from data_engineering.pipeline import DEFAULT_CSV
 from data_engineering.seed import seed_reservoirs
@@ -14,6 +17,8 @@ from fastapi.testclient import TestClient
 from ml.forecasting import run_forecasting
 from ml.release import run_release_risk
 from sqlalchemy import text
+
+from api import gee_tiles
 
 
 @pytest.fixture
@@ -45,6 +50,36 @@ def test_reservoir_catalogue_and_detail(client):
     assert isinstance(r.json()[0]["live_capacity_bcm"], (int, float))
     assert client.get("/reservoirs/pong").status_code == 200
     assert client.get("/reservoirs/does_not_exist").status_code == 404
+
+
+def test_reservoir_catalogue_ignores_incomplete_reservoir_metadata(client, session):
+    session.execute(
+        text(
+            """
+            INSERT INTO reservoir
+              (reservoir_id, name, basin, dam_point, frl_m, live_capacity_bcm,
+               aoi_geom, aoi_version, orbit_relative, pass_direction, release_thresholds)
+            VALUES
+              ('incomplete', 'Incomplete', 'Chenab', ST_GeomFromText('POINT(75 33)', 4326),
+               NULL, NULL,
+               ST_GeomFromText(
+                 'MULTIPOLYGON(((75 33,75.1 33,75.1 33.1,75 33.1,75 33)))', 4326),
+               'v1', 12, 'ASC', '{}'::jsonb)
+            """
+        )
+    )
+
+    catalogue = client.get("/reservoirs")
+    assert catalogue.status_code == 200
+    assert {r["reservoir_id"] for r in catalogue.json()} == {"gobind_sagar", "pong", "thein"}
+
+    markers = client.get("/geojson/reservoirs")
+    assert markers.status_code == 200
+    assert {f["properties"]["reservoir_id"] for f in markers.json()["features"]} == {
+        "gobind_sagar",
+        "pong",
+        "thein",
+    }
 
 
 def test_status_and_timeseries(client):
@@ -84,6 +119,10 @@ def test_geojson_layers(client):
     for path in ("/geojson/catchment", "/geojson/water-extent"):
         layer = client.get(path).json()
         assert layer["type"] == "FeatureCollection"
+    districts = client.get("/geojson/districts").json()
+    assert districts["type"] == "FeatureCollection"
+    assert len(districts["features"]) > 0
+    assert districts["features"][0]["geometry"]["type"] in ("Polygon", "MultiPolygon")
 
 
 @pytest.fixture
@@ -162,6 +201,156 @@ def test_acquisitions_endpoint_serves_real_series(client, seeded_observation_row
     # C5 provenance: synthetic rows never reach the timeline, even with a real
     # extractor name — a fake area on the dashboard is a lie about the reservoir.
     assert "2026-01-01" not in dates
+
+
+def test_sar_tiles_reports_local_source_without_minting_gee(
+    client, seeded_observation_rows, monkeypatch, tmp_path
+):
+    vh = tmp_path / "vh.tif"
+    vh.write_bytes(b"placeholder")
+
+    def fake_find_asset(reservoir_id: str, acquisition_date: str, composite: str):
+        assert (reservoir_id, acquisition_date, composite) == ("gobind_sagar", "2020-01-05", "vh")
+        return SarAsset(
+            reservoir_id=reservoir_id,
+            acquisition_date=acquisition_date,
+            scene_id="S1A_TEST_0001",
+            vv_path=None,
+            vh_path=vh,
+            water_mask_path=None,
+            bounds=None,
+            min_zoom=8,
+            max_zoom=14,
+            status="ready",
+        )
+
+    def fail_get_cached_tile(*args, **kwargs):
+        raise AssertionError("Earth Engine should not be minted for cataloged local assets")
+
+    monkeypatch.setattr("api.routes.sar_assets.find_asset", fake_find_asset)
+    monkeypatch.setattr("api.routes.gee_tiles.get_cached_tile", fail_get_cached_tile)
+
+    r = client.get("/reservoirs/gobind_sagar/sar-tiles?date=2020-01-05&composite=vh")
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["source"] == "local"
+    assert body["composite"] == "vh"
+    assert body["tile_url"].endswith("?composite=vh")
+
+
+def test_sar_tiles_reports_earth_engine_source_when_local_asset_missing(
+    client, seeded_observation_rows, monkeypatch
+):
+    monkeypatch.setattr("api.routes.sar_assets.find_asset", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        "api.routes.gee_tiles.get_cached_tile",
+        lambda *args, **kwargs: ("https://tiles/{z}/{x}/{y}", datetime(2030, 1, 1, tzinfo=UTC)),
+    )
+
+    r = client.get("/reservoirs/gobind_sagar/sar-tiles?date=2020-01-05&composite=vh")
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["source"] == "earth_engine"
+    assert body["composite"] == "vh"
+
+
+def test_sar_tiles_rejects_invalid_composite(client, seeded_observation_rows):
+    r = client.get("/reservoirs/gobind_sagar/sar-tiles?date=2020-01-05&composite=bogus")
+
+    assert r.status_code == 422
+
+
+def test_sar_assets_manifest_endpoint_lists_local_coverage(
+    client, seeded_observation_rows, monkeypatch, tmp_path
+):
+    vh = tmp_path / "vh.tif"
+    vh.write_bytes(b"placeholder")
+    catalog = tmp_path / "catalog.sqlite"
+    upsert_asset(
+        SarAsset(
+            reservoir_id="gobind_sagar",
+            acquisition_date="2020-01-05",
+            scene_id="S1A_TEST_0001",
+            vv_path=None,
+            vh_path=vh,
+            water_mask_path=None,
+            bounds=(74.0, 31.0, 76.0, 33.0),
+            min_zoom=8,
+            max_zoom=14,
+            status="ready",
+        ),
+        catalog,
+    )
+    monkeypatch.setattr("api.routes.sar_assets._CATALOG_PATH", catalog)
+
+    r = client.get("/reservoirs/gobind_sagar/sar-assets")
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body == [
+        {
+            "reservoir_id": "gobind_sagar",
+            "acquisition_date": "2020-01-05",
+            "scene_id": "S1A_TEST_0001",
+            "composites": ["vh"],
+            "bounds": [74.0, 31.0, 76.0, 33.0],
+            "min_zoom": 8,
+            "max_zoom": 14,
+        }
+    ]
+
+
+def test_sar_tile_raster_serves_png_cache_before_minting_gee(
+    client, seeded_observation_rows, monkeypatch, tmp_path
+):
+    monkeypatch.setattr(gee_tiles, "_RASTER_CACHE_ROOT", tmp_path / "rasters")
+    path = gee_tiles._raster_path("gobind_sagar", "2020-01-05", "vh", 8, 10, 20)
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"cached-png")
+
+    def fail_get_cached_tile(*args, **kwargs):
+        raise AssertionError("Earth Engine should not be minted for cached PNG tiles")
+
+    monkeypatch.setattr("api.routes.gee_tiles.get_cached_tile", fail_get_cached_tile)
+
+    r = client.get("/reservoirs/gobind_sagar/sar-tile-raster/2020-01-05/8/10/20?composite=vh")
+
+    assert r.status_code == 200
+    assert r.content == b"cached-png"
+    assert r.headers["cache-control"] == "public, max-age=86400, immutable"
+
+
+def test_sar_tile_raster_uses_local_renderer_before_gee(
+    client, seeded_observation_rows, monkeypatch, tmp_path
+):
+    vh = tmp_path / "vh.tif"
+    vh.write_bytes(b"placeholder")
+    asset = SarAsset(
+        reservoir_id="gobind_sagar",
+        acquisition_date="2020-01-05",
+        scene_id="S1A_TEST_0001",
+        vv_path=None,
+        vh_path=vh,
+        water_mask_path=None,
+        bounds=None,
+        min_zoom=8,
+        max_zoom=14,
+        status="ready",
+    )
+
+    def fail_get_cached_tile(*args, **kwargs):
+        raise AssertionError("Earth Engine should not be minted when local render succeeds")
+
+    monkeypatch.setattr("api.routes.sar_assets.find_asset", lambda *args, **kwargs: asset)
+    monkeypatch.setattr("api.routes.sar_assets.render_tile", lambda *args, **kwargs: b"local-png")
+    monkeypatch.setattr("api.routes.gee_tiles.get_cached_tile", fail_get_cached_tile)
+
+    r = client.get("/reservoirs/gobind_sagar/sar-tile-raster/2020-01-05/8/10/20?composite=vh")
+
+    assert r.status_code == 200
+    assert r.content == b"local-png"
 
 
 def test_current_estimate_endpoint_serves_selected_imagery_state(client, seeded_observation_rows):

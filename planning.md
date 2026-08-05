@@ -85,11 +85,11 @@ data/sar_cog/{reservoir_id}/{date}/water_mask.tif
 
 ## Phase 6: Production Hardening
 
-- [ ] Move COG storage behind a configurable root path.
-- [ ] Add checksums/file-size validation in the catalog.
-- [ ] Add metrics: local hit, rendered hit, Earth Engine fallback, tile render latency.
-- [ ] Add operational docs for refreshing SAR assets.
-- [ ] Consider moving rendered tiles and/or COGs to object storage/CDN.
+- [x] Move COG storage behind a configurable root path.
+- [x] Add checksums/file-size validation in the catalog.
+- [x] Add metrics: local hit, rendered hit, Earth Engine fallback, tile render latency.
+- [x] Add operational docs for refreshing SAR assets.
+- [x] Consider moving rendered tiles and/or COGs to object storage/CDN.
 
 ## Open Questions
 

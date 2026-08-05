@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     gee_project: str | None = Field(default=None)
     gee_sa_key_file: str | None = Field(default=None)  # file-mounted, never inlined
 
+    # --- Local SAR serving ---
+    sar_cog_root: str = Field(default="data/sar_cog")
+
 
 @lru_cache
 def get_settings() -> Settings:

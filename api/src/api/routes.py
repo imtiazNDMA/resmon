@@ -7,6 +7,7 @@ Postgres ``Decimal`` to JSON numbers and publish a real OpenAPI contract.
 from __future__ import annotations
 
 import json
+import time
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from datetime import date as Date
@@ -36,6 +37,7 @@ from api.schemas import (
     ReservoirStatus,
     ReservoirSummary,
     SarAssetManifestEntryOut,
+    SarTileMetricsOut,
     SarTileOut,
     TimeseriesPoint,
     WaterExtentProperties,
@@ -187,6 +189,7 @@ def reservoir_sar_tile_raster(
         composite = gee_tiles.validate_composite(composite)
         cached = gee_tiles.get_cached_raster_content(rid, date_key, composite, z, x, y)
         if cached is not None:
+            gee_tiles.record_rendered_cache_hit()
             return Response(
                 content=cached,
                 media_type="image/png",
@@ -194,9 +197,12 @@ def reservoir_sar_tile_raster(
             )
         local_asset = sar_assets.find_asset(rid, date_key, composite)
         if local_asset is not None:
+            gee_tiles.record_local_asset_hit()
             try:
+                started = time.perf_counter()
                 content = sar_assets.render_tile(local_asset, composite, z, x, y)
                 gee_tiles.put_cached_raster_content(rid, date_key, composite, z, x, y, content)
+                gee_tiles.record_local_render((time.perf_counter() - started) * 1000)
                 return Response(
                     content=content,
                     media_type="image/png",
@@ -205,7 +211,9 @@ def reservoir_sar_tile_raster(
             except sar_assets.LocalSarUnavailable:
                 pass
         tile_url, _ = gee_tiles.get_cached_tile(rid, date_key, scene_id, composite)
+        started = time.perf_counter()
         content = gee_tiles.get_cached_raster(tile_url, rid, date_key, composite, z, x, y)
+        gee_tiles.record_earth_engine_fallback((time.perf_counter() - started) * 1000)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except gee_tiles.GeeUnavailable as exc:
@@ -215,6 +223,12 @@ def reservoir_sar_tile_raster(
         media_type="image/png",
         headers={"Cache-Control": "public, max-age=86400, immutable"},
     )
+
+
+@router.get("/metrics/sar-tiles", tags=["metrics"], response_model=SarTileMetricsOut)
+def sar_tile_metrics() -> dict:
+    """In-process counters for local SAR tile serving paths."""
+    return gee_tiles.sar_tile_metrics().__dict__
 
 
 @router.get(

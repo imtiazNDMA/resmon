@@ -27,20 +27,44 @@ describe("app store transitions", () => {
     expect(s().selected).toBe("thein");
   });
 
+  it("changes basemaps without resetting timeline or overlays", () => {
+    s().selectReservoir("pong");
+    s().setActiveDate("2026-07-16");
+    s().toggleLayer("districts");
+    s().setBasemap("dark");
+    expect(s().basemap).toBe("dark");
+    expect(s().activeDate).toBe("2026-07-16");
+    expect(s().selected).toBe("pong");
+    expect(s().showDistricts).toBe(true);
+  });
+
+  it("changes SAR composites without resetting basemap or overlays", () => {
+    s().setBasemap("dark");
+    s().toggleLayer("catchment");
+    s().setSarComposite("false_color");
+    expect(s().sarComposite).toBe("false_color");
+    expect(s().basemap).toBe("dark");
+    expect(s().showCatchment).toBe(true);
+  });
+
   it("setActiveDate ignores dates while no reservoir selected", () => {
     s().setActiveDate("2020-01-05");
     expect(s().activeDate).toBeNull();
   });
 
-  it("layer toggles default on and flip independently", () => {
+  it("layer toggles default off and flip independently", () => {
+    expect(s().showCatchment).toBe(false);
+    expect(s().showDistricts).toBe(false);
+    expect(s().showWaterExtent).toBe(false);
+    s().toggleLayer("catchment");
     expect(s().showCatchment).toBe(true);
-    expect(s().showWaterExtent).toBe(true);
+    expect(s().showDistricts).toBe(false);
+    expect(s().showWaterExtent).toBe(false); // independent
     s().toggleLayer("catchment");
     expect(s().showCatchment).toBe(false);
-    expect(s().showWaterExtent).toBe(true); // independent
-    s().toggleLayer("catchment");
-    expect(s().showCatchment).toBe(true);
+    s().toggleLayer("districts");
+    expect(s().showDistricts).toBe(true);
     s().toggleLayer("waterExtent");
-    expect(s().showWaterExtent).toBe(false);
+    expect(s().showWaterExtent).toBe(true);
   });
 });

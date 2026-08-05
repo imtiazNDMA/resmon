@@ -99,6 +99,15 @@ class SarAssetManifestEntryOut(BaseModel):
     max_zoom: int
 
 
+class SarTileMetricsOut(BaseModel):
+    rendered_cache_hits: int
+    local_asset_hits: int
+    local_renders: int
+    earth_engine_fallbacks: int
+    tile_render_latency_ms_total: float
+    tile_render_latency_ms_avg: float
+
+
 class RainfallPointOut(BaseModel):
     date: str
     precip_mm: float | None

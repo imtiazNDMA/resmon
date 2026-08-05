@@ -21,9 +21,11 @@ export default function Sidebar() {
   return (
     <nav className="sidebar">
       <div className="brand">◈ RESERVOIR WATCH</div>
-      {RESERVOIRS.map((r) => (
-        <ReservoirButton key={r.id} id={r.id} name={r.name} basin={r.basin} />
-      ))}
+      <div className="reservoir-list">
+        {RESERVOIRS.map((r) => (
+          <ReservoirButton key={r.id} id={r.id} name={r.name} basin={r.basin} />
+        ))}
+      </div>
       <div className="date-range-card">
         <div className="date-range-title">Imagery range</div>
         <label>

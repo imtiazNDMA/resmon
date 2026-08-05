@@ -12,9 +12,11 @@ def clear_cache(monkeypatch, tmp_path):
     monkeypatch.setattr(gee_tiles, "_DISK_CACHE_PATH", tmp_path / "sar_tiles.json")
     gee_tiles._DISK_CACHE_LOADED = False
     gee_tiles._CACHE.clear()
+    gee_tiles.reset_sar_tile_metrics()
     yield
     gee_tiles._CACHE.clear()
     gee_tiles._DISK_CACHE_LOADED = False
+    gee_tiles.reset_sar_tile_metrics()
 
 
 def test_cache_hit_within_ttl(monkeypatch):
@@ -166,3 +168,19 @@ def test_put_cached_raster_content_persists_tile(monkeypatch, tmp_path):
     gee_tiles.put_cached_raster_content("pong", "2020-01-05", "vh", 8, 10, 20, b"rendered")
 
     assert gee_tiles.get_cached_raster_content("pong", "2020-01-05", "vh", 8, 10, 20) == b"rendered"
+
+
+def test_sar_tile_metrics_record_serving_paths():
+    gee_tiles.record_rendered_cache_hit()
+    gee_tiles.record_local_asset_hit()
+    gee_tiles.record_local_render(12.0)
+    gee_tiles.record_earth_engine_fallback(18.0)
+
+    metrics = gee_tiles.sar_tile_metrics()
+
+    assert metrics.rendered_cache_hits == 1
+    assert metrics.local_asset_hits == 1
+    assert metrics.local_renders == 1
+    assert metrics.earth_engine_fallbacks == 1
+    assert metrics.tile_render_latency_ms_total == 30.0
+    assert metrics.tile_render_latency_ms_avg == 15.0

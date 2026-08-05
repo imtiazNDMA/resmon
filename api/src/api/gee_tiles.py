@@ -59,6 +59,25 @@ class RasterCacheStats:
     bytes: int
 
 
+@dataclass(frozen=True)
+class SarTileMetrics:
+    rendered_cache_hits: int
+    local_asset_hits: int
+    local_renders: int
+    earth_engine_fallbacks: int
+    tile_render_latency_ms_total: float
+    tile_render_latency_ms_avg: float
+
+
+_METRICS = {
+    "rendered_cache_hits": 0,
+    "local_asset_hits": 0,
+    "local_renders": 0,
+    "earth_engine_fallbacks": 0,
+    "tile_render_latency_ms_total": 0.0,
+}
+
+
 class GeeUnavailable(RuntimeError):
     """GEE credentials missing or initialisation failed — degrade, don't crash."""
 
@@ -281,6 +300,42 @@ def cleanup_raster_cache(max_bytes: int, root: Path | None = None) -> RasterCach
         total -= size
         tiles -= 1
     return RasterCacheStats(root=root, tiles=tiles, bytes=total)
+
+
+def record_rendered_cache_hit() -> None:
+    _METRICS["rendered_cache_hits"] += 1
+
+
+def record_local_asset_hit() -> None:
+    _METRICS["local_asset_hits"] += 1
+
+
+def record_local_render(latency_ms: float) -> None:
+    _METRICS["local_renders"] += 1
+    _METRICS["tile_render_latency_ms_total"] += latency_ms
+
+
+def record_earth_engine_fallback(latency_ms: float) -> None:
+    _METRICS["earth_engine_fallbacks"] += 1
+    _METRICS["tile_render_latency_ms_total"] += latency_ms
+
+
+def sar_tile_metrics() -> SarTileMetrics:
+    rendered = int(_METRICS["local_renders"] + _METRICS["earth_engine_fallbacks"])
+    total_latency = float(_METRICS["tile_render_latency_ms_total"])
+    return SarTileMetrics(
+        rendered_cache_hits=int(_METRICS["rendered_cache_hits"]),
+        local_asset_hits=int(_METRICS["local_asset_hits"]),
+        local_renders=int(_METRICS["local_renders"]),
+        earth_engine_fallbacks=int(_METRICS["earth_engine_fallbacks"]),
+        tile_render_latency_ms_total=total_latency,
+        tile_render_latency_ms_avg=total_latency / rendered if rendered else 0.0,
+    )
+
+
+def reset_sar_tile_metrics() -> None:
+    for key in _METRICS:
+        _METRICS[key] = 0.0 if key.endswith("_total") else 0
 
 
 def get_cached_raster(
