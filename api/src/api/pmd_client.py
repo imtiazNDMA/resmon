@@ -14,6 +14,7 @@ import threading
 import time
 from collections.abc import Callable, MutableMapping
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 
 import requests
@@ -163,6 +164,145 @@ def pmd_configured() -> bool:
 
 def pmd_source(key: str) -> PmdSource:
     return PMD_SOURCES[key]
+
+
+def _number(value: Any) -> float | None:
+    value = clean_pmd_value(value)
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _text(value: Any) -> str | None:
+    value = clean_pmd_value(value)
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def _bool_or_none(value: Any) -> bool | None:
+    value = clean_pmd_value(value)
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int | float):
+        return bool(value)
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"true", "1", "ok", "online", "active"}:
+            return True
+        if lowered in {"false", "0", "offline", "inactive"}:
+            return False
+    return None
+
+
+def _first(props: dict[str, Any], *keys: str) -> Any:
+    for key in keys:
+        if key in props and props[key] is not None:
+            return props[key]
+    return None
+
+
+def _station_items(payload: Any) -> list[tuple[dict[str, Any] | None, dict[str, Any]]]:
+    payload = clean_pmd_value(payload)
+    if isinstance(payload, dict) and payload.get("type") == "FeatureCollection":
+        items = []
+        for feature in payload.get("features") or []:
+            if not isinstance(feature, dict):
+                continue
+            props = feature.get("properties") or {}
+            if isinstance(props, dict):
+                items.append((feature.get("geometry"), props))
+        return items
+    if isinstance(payload, dict):
+        for key in ("features", "data", "items", "rows", "results"):
+            value = payload.get(key)
+            if isinstance(value, list):
+                return _station_items(value)
+    if isinstance(payload, list):
+        items = []
+        for row in payload:
+            if isinstance(row, dict) and row.get("type") == "Feature":
+                props = row.get("properties") or {}
+                if isinstance(props, dict):
+                    items.append((row.get("geometry"), props))
+            elif isinstance(row, dict):
+                items.append((None, row))
+        return items
+    return []
+
+
+def _point_geometry(
+    geometry: dict[str, Any] | None, props: dict[str, Any]
+) -> dict[str, Any] | None:
+    if isinstance(geometry, dict) and geometry.get("type") == "Point":
+        coords = geometry.get("coordinates")
+        if isinstance(coords, list | tuple) and len(coords) >= 2:
+            lon = _number(coords[0])
+            lat = _number(coords[1])
+            if lon is not None and lat is not None:
+                return {"type": "Point", "coordinates": [lon, lat]}
+    lon = _number(_first(props, "lon", "lng", "long", "longitude", "x"))
+    lat = _number(_first(props, "lat", "latitude", "y"))
+    if lon is None or lat is None:
+        return None
+    return {"type": "Point", "coordinates": [lon, lat]}
+
+
+def normalize_monitor_station_features(
+    payload: Any, *, cache_status: str, fetched_at: datetime | None = None
+) -> dict[str, Any]:
+    """Normalize PMD Monitor station observations to our public GeoJSON contract."""
+    source = pmd_source("monitor_stations")
+    timestamp = fetched_at or datetime.now(UTC)
+    features = []
+    for geometry, raw_props in _station_items(payload):
+        props = clean_pmd_value(raw_props)
+        if not isinstance(props, dict):
+            continue
+        point = _point_geometry(geometry, props)
+        if point is None:
+            continue
+        date_time = _text(_first(props, "date_time", "datetime", "obs_time", "time"))
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": point,
+                "properties": {
+                    "station_id": _text(_first(props, "station_id", "id")),
+                    "code": _text(_first(props, "code", "station_code")),
+                    "name": _text(_first(props, "name", "station_name")),
+                    "station_type": _text(_first(props, "station_type", "type")),
+                    "date_time": date_time,
+                    "temperature_c": _number(_first(props, "temperature", "temp", "tem")),
+                    "humidity_pct": _number(_first(props, "humidity", "rhu")),
+                    "pressure_hpa": _number(_first(props, "pressure", "prs")),
+                    "wind_speed_mps": _number(_first(props, "wind_speed", "wspd")),
+                    "wind_direction_deg": _number(_first(props, "wind_direction", "wdir")),
+                    "rain_1h_mm": _number(_first(props, "rain_1h", "rain1h")),
+                    "rain_6h_mm": _number(_first(props, "rain_6h", "rain6h")),
+                    "rain_24h_mm": _number(_first(props, "rain_24h", "rain24h", "pre24")),
+                    "visibility_km": _number(_first(props, "visibility", "vis")),
+                    "status": _bool_or_none(_first(props, "status", "online")),
+                    "warn_temp": _text(_first(props, "warn_temp")),
+                    "warn_wind": _text(_first(props, "warn_wind")),
+                    "warn_rain": _text(_first(props, "warn_rain")),
+                    "warn_vis": _text(_first(props, "warn_vis")),
+                    "source": source.source_name,
+                    "source_timestamp": date_time,
+                    "fetched_at": timestamp,
+                    "cache_status": cache_status,
+                    "stale": cache_status == "stale",
+                    "ttl_seconds": source.ttl_seconds,
+                },
+            }
+        )
+    return {"type": "FeatureCollection", "features": features}
 
 
 def clean_pmd_value(value: Any) -> Any:

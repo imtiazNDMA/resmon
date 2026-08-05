@@ -364,16 +364,16 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 ### 8C.2 PMD GeoJSON Observation + Warning Contracts
 
-- [ ] Define typed Pydantic schemas and TypeScript contracts for PMD station observations, NWFC observations, warning polygons, monsoon warnings, lightning strikes, GLOF observations, city forecasts, and FFD water levels
+- [~] Define typed Pydantic schemas and TypeScript contracts for PMD station observations, NWFC observations, warning polygons, monsoon warnings, lightning strikes, GLOF observations, city forecasts, and FFD water levels — backend Pydantic station observation contract added; TypeScript and remaining datasets still open
 - [ ] Represent nested JSON-string upstream fields (`fc`, `elements`, `gauges`, selected warning geometry fields) as parsed native JSON in our API responses where safe and stable
-- [ ] Preserve raw upstream IDs/codes (`station_id`, `code`, `data_type`, `model`, `forecast_time`) so map features can be joined, inspected, and refreshed deterministically
-- [ ] Add freshness fields to every PMD response: `source`, `source_timestamp`, `fetched_at`, `cache_status`, `stale`, and `ttl_seconds`
-- [ ] Return empty valid FeatureCollections for normal no-data conditions; reserve non-2xx responses for auth/config/server failures
-- [ ] Add fixture responses for representative non-empty, empty, stale-cache, sentinel-value, and malformed-nested-JSON cases
+- [~] Preserve raw upstream IDs/codes (`station_id`, `code`, `data_type`, `model`, `forecast_time`) so map features can be joined, inspected, and refreshed deterministically — station `station_id`/`code` preserved
+- [~] Add freshness fields to every PMD response: `source`, `source_timestamp`, `fetched_at`, `cache_status`, `stale`, and `ttl_seconds` — station endpoint includes these fields where upstream provides timestamps
+- [x] Return empty valid FeatureCollections for normal no-data conditions; reserve non-2xx responses for auth/config/server failures — covered for PMD station endpoint
+- [~] Add fixture responses for representative non-empty, empty, stale-cache, sentinel-value, and malformed-nested-JSON cases — no-network station tests cover non-empty, empty, stale, and sentinel cleaning
 
 ### 8C.3 Backend PMD GeoJSON API
 
-- [ ] Add `/weather/pmd/monitor/stations` for live SYNOP/METAR/AWS station observations with temperature, rainfall, wind, humidity, pressure, visibility, and warning color fields
+- [x] Add `/weather/pmd/monitor/stations` for live SYNOP/METAR/AWS station observations with temperature, rainfall, wind, humidity, pressure, visibility, and warning color fields
 - [ ] Add `/weather/pmd/nwfc/observations` for NWFC station observations and weather-text/icon classification inputs
 - [ ] Add `/weather/pmd/monitor/warnings` for active warning polygons with severity, hazard element, model, forecast time, data time, message, and area
 - [ ] Add `/weather/pmd/monitor/monsoon` for monsoon-specific warnings and rainfall forecast text
@@ -382,7 +382,7 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 - [ ] Add `/weather/ffd/waterlevels` for FFD river gauge discharge/status points and parsed gauge arrays
 - [ ] Add `/weather/pmd/monitor/city-forecast` for city current conditions plus parsed 12-step forecast arrays
 - [ ] Add endpoint-level timeout handling so one slow upstream source cannot block unrelated reservoir/hydrologic map endpoints
-- [ ] Add repository-free API tests using mocked PMD client responses; avoid network calls in tests
+- [~] Add repository-free API tests using mocked PMD client responses; avoid network calls in tests — station endpoint covered with dependency override fake client
 
 ### 8C.4 PMD Forecast Raster Discovery
 

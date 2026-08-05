@@ -9,6 +9,7 @@ from api.pmd_client import (
     PmdMonitorClient,
     clean_pmd_value,
     extract_jwt,
+    normalize_monitor_station_features,
     parse_json_string,
     pmd_source,
 )
@@ -79,6 +80,50 @@ def test_source_registry_tracks_ttls_attribution_and_debug_exclusions():
     assert stations.geometry_type == "Point"
     assert "monitor_debug" not in PMD_SOURCES
     assert "api/pmd/monitor/debug/" in EXCLUDED_PMD_ENDPOINTS
+
+
+def test_normalize_monitor_station_features_accepts_geojson_and_cleans_values():
+    payload = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [73.1, 33.7]},
+                "properties": {
+                    "station_id": "1",
+                    "code": "OPIS",
+                    "name": "Islamabad",
+                    "station_type": "synop",
+                    "date_time": "2026-08-05 10:00:00",
+                    "temperature": 31.5,
+                    "rain_24h": 9999.0,
+                    "status": "true",
+                    "warn_rain": "yellow",
+                },
+            }
+        ],
+    }
+
+    normalized = normalize_monitor_station_features(payload, cache_status="fetched")
+    feature = normalized["features"][0]
+
+    assert feature["geometry"] == {"type": "Point", "coordinates": [73.1, 33.7]}
+    assert feature["properties"]["temperature_c"] == 31.5
+    assert feature["properties"]["rain_24h_mm"] is None
+    assert feature["properties"]["status"] is True
+    assert feature["properties"]["source"] == "PMD Monitor"
+
+
+def test_normalize_monitor_station_features_accepts_raw_rows_with_lat_lon():
+    normalized = normalize_monitor_station_features(
+        [{"lat": "33.7", "lon": "73.1", "temp": "29.5", "pre24": "12.0"}],
+        cache_status="stale",
+    )
+
+    props = normalized["features"][0]["properties"]
+    assert props["temperature_c"] == 29.5
+    assert props["rain_24h_mm"] == 12.0
+    assert props["stale"] is True
 
 
 def test_cached_returns_fresh_then_stale_on_fetch_failure():

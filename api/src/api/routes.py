@@ -16,6 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
 from sqlalchemy.orm import Session
 
 import api.gee_tiles as gee_tiles
+import api.pmd_client as pmd
 import api.repositories as repo
 import api.sar_assets as sar_assets
 from api.db import get_db
@@ -32,6 +33,7 @@ from api.schemas import (
     ForecastResponse,
     HydrologicLayerProvenanceOut,
     MetForcingOut,
+    PmdStationObservationProperties,
     RainfallPointOut,
     ReleaseRiskEntry,
     ReservoirDetail,
@@ -47,6 +49,12 @@ from api.schemas import (
 )
 
 router = APIRouter()
+
+_PMD_CLIENT = pmd.PmdMonitorClient()
+
+
+def get_pmd_monitor_client() -> pmd.PmdMonitorClient:
+    return _PMD_CLIENT
 
 
 def _ensure_reservoir(db: Session, rid: str) -> None:
@@ -250,6 +258,33 @@ def reservoir_met_forcings(rid: str, db: Session = Depends(get_db)) -> dict:
     """Latest catchment-aggregated MET forcings for map overlay toggles."""
     _ensure_reservoir(db, rid)
     return repo.met_forcings(db, rid)
+
+
+@router.get(
+    "/weather/pmd/monitor/stations",
+    tags=["weather"],
+    response_model=FeatureCollection[PmdStationObservationProperties],
+)
+def weather_pmd_monitor_stations(
+    client: pmd.PmdMonitorClient = Depends(get_pmd_monitor_client),
+) -> dict:
+    """Live PMD Monitor SYNOP/METAR/AWS station observations as GeoJSON."""
+    source = pmd.pmd_source("monitor_stations")
+    if not client.configured():
+        raise HTTPException(status_code=503, detail="PMD Monitor credentials are not configured")
+    try:
+        cached = client.cached(
+            "pmd_monitor_stations",
+            source.ttl_seconds,
+            lambda: client.get_json(source.upstream_path),
+            fallback_key="pmd_monitor_stations_stale",
+        )
+    except pmd.PmdUpstreamError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return pmd.normalize_monitor_station_features(
+        cached.value,
+        cache_status=cached.cache_status,
+    )
 
 
 @router.get("/reservoirs/{rid}/forecast", tags=["forecast"], response_model=ForecastResponse)

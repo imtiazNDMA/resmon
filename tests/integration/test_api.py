@@ -9,6 +9,8 @@ from datetime import UTC, datetime
 import pytest
 from api.db import get_db
 from api.main import app
+from api.pmd_client import PmdCacheResult, PmdConfigError, pmd_source
+from api.routes import get_pmd_monitor_client
 from api.sar_assets import SarAsset, upsert_asset
 from data_engineering.ingest import ingest_bulletins
 from data_engineering.pipeline import DEFAULT_CSV
@@ -714,6 +716,89 @@ def test_rainfall_endpoint_empty_is_honest(client):
 
 def test_rainfall_unknown_reservoir_404(client):
     assert client.get("/reservoirs/nope/rainfall").status_code == 404
+
+
+class FakePmdClient:
+    def __init__(self, *, configured=True, payload=None, cache_status="fetched"):
+        self._configured = configured
+        self.payload = payload if payload is not None else {
+            "type": "FeatureCollection",
+            "features": [],
+        }
+        self.cache_status = cache_status
+
+    def configured(self):
+        return self._configured
+
+    def cached(self, key, ttl_seconds, fetch, *, fallback_key=None):
+        if not self._configured:
+            raise PmdConfigError("not configured")
+        return PmdCacheResult(self.payload, self.cache_status)
+
+    def get_json(self, path):
+        return self.payload
+
+
+def test_weather_pmd_monitor_stations_disabled_without_config(client):
+    app.dependency_overrides[get_pmd_monitor_client] = lambda: FakePmdClient(configured=False)
+    try:
+        response = client.get("/weather/pmd/monitor/stations")
+    finally:
+        app.dependency_overrides.pop(get_pmd_monitor_client, None)
+
+    assert response.status_code == 503
+
+
+def test_weather_pmd_monitor_stations_serves_typed_geojson(client):
+    payload = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [73.1, 33.7]},
+                "properties": {
+                    "station_id": "1",
+                    "code": "OPIS",
+                    "name": "Islamabad",
+                    "station_type": "synop",
+                    "date_time": "2026-08-05 10:00:00",
+                    "temperature": 31.5,
+                    "rain_24h": 8.2,
+                    "warn_rain": "yellow",
+                    "status": True,
+                },
+            }
+        ],
+    }
+    app.dependency_overrides[get_pmd_monitor_client] = lambda: FakePmdClient(payload=payload)
+    try:
+        response = client.get("/weather/pmd/monitor/stations")
+    finally:
+        app.dependency_overrides.pop(get_pmd_monitor_client, None)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["type"] == "FeatureCollection"
+    assert len(body["features"]) == 1
+    props = body["features"][0]["properties"]
+    assert props["source"] == pmd_source("monitor_stations").source_name
+    assert props["temperature_c"] == 31.5
+    assert props["rain_24h_mm"] == 8.2
+    assert props["cache_status"] == "fetched"
+    assert props["stale"] is False
+
+
+def test_weather_pmd_monitor_stations_accepts_empty_payload(client):
+    app.dependency_overrides[get_pmd_monitor_client] = lambda: FakePmdClient(
+        payload={"type": "FeatureCollection", "features": []}
+    )
+    try:
+        response = client.get("/weather/pmd/monitor/stations")
+    finally:
+        app.dependency_overrides.pop(get_pmd_monitor_client, None)
+
+    assert response.status_code == 200
+    assert response.json() == {"type": "FeatureCollection", "features": []}
 
 
 def test_openapi_published(client):

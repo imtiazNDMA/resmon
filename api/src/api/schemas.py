@@ -250,6 +250,34 @@ class DistrictBoundaryProperties(BaseModel):
     bbox: list[float]
 
 
+class PmdStationObservationProperties(BaseModel):
+    station_id: str | None
+    code: str | None
+    name: str | None
+    station_type: str | None
+    date_time: str | None
+    temperature_c: float | None
+    humidity_pct: float | None
+    pressure_hpa: float | None
+    wind_speed_mps: float | None
+    wind_direction_deg: float | None
+    rain_1h_mm: float | None
+    rain_6h_mm: float | None
+    rain_24h_mm: float | None
+    visibility_km: float | None
+    status: bool | None
+    warn_temp: str | None
+    warn_wind: str | None
+    warn_rain: str | None
+    warn_vis: str | None
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
 class ReservoirMarkerProperties(BaseModel):
     reservoir_id: str
     name: str
