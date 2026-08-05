@@ -11,7 +11,7 @@
   --warn: #e8b45a;
   --danger: #e0654f;
   --radius: 10px;
-  --sidebar-w: 240px;
+  --sidebar-w: 280px;
   --dock-h: 84px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-1: 200ms; /* micro */

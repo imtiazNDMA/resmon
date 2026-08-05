@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_SAR_COMPOSITE } from "./sarComposites";
 import { useAppStore } from "./store";
 
 const s = () => useAppStore.getState();
@@ -28,46 +27,44 @@ describe("app store transitions", () => {
     expect(s().selected).toBe("thein");
   });
 
+  it("changes basemaps without resetting timeline or overlays", () => {
+    s().selectReservoir("pong");
+    s().setActiveDate("2026-07-16");
+    s().toggleLayer("districts");
+    s().setBasemap("dark");
+    expect(s().basemap).toBe("dark");
+    expect(s().activeDate).toBe("2026-07-16");
+    expect(s().selected).toBe("pong");
+    expect(s().showDistricts).toBe(true);
+  });
+
+  it("changes SAR composites without resetting basemap or overlays", () => {
+    s().setBasemap("dark");
+    s().toggleLayer("catchment");
+    s().setSarComposite("false_color");
+    expect(s().sarComposite).toBe("false_color");
+    expect(s().basemap).toBe("dark");
+    expect(s().showCatchment).toBe(true);
+  });
+
   it("setActiveDate ignores dates while no reservoir selected", () => {
     s().setActiveDate("2020-01-05");
     expect(s().activeDate).toBeNull();
   });
 
-  it("stores the selected SAR composite", () => {
-    expect(s().sarComposite).toBe(DEFAULT_SAR_COMPOSITE);
-    s().setSarComposite("water_class");
-    expect(s().sarComposite).toBe("water_class");
-  });
-
-  it("layer toggles default on and flip independently", () => {
+  it("layer toggles default off and flip independently", () => {
+    expect(s().showCatchment).toBe(false);
+    expect(s().showDistricts).toBe(false);
+    expect(s().showWaterExtent).toBe(false);
+    s().toggleLayer("catchment");
     expect(s().showCatchment).toBe(true);
-    expect(s().showWaterExtent).toBe(true);
-    expect(s().showFlowEdges).toBe(false);
+    expect(s().showDistricts).toBe(false);
+    expect(s().showWaterExtent).toBe(false); // independent
     s().toggleLayer("catchment");
     expect(s().showCatchment).toBe(false);
-    expect(s().showWaterExtent).toBe(true); // independent
-    s().toggleLayer("catchment");
-    expect(s().showCatchment).toBe(true);
+    s().toggleLayer("districts");
+    expect(s().showDistricts).toBe(true);
     s().toggleLayer("waterExtent");
-    expect(s().showWaterExtent).toBe(false);
-  });
-
-  it("sub-basins default off and toggle without disturbing the other layers", () => {
-    expect(s().showSubBasins).toBe(false); // opt-in: dozens of polygons over the basemap
-    s().toggleLayer("subBasins");
-    expect(s().showSubBasins).toBe(true);
-    expect(s().showCatchment).toBe(true);
-    expect(s().showWaterExtent).toBe(true);
-    s().toggleLayer("subBasins");
-    expect(s().showSubBasins).toBe(false);
-  });
-
-  it("flow paths default off and toggle independently", () => {
-    expect(s().showFlowEdges).toBe(false);
-    s().toggleLayer("flowEdges");
-    expect(s().showFlowEdges).toBe(true);
-    expect(s().showCatchment).toBe(true);
-    expect(s().showSubBasins).toBe(false);
     expect(s().showWaterExtent).toBe(true);
   });
 });

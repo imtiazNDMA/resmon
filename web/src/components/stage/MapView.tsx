@@ -1,14 +1,15 @@
 import { useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CircleMarker, GeoJSON, MapContainer, TileLayer, useMap } from "react-leaflet";
+import { BASEMAPS } from "../../lib/basemaps";
 import { sarTileQuery, useAcquisitions, useAoi, useMarkers } from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
 import AreaMeter from "./AreaMeter";
 import CatchmentLayer from "./CatchmentLayer";
-import FlowEdgeLayer from "./FlowEdgeLayer";
+import DistrictBoundaryLayer from "./DistrictBoundaryLayer";
 import LayerChips from "./LayerChips";
 import SarTileLayer from "./SarTileLayer";
-import SubBasinLayer from "./SubBasinLayer";
+import SarTilePreloader from "./SarTilePreloader";
 import TimelineDock from "./TimelineDock";
 import WaterExtentLayer from "./WaterExtentLayer";
 
@@ -60,13 +61,15 @@ export default function MapView() {
   const queryClient = useQueryClient();
   const selected = useAppStore((s) => s.selected);
   const activeDate = useAppStore((s) => s.activeDate);
+  const basemapId = useAppStore((s) => s.basemap);
+  const sarComposite = useAppStore((s) => s.sarComposite);
   const imageryDateFrom = useAppStore((s) => s.imageryDateFrom);
   const imageryDateTo = useAppStore((s) => s.imageryDateTo);
-  const sarComposite = useAppStore((s) => s.sarComposite);
   const setActiveDate = useAppStore((s) => s.setActiveDate);
   const { data: aoi } = useAoi();
   const { data: markers } = useMarkers();
   const { data: acqs } = useAcquisitions(selected);
+  const basemap = BASEMAPS.find((b) => b.id === basemapId) ?? BASEMAPS[0]!;
   const filteredAcqs = useMemo(
     () =>
       acqs?.filter(
@@ -75,6 +78,14 @@ export default function MapView() {
       ),
     [acqs, imageryDateFrom, imageryDateTo],
   );
+  const preloadDates = useMemo(() => {
+    if (!activeDate || !filteredAcqs?.length) return [];
+    const idx = filteredAcqs.findIndex((a) => a.date === activeDate);
+    if (idx < 0) return [];
+    return [filteredAcqs[idx + 1], filteredAcqs[idx + 2], filteredAcqs[idx - 1]]
+      .filter((a): a is NonNullable<typeof a> => !!a)
+      .map((a) => a.date);
+  }, [activeDate, filteredAcqs]);
 
   // Default to the latest acquisition in the selected date range.
   useEffect(() => {
@@ -100,10 +111,7 @@ export default function MapView() {
     <div className="mapview">
       <MapContainer center={HOME} zoom={8} zoomControl={false} className="leaflet-root">
         <MapSizeInvalidator />
-        <TileLayer
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-          attribution="Esri"
-        />
+        <TileLayer key={basemap.id} url={basemap.url} attribution={basemap.attribution} />
         <CameraDriver />
         {aoi && (
           <GeoJSON
@@ -112,8 +120,7 @@ export default function MapView() {
             style={{ color: "#59b7ff", weight: 1.5, fillOpacity: 0.05 }}
           />
         )}
-        <SubBasinLayer />
-        <FlowEdgeLayer />
+        <DistrictBoundaryLayer />
         <CatchmentLayer />
         <WaterExtentLayer />
         {markers?.features.map((f) => {
@@ -130,6 +137,9 @@ export default function MapView() {
           );
         })}
         {selected && activeDate && <SarTileLayer rid={selected} date={activeDate} />}
+        {selected && preloadDates.length > 0 && (
+          <SarTilePreloader rid={selected} dates={preloadDates} />
+        )}
       </MapContainer>
       <LayerChips />
       {selected && filteredAcqs && filteredAcqs.length > 0 && <AreaMeter acquisitions={filteredAcqs} />}
