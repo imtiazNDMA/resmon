@@ -56,6 +56,20 @@ class PmdSource:
     limitations: str
 
 
+@dataclass(frozen=True)
+class PmdForecastElement:
+    key: str
+    data_type: str
+    element: str
+    label: str
+    unit: str
+    accumulation: str
+    status: str
+    notes: str
+    color_ramp: str
+    max_frames: int
+
+
 PMD_SOURCES: dict[str, PmdSource] = {
     "monitor_stations": PmdSource(
         key="monitor_stations",
@@ -127,6 +141,57 @@ PMD_SOURCES: dict[str, PmdSource] = {
     ),
 }
 
+PMD_FORECAST_ELEMENTS: dict[str, PmdForecastElement] = {
+    "pmd_pred_hourtpe": PmdForecastElement(
+        key="pmd_pred_hourtpe",
+        data_type="WRFPRS",
+        element="HOURTPE",
+        label="Hourly precipitation",
+        unit="mm",
+        accumulation="1h",
+        status="candidate",
+        notes="Candidate only; requires live metadata and raster inspection before UI exposure.",
+        color_ramp="project_precip_fallback",
+        max_frames=24,
+    ),
+    "pmd_pred_sixtpe": PmdForecastElement(
+        key="pmd_pred_sixtpe",
+        data_type="WRFPRS",
+        element="SIXTPE",
+        label="6h precipitation",
+        unit="mm",
+        accumulation="6h",
+        status="candidate",
+        notes="Candidate only; accumulation reset semantics are not yet confirmed.",
+        color_ramp="project_precip_fallback",
+        max_frames=20,
+    ),
+    "pmd_pred_twelvetpe": PmdForecastElement(
+        key="pmd_pred_twelvetpe",
+        data_type="WRFPRS",
+        element="TWELVETPE",
+        label="12h precipitation",
+        unit="mm",
+        accumulation="12h",
+        status="candidate",
+        notes="Candidate only; time labels and accumulation window are not yet confirmed.",
+        color_ramp="project_precip_fallback",
+        max_frames=16,
+    ),
+    "pmd_pred_daytpe": PmdForecastElement(
+        key="pmd_pred_daytpe",
+        data_type="WRFPRS",
+        element="DAYTPE",
+        label="24h precipitation",
+        unit="mm",
+        accumulation="24h",
+        status="candidate",
+        notes="Candidate only; daily-total vs rolling-24h semantics are not yet confirmed.",
+        color_ramp="project_precip_fallback",
+        max_frames=14,
+    ),
+}
+
 EXCLUDED_PMD_ENDPOINTS = frozenset(
     {
         "api/pmd/monitor/debug/",
@@ -164,6 +229,120 @@ def pmd_configured() -> bool:
 
 def pmd_source(key: str) -> PmdSource:
     return PMD_SOURCES[key]
+
+
+def pmd_forecast_element(key: str) -> PmdForecastElement:
+    return PMD_FORECAST_ELEMENTS[key]
+
+
+def pmd_forecast_element_candidates() -> list[PmdForecastElement]:
+    return list(PMD_FORECAST_ELEMENTS.values())
+
+
+def summarize_model_time_response(payload: Any) -> dict[str, Any]:
+    """Summarize PMD modelTimeList output without depending on one vendor shape."""
+    cleaned = clean_pmd_value(payload)
+    rows: list[Any]
+    if isinstance(cleaned, list):
+        rows = cleaned
+    elif isinstance(cleaned, dict):
+        rows = []
+        for key in ("data", "items", "rows", "results", "model_times", "times"):
+            value = cleaned.get(key)
+            if isinstance(value, list):
+                rows = value
+                break
+        if not rows:
+            rows = [cleaned]
+    else:
+        rows = []
+
+    times: list[str] = []
+    frames = 0
+    for row in rows:
+        if isinstance(row, str):
+            text = row.strip()
+            if text:
+                times.append(text)
+            continue
+        if not isinstance(row, dict):
+            continue
+        for key in ("model_time", "modelTime", "run", "run_time", "date", "time"):
+            text = _text(row.get(key))
+            if text:
+                times.append(text)
+                break
+        frame_list = _first(row, "frames", "steps", "forecast_times", "dates")
+        if isinstance(frame_list, list):
+            frames += len(frame_list)
+
+    return {
+        "available": bool(rows),
+        "row_count": len(rows),
+        "model_times": times,
+        "frame_count": frames or None,
+    }
+
+
+def latest_model_time(payload: Any) -> str | None:
+    summary = summarize_model_time_response(payload)
+    times = summary["model_times"]
+    if not times:
+        return None
+    return str(times[-1])
+
+
+def normalize_prediction_frames(payload: Any) -> list[dict[str, Any]]:
+    cleaned = clean_pmd_value(payload)
+    rows: list[Any]
+    if isinstance(cleaned, list):
+        rows = cleaned
+    elif isinstance(cleaned, dict):
+        rows = []
+        for key in ("steps", "frames", "data", "items", "rows", "results"):
+            value = cleaned.get(key)
+            if isinstance(value, list):
+                rows = value
+                break
+    else:
+        rows = []
+
+    frames = []
+    for index, row in enumerate(rows):
+        if isinstance(row, str):
+            frames.append({"date": row, "upstream_index": index})
+            continue
+        if not isinstance(row, dict):
+            continue
+        date = _text(
+            _first(row, "date", "datetime", "forecast_time", "valid_time", "time", "step")
+        )
+        url = _text(_first(row, "url", "png", "image_url", "raster_url"))
+        bounds = _parsed_optional_json(_first(row, "bounds", "bbox"))
+        coordinates = _parsed_optional_json(_first(row, "coordinates", "corners"))
+        frames.append(
+            {
+                "date": date or str(index),
+                "upstream_index": index,
+                "upstream_url": url,
+                "bounds": bounds if isinstance(bounds, list) else None,
+                "coordinates": coordinates if isinstance(coordinates, list) else None,
+            }
+        )
+    return frames
+
+
+def thin_prediction_frames(frames: list[dict[str, Any]], max_frames: int) -> list[dict[str, Any]]:
+    if len(frames) <= max_frames:
+        return frames
+    early_count = min(8, max_frames)
+    early = frames[:early_count]
+    remaining_slots = max_frames - early_count
+    if remaining_slots <= 0:
+        return early
+    tail = frames[early_count:]
+    stride = max(1, math.ceil(len(tail) / remaining_slots))
+    return early + tail[::stride][:remaining_slots]
 
 
 def _number(value: Any) -> float | None:
@@ -252,6 +431,18 @@ def _point_geometry(
     if lon is None or lat is None:
         return None
     return {"type": "Point", "coordinates": [lon, lat]}
+
+
+def _geometry_from_props(
+    geometry: dict[str, Any] | None, props: dict[str, Any]
+) -> dict[str, Any] | None:
+    if isinstance(geometry, dict) and geometry.get("type"):
+        return geometry
+    for key in ("geometry", "geom", "area", "polygon", "coordinates"):
+        parsed = _parsed_optional_json(props.get(key))
+        if isinstance(parsed, dict) and parsed.get("type"):
+            return parsed
+    return _point_geometry(geometry, props)
 
 
 def normalize_monitor_station_features(
@@ -388,6 +579,223 @@ def normalize_glof_observation_features(
                     "temperature_c": _number(_first(props, "temperature", "temp", "tem")),
                     "source": source.source_name,
                     "source_timestamp": date_time,
+                    "fetched_at": timestamp,
+                    "cache_status": cache_status,
+                    "stale": cache_status == "stale",
+                    "ttl_seconds": source.ttl_seconds,
+                },
+            }
+        )
+    return {"type": "FeatureCollection", "features": features}
+
+
+def normalize_lightning_features(
+    payload: Any, *, hours: int, cache_status: str, fetched_at: datetime | None = None
+) -> dict[str, Any]:
+    """Normalize recent PMD lightning strikes to our public GeoJSON contract."""
+    source = pmd_source("monitor_lightning")
+    timestamp = fetched_at or datetime.now(UTC)
+    features = []
+    for geometry, raw_props in _station_items(payload):
+        props = clean_pmd_value(raw_props)
+        if not isinstance(props, dict):
+            continue
+        point = _point_geometry(geometry, props)
+        if point is None:
+            continue
+        strike_time = _text(
+            _first(props, "strike_time", "date_time", "datetime", "time", "timestamp")
+        )
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": point,
+                "properties": {
+                    "strike_id": _text(_first(props, "strike_id", "id")),
+                    "strike_time": strike_time,
+                    "polarity": _text(_first(props, "polarity", "type")),
+                    "peak_current_ka": _number(
+                        _first(props, "peak_current", "current", "peak_current_ka")
+                    ),
+                    "multiplicity": _number(_first(props, "multiplicity", "strokes")),
+                    "window_hours": hours,
+                    "source": source.source_name,
+                    "source_timestamp": strike_time,
+                    "fetched_at": timestamp,
+                    "cache_status": cache_status,
+                    "stale": cache_status == "stale",
+                    "ttl_seconds": source.ttl_seconds,
+                },
+            }
+        )
+    return {"type": "FeatureCollection", "features": features}
+
+
+def _parsed_optional_json(value: Any) -> Any:
+    value = clean_pmd_value(value)
+    parsed = parse_json_string(value)
+    return clean_pmd_value(parsed)
+
+
+def normalize_ffd_waterlevel_features(
+    payload: Any, *, cache_status: str, fetched_at: datetime | None = None
+) -> dict[str, Any]:
+    """Normalize FFD river gauge water-level snapshots to GeoJSON points."""
+    source = pmd_source("ffd_waterlevels")
+    timestamp = fetched_at or datetime.now(UTC)
+    features = []
+    for geometry, raw_props in _station_items(payload):
+        props = clean_pmd_value(raw_props)
+        if not isinstance(props, dict):
+            continue
+        point = _point_geometry(geometry, props)
+        if point is None:
+            continue
+        date_time = _text(
+            _first(props, "date_time", "datetime", "obs_time", "time", "last_update")
+        )
+        gauges = _parsed_optional_json(_first(props, "gauges", "gauge", "readings"))
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": point,
+                "properties": {
+                    "station_id": _text(_first(props, "station_id", "id", "site_id")),
+                    "code": _text(_first(props, "code", "station_code", "site_code")),
+                    "name": _text(_first(props, "name", "station_name", "site_name")),
+                    "river": _text(_first(props, "river", "river_name")),
+                    "date_time": date_time,
+                    "water_level_m": _number(_first(props, "water_level", "level", "wl")),
+                    "discharge_cusecs": _number(
+                        _first(props, "discharge_cusecs", "discharge", "flow_cusecs")
+                    ),
+                    "discharge_cumecs": _number(_first(props, "discharge_cumecs", "flow_cms")),
+                    "status": _text(_first(props, "status", "flood_status", "category")),
+                    "gauges": gauges if isinstance(gauges, list | dict) else None,
+                    "source": source.source_name,
+                    "source_timestamp": date_time,
+                    "fetched_at": timestamp,
+                    "cache_status": cache_status,
+                    "stale": cache_status == "stale",
+                    "ttl_seconds": source.ttl_seconds,
+                },
+            }
+        )
+    return {"type": "FeatureCollection", "features": features}
+
+
+def normalize_warning_features(
+    payload: Any, *, cache_status: str, fetched_at: datetime | None = None
+) -> dict[str, Any]:
+    """Normalize PMD active warnings to GeoJSON features."""
+    source = pmd_source("monitor_warnings")
+    timestamp = fetched_at or datetime.now(UTC)
+    features = []
+    for geometry, raw_props in _station_items(payload):
+        props = clean_pmd_value(raw_props)
+        if not isinstance(props, dict):
+            continue
+        feature_geometry = _geometry_from_props(geometry, props)
+        if feature_geometry is None:
+            continue
+        forecast_time = _text(_first(props, "forecast_time", "valid_time", "valid_from"))
+        data_time = _text(_first(props, "data_time", "date_time", "datetime", "issued_at"))
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": feature_geometry,
+                "properties": {
+                    "warning_id": _text(_first(props, "warning_id", "id")),
+                    "severity": _text(_first(props, "severity", "level", "warning_level")),
+                    "hazard": _text(_first(props, "hazard", "element", "data_type")),
+                    "model": _text(_first(props, "model", "source_model")),
+                    "forecast_time": forecast_time,
+                    "data_time": data_time,
+                    "message": _text(_first(props, "message", "description", "text")),
+                    "area_name": _text(_first(props, "area_name", "area", "district")),
+                    "source": source.source_name,
+                    "source_timestamp": data_time or forecast_time,
+                    "fetched_at": timestamp,
+                    "cache_status": cache_status,
+                    "stale": cache_status == "stale",
+                    "ttl_seconds": source.ttl_seconds,
+                },
+            }
+        )
+    return {"type": "FeatureCollection", "features": features}
+
+
+def normalize_monsoon_features(
+    payload: Any, *, cache_status: str, fetched_at: datetime | None = None
+) -> dict[str, Any]:
+    """Normalize PMD monsoon warning rows to GeoJSON where geometry is available."""
+    source = pmd_source("monitor_monsoon")
+    timestamp = fetched_at or datetime.now(UTC)
+    features = []
+    for geometry, raw_props in _station_items(payload):
+        props = clean_pmd_value(raw_props)
+        if not isinstance(props, dict):
+            continue
+        feature_geometry = _geometry_from_props(geometry, props)
+        if feature_geometry is None:
+            continue
+        data_time = _text(_first(props, "data_time", "date_time", "datetime", "issued_at"))
+        forecast = _parsed_optional_json(_first(props, "fc", "forecast", "rainfall_forecast"))
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": feature_geometry,
+                "properties": {
+                    "warning_id": _text(_first(props, "warning_id", "id")),
+                    "severity": _text(_first(props, "severity", "level", "warning_level")),
+                    "data_type": _text(_first(props, "data_type", "type")),
+                    "data_time": data_time,
+                    "message": _text(_first(props, "message", "description", "text")),
+                    "forecast": forecast,
+                    "source": source.source_name,
+                    "source_timestamp": data_time,
+                    "fetched_at": timestamp,
+                    "cache_status": cache_status,
+                    "stale": cache_status == "stale",
+                    "ttl_seconds": source.ttl_seconds,
+                },
+            }
+        )
+    return {"type": "FeatureCollection", "features": features}
+
+
+def normalize_city_forecast_features(
+    payload: Any, *, cache_status: str, fetched_at: datetime | None = None
+) -> dict[str, Any]:
+    """Normalize PMD city current conditions and forecast arrays to GeoJSON points."""
+    source = pmd_source("monitor_city_forecast")
+    timestamp = fetched_at or datetime.now(UTC)
+    features = []
+    for geometry, raw_props in _station_items(payload):
+        props = clean_pmd_value(raw_props)
+        if not isinstance(props, dict):
+            continue
+        point = _point_geometry(geometry, props)
+        if point is None:
+            continue
+        data_time = _text(_first(props, "data_time", "date_time", "datetime", "time"))
+        forecast = _parsed_optional_json(_first(props, "fc", "forecast", "forecast_12"))
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": point,
+                "properties": {
+                    "city_id": _text(_first(props, "city_id", "id")),
+                    "name": _text(_first(props, "name", "city", "city_name")),
+                    "data_time": data_time,
+                    "weather_text": _text(_first(props, "weather", "weather_text", "description")),
+                    "weather_icon": _text(_first(props, "weather_icon", "icon", "icon_url")),
+                    "temperature_c": _number(_first(props, "temperature", "temp", "tem")),
+                    "humidity_pct": _number(_first(props, "humidity", "rhu")),
+                    "wind_speed_mps": _number(_first(props, "wind_speed", "wspd")),
+                    "forecast": forecast if isinstance(forecast, list | dict) else None,
+                    "source": source.source_name,
+                    "source_timestamp": data_time,
                     "fetched_at": timestamp,
                     "cache_status": cache_status,
                     "stale": cache_status == "stale",

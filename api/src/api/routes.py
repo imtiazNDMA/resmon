@@ -28,14 +28,20 @@ from api.schemas import (
     CurrentEstimateOut,
     DistrictBoundaryProperties,
     FeatureCollection,
+    FfdWaterlevelProperties,
     FlowEdgeProperties,
     FlowlineProperties,
     ForecastResponse,
     HydrologicLayerProvenanceOut,
     MetForcingOut,
+    PmdCityForecastProperties,
     PmdGlofObservationProperties,
+    PmdLightningProperties,
+    PmdMonsoonProperties,
     PmdNwfcObservationProperties,
+    PmdPredictionResponse,
     PmdStationObservationProperties,
+    PmdWarningProperties,
     RainfallPointOut,
     ReleaseRiskEntry,
     ReservoirDetail,
@@ -341,6 +347,207 @@ def weather_pmd_monitor_glof_observations(
         cached.value,
         cache_status=cached.cache_status,
     )
+
+
+@router.get(
+    "/weather/pmd/monitor/lightning",
+    tags=["weather"],
+    response_model=FeatureCollection[PmdLightningProperties],
+)
+def weather_pmd_monitor_lightning(
+    hours: int = Query(default=1, ge=1, le=48),
+    client: pmd.PmdMonitorClient = Depends(get_pmd_monitor_client),
+) -> dict:
+    """Recent PMD Monitor lightning strike points for a bounded lookback window."""
+    source = pmd.pmd_source("monitor_lightning")
+    if not client.configured():
+        raise HTTPException(status_code=503, detail="PMD Monitor credentials are not configured")
+    try:
+        cached = client.cached(
+            f"pmd_monitor_lightning_{hours}h",
+            source.ttl_seconds,
+            lambda: client.get_json(source.upstream_path, params={"hours": hours}),
+            fallback_key=f"pmd_monitor_lightning_{hours}h_stale",
+        )
+    except pmd.PmdUpstreamError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return pmd.normalize_lightning_features(
+        cached.value,
+        hours=hours,
+        cache_status=cached.cache_status,
+    )
+
+
+@router.get(
+    "/weather/ffd/waterlevels",
+    tags=["weather"],
+    response_model=FeatureCollection[FfdWaterlevelProperties],
+)
+def weather_ffd_waterlevels(
+    client: pmd.PmdMonitorClient = Depends(get_pmd_monitor_client),
+) -> dict:
+    """FFD river gauge water-level snapshot as normalized GeoJSON points."""
+    source = pmd.pmd_source("ffd_waterlevels")
+    if not client.configured():
+        raise HTTPException(status_code=503, detail="PMD Monitor credentials are not configured")
+    try:
+        cached = client.cached(
+            "ffd_waterlevels",
+            source.ttl_seconds,
+            lambda: client.get_json(source.upstream_path),
+            fallback_key="ffd_waterlevels_stale",
+        )
+    except pmd.PmdUpstreamError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return pmd.normalize_ffd_waterlevel_features(
+        cached.value,
+        cache_status=cached.cache_status,
+    )
+
+
+@router.get(
+    "/weather/pmd/monitor/warnings",
+    tags=["weather"],
+    response_model=FeatureCollection[PmdWarningProperties],
+)
+def weather_pmd_monitor_warnings(
+    client: pmd.PmdMonitorClient = Depends(get_pmd_monitor_client),
+) -> dict:
+    """Active PMD Monitor warning polygons as normalized GeoJSON."""
+    source = pmd.pmd_source("monitor_warnings")
+    if not client.configured():
+        raise HTTPException(status_code=503, detail="PMD Monitor credentials are not configured")
+    try:
+        cached = client.cached(
+            "pmd_monitor_warnings",
+            source.ttl_seconds,
+            lambda: client.get_json(source.upstream_path),
+            fallback_key="pmd_monitor_warnings_stale",
+        )
+    except pmd.PmdUpstreamError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return pmd.normalize_warning_features(cached.value, cache_status=cached.cache_status)
+
+
+@router.get(
+    "/weather/pmd/monitor/monsoon",
+    tags=["weather"],
+    response_model=FeatureCollection[PmdMonsoonProperties],
+)
+def weather_pmd_monitor_monsoon(
+    client: pmd.PmdMonitorClient = Depends(get_pmd_monitor_client),
+) -> dict:
+    """PMD Monitor monsoon warnings and rainfall forecast text as GeoJSON."""
+    source = pmd.pmd_source("monitor_monsoon")
+    if not client.configured():
+        raise HTTPException(status_code=503, detail="PMD Monitor credentials are not configured")
+    try:
+        cached = client.cached(
+            "pmd_monitor_monsoon",
+            source.ttl_seconds,
+            lambda: client.get_json(source.upstream_path),
+            fallback_key="pmd_monitor_monsoon_stale",
+        )
+    except pmd.PmdUpstreamError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return pmd.normalize_monsoon_features(cached.value, cache_status=cached.cache_status)
+
+
+@router.get(
+    "/weather/pmd/monitor/city-forecast",
+    tags=["weather"],
+    response_model=FeatureCollection[PmdCityForecastProperties],
+)
+def weather_pmd_monitor_city_forecast(
+    client: pmd.PmdMonitorClient = Depends(get_pmd_monitor_client),
+) -> dict:
+    """PMD Monitor city conditions plus parsed forecast arrays as GeoJSON points."""
+    source = pmd.pmd_source("monitor_city_forecast")
+    if not client.configured():
+        raise HTTPException(status_code=503, detail="PMD Monitor credentials are not configured")
+    try:
+        cached = client.cached(
+            "pmd_monitor_city_forecast",
+            source.ttl_seconds,
+            lambda: client.get_json(source.upstream_path),
+            fallback_key="pmd_monitor_city_forecast_stale",
+        )
+    except pmd.PmdUpstreamError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return pmd.normalize_city_forecast_features(cached.value, cache_status=cached.cache_status)
+
+
+@router.get(
+    "/weather/pmd/predictions/{element_key}",
+    tags=["weather"],
+    response_model=PmdPredictionResponse,
+)
+def weather_pmd_predictions(
+    element_key: str,
+    run: str | None = Query(default=None),
+    client: pmd.PmdMonitorClient = Depends(get_pmd_monitor_client),
+) -> dict:
+    """PMD prediction metadata scaffold. Raster PNG conversion is gated by 8C.5 validation."""
+    try:
+        element = pmd.pmd_forecast_element(element_key)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=404, detail=f"unknown PMD prediction element {element_key!r}"
+        ) from exc
+    if not client.configured():
+        raise HTTPException(status_code=503, detail="PMD Monitor credentials are not configured")
+
+    metadata_params = {"data_type": element.data_type, "element": element.element}
+    try:
+        metadata = client.cached(
+            f"pmd_prediction_model_times_{element.key}",
+            1800,
+            lambda: client.get_json("api/modelTimeList", params=metadata_params),
+            fallback_key=f"pmd_prediction_model_times_{element.key}_stale",
+        )
+        selected_run = run or pmd.latest_model_time(metadata.value)
+        frames = []
+        frame_cache_status = metadata.cache_status
+        if selected_run is not None:
+            frame_params = {
+                "data_type": element.data_type,
+                "element": element.element,
+                "date_time": selected_run,
+            }
+            frame_result = client.cached(
+                f"pmd_prediction_frames_{element.key}_{selected_run}",
+                10800,
+                lambda: client.get_json("api/model", params=frame_params),
+                fallback_key=f"pmd_prediction_frames_{element.key}_{selected_run}_stale",
+            )
+            frame_cache_status = frame_result.cache_status
+            frames = pmd.thin_prediction_frames(
+                pmd.normalize_prediction_frames(frame_result.value), element.max_frames
+            )
+    except pmd.PmdUpstreamError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    return {
+        "element": element.__dict__,
+        "run": selected_run,
+        "available": selected_run is not None,
+        "metadata_status": "metadata-confirmed" if selected_run is not None else "candidate",
+        "cache_status": frame_cache_status,
+        "steps": [
+            {
+                "date": frame["date"],
+                "bounds": frame.get("bounds"),
+                "coordinates": frame.get("coordinates"),
+                "url": None,
+                "cache_status": frame_cache_status,
+            }
+            for frame in frames
+        ],
+        "limitations": (
+            "Metadata only: server-side GeoTIFF conversion, color ramp validation, bounds "
+            "verification, and product-ready promotion are not complete."
+        ),
+    }
 
 
 @router.get("/reservoirs/{rid}/forecast", tags=["forecast"], response_model=ForecastResponse)

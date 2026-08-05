@@ -9,11 +9,22 @@ from api.pmd_client import (
     PmdMonitorClient,
     clean_pmd_value,
     extract_jwt,
+    latest_model_time,
+    normalize_city_forecast_features,
+    normalize_ffd_waterlevel_features,
     normalize_glof_observation_features,
+    normalize_lightning_features,
     normalize_monitor_station_features,
+    normalize_monsoon_features,
     normalize_nwfc_observation_features,
+    normalize_prediction_frames,
+    normalize_warning_features,
     parse_json_string,
+    pmd_forecast_element,
+    pmd_forecast_element_candidates,
     pmd_source,
+    summarize_model_time_response,
+    thin_prediction_frames,
 )
 
 
@@ -82,6 +93,71 @@ def test_source_registry_tracks_ttls_attribution_and_debug_exclusions():
     assert stations.geometry_type == "Point"
     assert "monitor_debug" not in PMD_SOURCES
     assert "api/pmd/monitor/debug/" in EXCLUDED_PMD_ENDPOINTS
+
+
+def test_forecast_element_registry_marks_wrfprs_precipitation_as_candidates():
+    keys = {candidate.key for candidate in pmd_forecast_element_candidates()}
+
+    assert {
+        "pmd_pred_hourtpe",
+        "pmd_pred_sixtpe",
+        "pmd_pred_twelvetpe",
+        "pmd_pred_daytpe",
+    } <= keys
+    hour = pmd_forecast_element("pmd_pred_hourtpe")
+    assert hour.data_type == "WRFPRS"
+    assert hour.element == "HOURTPE"
+    assert hour.status == "candidate"
+
+
+def test_summarize_model_time_response_handles_common_shapes_and_sentinels():
+    summary = summarize_model_time_response(
+        {
+            "data": [
+                {"model_time": "2026-08-05 00:00", "frames": ["+1h", "+2h"]},
+                {"run_time": "2026-08-05 06:00", "frames": [9999, "+8h"]},
+            ]
+        }
+    )
+
+    assert summary == {
+        "available": True,
+        "row_count": 2,
+        "model_times": ["2026-08-05 00:00", "2026-08-05 06:00"],
+        "frame_count": 4,
+    }
+
+
+def test_summarize_model_time_response_accepts_string_rows():
+    summary = summarize_model_time_response(["2026-08-05 00:00", ""])
+
+    assert summary["available"] is True
+    assert summary["row_count"] == 2
+    assert summary["model_times"] == ["2026-08-05 00:00"]
+    assert summary["frame_count"] is None
+
+
+def test_latest_model_time_uses_last_available_run():
+    assert latest_model_time(["2026-08-05 00:00", "2026-08-05 06:00"]) == "2026-08-05 06:00"
+    assert latest_model_time([]) is None
+
+
+def test_normalize_and_thin_prediction_frames():
+    frames = normalize_prediction_frames(
+        {
+            "frames": [
+                {"forecast_time": "+1h", "bounds": "[73,33,74,34]"},
+                {"forecast_time": "+2h", "coordinates": "[[73,33],[74,34]]"},
+                {"forecast_time": "+3h"},
+                {"forecast_time": "+4h"},
+            ]
+        }
+    )
+
+    assert frames[0]["date"] == "+1h"
+    assert frames[0]["bounds"] == [73, 33, 74, 34]
+    assert frames[1]["coordinates"] == [[73, 33], [74, 34]]
+    assert [frame["date"] for frame in thin_prediction_frames(frames, 2)] == ["+1h", "+2h"]
 
 
 def test_normalize_monitor_station_features_accepts_geojson_and_cleans_values():
@@ -190,6 +266,143 @@ def test_normalize_glof_observation_features_cleans_telemetry():
     assert props["water_level_m"] == 2.1
     assert props["source"] == "PMD Monitor GLOF"
     assert props["stale"] is True
+
+
+def test_normalize_lightning_features_keeps_window_and_cleans_current():
+    normalized = normalize_lightning_features(
+        {
+            "data": [
+                {
+                    "lat": "33.6",
+                    "lon": "73.0",
+                    "strike_id": "l-1",
+                    "timestamp": "2026-08-05T09:00:00+05:00",
+                    "polarity": "negative",
+                    "peak_current": 9999,
+                    "strokes": "2",
+                }
+            ]
+        },
+        hours=12,
+        cache_status="fetched",
+    )
+
+    feature = normalized["features"][0]
+    assert feature["geometry"] == {"type": "Point", "coordinates": [73.0, 33.6]}
+    props = feature["properties"]
+    assert props["strike_id"] == "l-1"
+    assert props["window_hours"] == 12
+    assert props["peak_current_ka"] is None
+    assert props["multiplicity"] == 2.0
+    assert props["source"] == "PMD Monitor Lightning"
+
+
+def test_normalize_ffd_waterlevel_features_parses_gauge_json():
+    normalized = normalize_ffd_waterlevel_features(
+        {
+            "rows": [
+                {
+                    "latitude": "31.4",
+                    "longitude": "73.1",
+                    "site_id": "ffd-1",
+                    "site_name": "River Chenab Gauge",
+                    "river_name": "Chenab",
+                    "last_update": "2026-08-05T10:00:00+05:00",
+                    "water_level": "3.4",
+                    "discharge": "12500",
+                    "status": "Low Flood",
+                    "gauges": '[{"name":"upstream","level":9999},{"name":"main","level":3.4}]',
+                }
+            ]
+        },
+        cache_status="fetched",
+    )
+
+    feature = normalized["features"][0]
+    assert feature["geometry"] == {"type": "Point", "coordinates": [73.1, 31.4]}
+    props = feature["properties"]
+    assert props["station_id"] == "ffd-1"
+    assert props["river"] == "Chenab"
+    assert props["water_level_m"] == 3.4
+    assert props["discharge_cusecs"] == 12500.0
+    assert props["status"] == "Low Flood"
+    assert props["gauges"] == [{"name": "upstream", "level": None}, {"name": "main", "level": 3.4}]
+    assert props["source"] == "FFD Flood Forecasting Division"
+
+
+def test_normalize_warning_features_parses_geometry_and_fields():
+    normalized = normalize_warning_features(
+        [
+            {
+                "geometry": '{"type":"Polygon","coordinates":[[[73,33],[74,33],[74,34],[73,33]]]}',
+                "warning_id": "w-1",
+                "severity": "Warning",
+                "data_type": "Heavy Rain",
+                "model": "wrf",
+                "forecast_time": "2026-08-05T12:00:00+05:00",
+                "issued_at": "2026-08-05T06:00:00+05:00",
+                "message": "Heavy rainfall expected",
+                "district": "Rawalpindi",
+            }
+        ],
+        cache_status="fetched",
+    )
+
+    feature = normalized["features"][0]
+    assert feature["geometry"]["type"] == "Polygon"
+    props = feature["properties"]
+    assert props["warning_id"] == "w-1"
+    assert props["hazard"] == "Heavy Rain"
+    assert props["area_name"] == "Rawalpindi"
+    assert props["source"] == "PMD Monitor"
+
+
+def test_normalize_monsoon_features_parses_forecast_json():
+    normalized = normalize_monsoon_features(
+        [
+            {
+                "lat": "30.2",
+                "lon": "71.5",
+                "id": "m-1",
+                "level": "Watch",
+                "data_type": "Monsoon Rain",
+                "date_time": "2026-08-05T06:00:00+05:00",
+                "fc": '[{"period":"24h","rain_mm":9999},{"period":"48h","rain_mm":22}]',
+            }
+        ],
+        cache_status="stale",
+    )
+
+    props = normalized["features"][0]["properties"]
+    assert props["warning_id"] == "m-1"
+    assert props["forecast"] == [
+        {"period": "24h", "rain_mm": None},
+        {"period": "48h", "rain_mm": 22},
+    ]
+    assert props["stale"] is True
+
+
+def test_normalize_city_forecast_features_parses_forecast_array():
+    normalized = normalize_city_forecast_features(
+        [
+            {
+                "lat": "33.7",
+                "lon": "73.1",
+                "city_id": "isb",
+                "city_name": "Islamabad",
+                "date_time": "2026-08-05T06:00:00+05:00",
+                "weather_text": "Cloudy",
+                "temp": "31",
+                "fc": '[{"t":"+3h","temp":32},{"t":"+6h","temp":9999}]',
+            }
+        ],
+        cache_status="fetched",
+    )
+
+    props = normalized["features"][0]["properties"]
+    assert props["city_id"] == "isb"
+    assert props["name"] == "Islamabad"
+    assert props["forecast"] == [{"t": "+3h", "temp": 32}, {"t": "+6h", "temp": None}]
 
 
 def test_cached_returns_fresh_then_stale_on_fetch_failure():
