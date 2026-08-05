@@ -211,6 +211,33 @@ class FlowEdgeProperties(BaseModel):
     version: str
 
 
+class FlowlineProperties(BaseModel):
+    reservoir_id: str
+    flowline_id: int
+    downstream_id: int | None
+    stream_order: int | None
+    upstream_area_km2: float | None
+    length_km: float | None
+    is_main_stem: bool
+    source_dataset: str
+    version: str
+
+
+class HydrologicLayerProvenanceOut(BaseModel):
+    reservoir_id: str
+    layer_name: str
+    source_dataset: str
+    source_version: str | None
+    source_date: date | None
+    resolution_m: float | None
+    processed_at: datetime
+    processing_version: str
+    simplification_tolerance_deg: float | None
+    projection: str
+    limitations: str
+    metadata: dict[str, Any]
+
+
 class WaterExtentProperties(BaseModel):
     reservoir_id: str
     name: str

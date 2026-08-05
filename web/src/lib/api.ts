@@ -4,7 +4,9 @@ import type {
   CatchmentProperties,
   DistrictBoundaryProperties,
   FlowEdgeProperties,
+  FlowlineProperties,
   GeoFC,
+  HydrologicLayerProvenance,
   MetForcing,
   RainfallPoint,
   Reservoir,
@@ -53,6 +55,16 @@ export const api = {
   catchment: (s?: AbortSignal) => getJson<GeoFC<CatchmentProperties>>("/geojson/catchment", s),
   subbasins: (s?: AbortSignal) => getJson<GeoFC<SubBasinProperties>>("/geojson/subbasins", s),
   flowEdges: (s?: AbortSignal) => getJson<GeoFC<FlowEdgeProperties>>("/geojson/flow-edges", s),
+  flowlines: (rid: string, minOrder = 1, s?: AbortSignal) =>
+    getJson<GeoFC<FlowlineProperties>>(
+      `/geojson/hydrologic/flowlines?reservoir_id=${rid}&min_order=${minOrder}`,
+      s,
+    ),
+  hydrologicProvenance: (rid: string, s?: AbortSignal) =>
+    getJson<HydrologicLayerProvenance[]>(
+      `/hydrologic/layers/provenance?reservoir_id=${rid}`,
+      s,
+    ),
   districts: (s?: AbortSignal) =>
     getJson<GeoFC<DistrictBoundaryProperties>>("/geojson/districts", s),
   waterExtent: (s?: AbortSignal) =>

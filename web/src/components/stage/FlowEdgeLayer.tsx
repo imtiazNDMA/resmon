@@ -48,7 +48,7 @@ export default function FlowEdgeLayer() {
         const props = feature.properties as FlowEdgeProperties;
         const resting = styleFor(props.is_headwater);
         layer.bindTooltip(
-          `HYBAS ${props.from_hybas_id} downstream<br/>distance ${fmt(
+          `${props.from_hybas_id === 0 ? "Catchment fallback" : `HYBAS ${props.from_hybas_id}`} downstream path<br/>distance ${fmt(
             props.distance_to_reservoir_km,
             "km",
           )}<br/>lag proxy ${fmt(props.routing_lag_days, "d")}`,

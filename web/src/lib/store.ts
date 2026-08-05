@@ -40,7 +40,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   showDistricts: false,
   showWaterExtent: false,
   selectReservoir: (id) =>
-    set({ view: "map", selected: id, activeDate: null, playing: false }),
+    set({
+      view: "map",
+      selected: id,
+      activeDate: null,
+      playing: false,
+      showCatchment: true,
+      showSubBasins: true,
+      showFlowEdges: true,
+    }),
   openDashboard: () => set({ view: "dashboard", playing: false }),
   setActiveDate: (d) => {
     if (get().selected !== null) set({ activeDate: d });

@@ -63,6 +63,30 @@ _INS_SUBBASIN = text(
     """
 )
 
+_UPSERT_PROVENANCE = text(
+    """
+    INSERT INTO hydrologic_layer_provenance
+      (reservoir_id, layer_name, source_dataset, source_version, source_date,
+       resolution_m, processed_at, processing_version, simplification_tolerance_deg,
+       projection, limitations, metadata_json)
+    VALUES
+      (:r, :layer_name, :source_dataset, :source_version, CAST(:source_date AS date),
+       :resolution_m, now(), :processing_version, :simplification_tolerance_deg,
+       'EPSG:4326', :limitations, CAST(:metadata_json AS jsonb))
+    ON CONFLICT (reservoir_id, layer_name) DO UPDATE SET
+      source_dataset = EXCLUDED.source_dataset,
+      source_version = EXCLUDED.source_version,
+      source_date = EXCLUDED.source_date,
+      resolution_m = EXCLUDED.resolution_m,
+      processed_at = EXCLUDED.processed_at,
+      processing_version = EXCLUDED.processing_version,
+      simplification_tolerance_deg = EXCLUDED.simplification_tolerance_deg,
+      projection = EXCLUDED.projection,
+      limitations = EXCLUDED.limitations,
+      metadata_json = EXCLUDED.metadata_json
+    """
+)
+
 # observation.layover_shadow_fraction is NOT NULL (core/src/core/models/observation.py),
 # and no DEM layover/shadow mask exists yet (deferred: needs GEE terrain execution).
 # 0 is recorded as a *placeholder lower bound*, NOT a measurement — revisit when the
@@ -87,6 +111,51 @@ _UPSERT_OBS = text(
 )
 
 
+def write_subbasins(
+    s: Session, reservoir_id: str, subbasins: list[dict], *, processing_version: str
+) -> None:
+    """Replace persisted HydroBASINS units and their topology provenance."""
+    s.execute(_DEL_SUBBASINS, {"r": reservoir_id})
+    for basin in subbasins:
+        s.execute(
+            _INS_SUBBASIN,
+            {
+                "r": reservoir_id,
+                "hybas_id": basin["hybas_id"],
+                "next_down": basin["next_down"],
+                "is_headwater": basin["is_headwater"],
+                "geom": json.dumps(basin["geom"]),
+            },
+        )
+    for layer_name in ("subbasins", "flow_edges"):
+        s.execute(
+            _UPSERT_PROVENANCE,
+            {
+                "r": reservoir_id,
+                "layer_name": layer_name,
+                "source_dataset": "HydroBASINS",
+                "source_version": "hybas7_v1",
+                "source_date": None,
+                "resolution_m": 500,
+                "processing_version": processing_version,
+                "simplification_tolerance_deg": 0.0001,
+                "limitations": (
+                    "Flow paths are derived from HydroBASINS NEXT_DOWN topology and "
+                    "centroid geometry; they are visualization proxies, not river hydraulics."
+                ),
+                "metadata_json": json.dumps({"level": 7, "subbasin_count": len(subbasins)}),
+            },
+        )
+
+
+def populate_subbasins_for_meta(s: Session, reservoir_id: str, lon: float, lat: float) -> int:
+    """Delineate and persist real HydroBASINS sub-basins for one reservoir."""
+    subbasins = delineate_subbasins(lon, lat)
+    write_subbasins(s, reservoir_id, subbasins, processing_version="populate_subbasins_v1")
+    s.commit()
+    return len(subbasins)
+
+
 def main() -> None:
     with Session(make_engine()) as s:
         for m in REGISTRY.values():
@@ -97,6 +166,25 @@ def main() -> None:
                 m.dam_lon, m.dam_lat, expected_km2=EXPECTED_CATCHMENT_KM2.get(m.slug)
             )
             s.execute(_UPD_RESERVOIR, {"r": m.slug, "aoi": json.dumps(aoi), "cat": json.dumps(cat)})
+            s.execute(
+                _UPSERT_PROVENANCE,
+                {
+                    "r": m.slug,
+                    "layer_name": "catchment",
+                    "source_dataset": "HydroBASINS",
+                    "source_version": "hybas7_v1",
+                    "source_date": None,
+                    "resolution_m": 500,
+                    "processing_version": "populate_geometry_v1",
+                    "simplification_tolerance_deg": 0.0001,
+                    "limitations": (
+                        "HydroBASINS catchments are cartographic aggregation units; "
+                        "validate against MERIT Hydro and published catchment areas "
+                        "where available."
+                    ),
+                    "metadata_json": json.dumps({"level": 7}),
+                },
+            )
             s.commit()  # AOI/catchment are useful even if the S1 extraction below skips
 
             # Sub-basins are a map nicety, not a pipeline input — a failure here must not
@@ -107,18 +195,7 @@ def main() -> None:
             except GeeExtractionError as exc:
                 log.warning("[%s] skipping sub-basin write: %s", m.slug, exc)
             else:
-                s.execute(_DEL_SUBBASINS, {"r": m.slug})
-                for b in subs:
-                    s.execute(
-                        _INS_SUBBASIN,
-                        {
-                            "r": m.slug,
-                            "hybas_id": b["hybas_id"],
-                            "next_down": b["next_down"],
-                            "is_headwater": b["is_headwater"],
-                            "geom": json.dumps(b["geom"]),
-                        },
-                    )
+                write_subbasins(s, m.slug, subs, processing_version="populate_geometry_v1")
                 s.commit()
                 heads = sum(1 for b in subs if b["is_headwater"])
                 print(f"  OK {m.slug}: {len(subs)} sub-basins ({heads} headwater)", flush=True)
@@ -159,6 +236,25 @@ def main() -> None:
                     "pass": w["pass_direction"],
                     "pp": json.dumps(w["processing"]),
                     "wgeo": json.dumps(w["geojson"]),
+                },
+            )
+            s.execute(
+                _UPSERT_PROVENANCE,
+                {
+                    "r": m.slug,
+                    "layer_name": "water_extent",
+                    "source_dataset": "Sentinel-1 SAR / Google Earth Engine",
+                    "source_version": OtsuVH.version,
+                    "source_date": w["acquisition_date"],
+                    "resolution_m": 10,
+                    "processing_version": OtsuVH.name,
+                    "simplification_tolerance_deg": 0.0001,
+                    "limitations": (
+                        "Current water extent is a SAR-derived mask with confidence from threshold "
+                        "separability and compactness; layover/shadow masking is still "
+                        "a placeholder."
+                    ),
+                    "metadata_json": json.dumps({"scene_id": w["scene_id"]}),
                 },
             )
             s.commit()

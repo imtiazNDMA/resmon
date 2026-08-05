@@ -16,6 +16,9 @@ describe("app store transitions", () => {
     expect(s().selected).toBe("pong");
     expect(s().activeDate).toBeNull(); // MapView sets it to latest acquisition
     expect(s().playing).toBe(false); // switching reservoir mid-play stops playback
+    expect(s().showCatchment).toBe(true);
+    expect(s().showSubBasins).toBe(true);
+    expect(s().showFlowEdges).toBe(true);
   });
 
   it("opening dashboard stops playback but keeps selection", () => {

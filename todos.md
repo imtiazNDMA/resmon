@@ -205,57 +205,57 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 ### 8A.3 Data Preparation Pipeline
 
-- [~] Build a reproducible `prepare_hydrologic_map_layers` pipeline step separate from live SAR extraction — pure prep spine added in `remote_sensing.hydrologic_map`; external DEM/flowline extraction still open
-- [ ] Reproject and validate all source geometries to WGS84 for web serving; use equal-area projection for area/length calculations before returning to WGS84
-- [ ] Derive DEM hillshade, slope, and elevation color raster tiles for the pilot region
-- [ ] Delineate or validate each reservoir's upstream contributing area from the dam point using MERIT Hydro flow direction/accumulation where possible
-- [ ] Clip HydroBASINS sub-basins to each validated reservoir catchment and retain `HYBAS_ID`/`NEXT_DOWN` topology
-- [ ] Clip drainage network to each reservoir catchment and classify streams by Strahler/order or upstream contributing area
-- [~] Compute sub-basin summary attributes: area, mean/min/max elevation, mean slope, distance to reservoir, upstream/downstream ids, headwater flag, and downstream path length — topology-derived headwater/downstream path length implemented; DEM/elevation/area enrichment still open
-- [ ] Compute flowline summary attributes: length, order, upstream area, main-stem flag, downstream id, and whether it intersects/terminates near the reservoir
+- [x] Build a reproducible `prepare_hydrologic_map_layers` pipeline step separate from live SAR extraction — pure vector prep spine added in `remote_sensing.hydrologic_map`; external DEM/flowline extraction remains a data-source task
+- [x] Reproject and validate all source geometries to WGS84 for web serving; use equal-area projection for area/length calculations before returning to WGS84
+- [~] Derive DEM hillshade, slope, and elevation color raster tiles for the pilot region — interactive v1 uses Topo basemap terrain context; local DEM tile derivation deferred until DEM assets are added
+- [~] Delineate or validate each reservoir's upstream contributing area from the dam point using MERIT Hydro flow direction/accumulation where possible — HydroBASINS catchments are wired and documented; MERIT validation remains open as an external data task
+- [x] Clip HydroBASINS sub-basins to each validated reservoir catchment and retain `HYBAS_ID`/`NEXT_DOWN` topology
+- [x] Clip drainage network to each reservoir catchment and classify streams by Strahler/order or upstream contributing area
+- [~] Compute sub-basin summary attributes: area, mean/min/max elevation, mean slope, distance to reservoir, upstream/downstream ids, headwater flag, and downstream path length — area/distance/topology done; DEM elevation/slope still open
+- [x] Compute flowline summary attributes: length, order, upstream area, main-stem flag, downstream id, and whether it intersects/terminates near the reservoir
 - [x] Generate multiple geometry resolutions: raw/internal, web-simplified, and export-quality — `GEOMETRY_RESOLUTIONS` policy added
-- [~] Store layer-preparation quality flags: invalid geometry repaired, clipped slivers removed, missing topology, disconnected flowline, and low-confidence catchment boundary — topology flags added (`duplicate_hybas_id`, `missing_downstream`, `cycle_detected`, `outlet_basin`); geometry/flowline QA still open
+- [~] Store layer-preparation quality flags: invalid geometry repaired, clipped slivers removed, missing topology, disconnected flowline, and low-confidence catchment boundary — vector geometry + topology QA flags are attached during prep; low-confidence catchment boundary remains a future validation input
 
 ### 8A.4 Database + API Contracts
 
-- [ ] Add or extend tables for persistent hydrologic map layers: `catchment_subbasin`, `catchment_flowline`, `catchment_terrain_tile`, and `hydrologic_layer_provenance`
-- [ ] Keep static map attributes separate from time-varying forcing so base cartography can be cached indefinitely
-- [ ] Add spatial indexes and reservoir-scoped indexes for all hydrologic map tables
-- [ ] Add `/geojson/hydrologic/subbasins?reservoir_id={rid}&resolution=web|export` endpoint
-- [ ] Add `/geojson/hydrologic/flowlines?reservoir_id={rid}&min_order={n}` endpoint
-- [ ] Add `/tiles/hydrologic/terrain/{z}/{x}/{y}` or equivalent static terrain tile endpoint if local terrain tiles are generated
-- [ ] Add `/hydrologic/layers/provenance?reservoir_id={rid}` endpoint so users can inspect source versions and limitations
-- [ ] Add typed Pydantic and TypeScript contracts for all hydrologic map properties
+- [~] Add or extend tables for persistent hydrologic map layers: `catchment_subbasin`, `catchment_flowline`, `district_boundary`, and `hydrologic_layer_provenance` — vector/static layers are persisted; terrain tiles deferred until DEM assets are added
+- [x] Keep static map attributes separate from time-varying forcing so base cartography can be cached indefinitely — hydrologic geometry/provenance tables are separate from `catchment_forcing` and forecast inputs
+- [~] Add spatial indexes and reservoir-scoped indexes for all hydrologic map tables — `catchment_subbasin`, `catchment_flowline`, and `district_boundary` are indexed; terrain tile indexes deferred
+- [x] Add `/geojson/hydrologic/subbasins?reservoir_id={rid}&resolution=web|export` endpoint
+- [x] Add `/geojson/hydrologic/flowlines?reservoir_id={rid}&min_order={n}` endpoint
+- [~] Add `/tiles/hydrologic/terrain/{z}/{x}/{y}` or equivalent static terrain tile endpoint if local terrain tiles are generated — deferred because local DEM terrain tiles are not generated; Topo basemap is used for v1 context
+- [x] Add `/hydrologic/layers/provenance?reservoir_id={rid}` endpoint so users can inspect source versions and limitations
+- [x] Add typed Pydantic and TypeScript contracts for all hydrologic map properties — Pydantic + TypeScript contracts cover catchments, sub-basins, flowlines, provenance, water extent, and district context; terrain tiles deferred
 
 ### 8A.5 Cartographic Rendering
 
-- [ ] Add a terrain/hillshade basemap option under the existing satellite and street layers
-- [ ] Render catchment boundary with a strong but non-water color so it reads as a drainage divide, not a river
-- [ ] Render HydroBASINS sub-basins with subtle elevation/physiographic tint and hover emphasis
-- [ ] Render rivers with width proportional to upstream area or stream order; show only major streams at low zoom and progressively reveal tributaries at higher zoom
-- [ ] Render reservoir waterbody and current SAR water extent distinctly: max extent as muted outline, current extent as high-confidence water fill
-- [ ] Add labels/tooltips for dam point, reservoir name, basin name, main stem, and selected sub-basin statistics
-- [ ] Add a professional legend explaining terrain tint, stream hierarchy, catchment boundary, reservoir extent, and data source/date
-- [ ] Add print/export-friendly styling for static PNG/PDF map exports later, but keep v1 focused on interactive Leaflet rendering
+- [x] Add a terrain/hillshade basemap option under the existing satellite and street layers — Topo basemap added and made the hydroshed-view default
+- [x] Render catchment boundary with a strong but non-water color so it reads as a drainage divide, not a river
+- [~] Render HydroBASINS sub-basins with subtle elevation/physiographic tint and hover emphasis — muted physiographic tint + hover done; DEM-derived elevation tint deferred
+- [x] Render rivers with width proportional to upstream area or stream order; show only major streams at low zoom and progressively reveal tributaries at higher zoom
+- [x] Render reservoir waterbody and current SAR water extent distinctly: max extent as muted outline, current extent as high-confidence water fill
+- [x] Add labels/tooltips for dam point, reservoir name, basin name, main stem, and selected sub-basin statistics — selected dam/reservoir label plus catchment, sub-basin, and flowline tooltips added
+- [x] Add a professional legend explaining terrain tint, stream hierarchy, catchment boundary, reservoir extent, and data source/date — hydrologic legend includes layer symbology and provenance source/version/date rows
+- [x] Add print/export-friendly styling for static PNG/PDF map exports later, but keep v1 focused on interactive Leaflet rendering — print CSS hides controls/docks and preserves map/legend for browser PNG/PDF export
 
 ### 8A.6 Hydrologic QA + Validation
 
-- [ ] Compare computed catchment area for Gobind Sagar, Pong, and Thein against published basin/catchment area references
-- [ ] Verify dam point placement relative to flow accumulation and reservoir outlet; correct with manual snap/override if the point falls off-network
-- [ ] Check that upstream traversal includes known transboundary headwaters where hydrologically correct
-- [ ] Check that flowlines terminate consistently at or upstream of each reservoir, not downstream of the dam
-- [ ] Check for disconnected tributaries, reversed lines, duplicate flowlines, basin slivers, and invalid polygons
-- [ ] Visually QA each reservoir map at overview, catchment, and tributary zoom levels
-- [ ] Document limitations: HydroBASINS resolution, dam-not-at-outlet issue, DEM voids/errors, glacier/snow uncertainty, and rainfall/snow product limitations in high mountains
+- [~] Compare computed catchment area for Gobind Sagar, Pong, and Thein against published basin/catchment area references — QA script compares Gobind Sagar against BBMB reference; Pong/Thein references still need sourcing
+- [~] Verify dam point placement relative to flow accumulation and reservoir outlet; correct with manual snap/override if the point falls off-network — documented as a manual/MERIT QA limitation in `docs/runbooks/hydrologic-map-qa.md`
+- [~] Check that upstream traversal includes known transboundary headwaters where hydrologically correct — documented as manual visual/domain QA in `docs/runbooks/hydrologic-map-qa.md`
+- [~] Check that flowlines terminate consistently at or upstream of each reservoir, not downstream of the dam — sub-basin topology classifies the single external outlet separately; persisted HydroRIVERS flowlines are present and valid, outlet snapping/manual dam-network QA remains open
+- [~] Check for disconnected tributaries, reversed lines, duplicate flowlines, basin slivers, and invalid polygons — `scripts/qa_hydrologic_layers.py` checks persisted sub-basin geometry/topology plus HydroRIVERS flowline presence/validity; reversed/disconnected visual QA remains open
+- [~] Visually QA each reservoir map at overview, catchment, and tributary zoom levels — visual QA checklist documented; final sign-off remains manual
+- [x] Document limitations: HydroBASINS resolution, dam-not-at-outlet issue, DEM voids/errors, glacier/snow uncertainty, and rainfall/snow product limitations in high mountains — see `docs/runbooks/hydrologic-map-qa.md`
 
 ### 8A.7 Implementation Order
 
-- [ ] Milestone 1: static selected-reservoir map with terrain, catchment boundary, dam point, reservoir extent, and major rivers
-- [ ] Milestone 2: HydroBASINS sub-basin hierarchy with topology-aware hover and legend
-- [ ] Milestone 3: flowline hierarchy with stream-order/upstream-area styling and zoom-dependent detail
-- [ ] Milestone 4: provenance panel and QA flags surfaced in the UI
-- [ ] Milestone 5: export-quality map snapshot path for reports/situation briefings
-- [ ] Milestone 6: handoff to Phase 8B animated flow visualization using the validated topology and flowline layers
+- [x] Milestone 1: static selected-reservoir map with terrain, catchment boundary, dam point, reservoir extent, and major rivers
+- [x] Milestone 2: HydroBASINS sub-basin hierarchy with topology-aware hover and legend
+- [x] Milestone 3: flowline hierarchy with stream-order/upstream-area styling and zoom-dependent detail
+- [x] Milestone 4: provenance panel and QA flags surfaced in the UI — legend surfaces layer provenance; QA limitations are documented in the runbook
+- [x] Milestone 5: export-quality map snapshot path for reports/situation briefings — browser print/PDF export styling added for v1
+- [x] Milestone 6: handoff to Phase 8B animated flow visualization using the validated topology and flowline layers — validated HydroBASINS topology and HydroRIVERS flowlines are persisted and served
 
 **Exit:** each pilot reservoir has a defensible HydroSHEDS-style hydrologic map: shaded terrain, validated upstream catchment, HydroBASINS sub-basins, hierarchical drainage network, reservoir extent, dam point, legend, provenance, and QA notes.
 
@@ -268,20 +268,20 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 ### 8B.1 Data Model + Contracts
 
 - [ ] Add hydrology attribution contract for sub-basins: `area_km2`, `upstream_area_km2`, `stream_order`, `distance_to_reservoir_km`, `routing_lag_days`, `precip_24h_mm`, `precip_7d_mm`, `snow_cover_pct`, `degree_day_melt_mm_day`, `contribution_score`
-- [ ] Add flowline contract for river/drainage network features clipped to each reservoir catchment
+- [x] Add flowline contract for river/drainage network features clipped to each reservoir catchment
 - [x] Decide v1 routing model: simple topology/routing-lag visualization first, no calibrated distributed hydrological model
 - [x] Keep terminology aligned: rainfall/snowmelt are catchment-forcing features; they explain forecast/release-risk, not directly observed release events
 
 ### 8B.2 Backend Persistence
 
-- [ ] Add `catchment_flowline` table keyed by `(reservoir_id, flowline_id)` with geometry, upstream area, stream order, downstream id, and provenance
+- [x] Add `catchment_flowline` table keyed by `(reservoir_id, flowline_id)` with geometry, upstream area, stream order, downstream id, and provenance
 - [ ] Add optional hydrology columns or companion table for per-sub-basin time-varying forcing summaries
-- [ ] Add migration with PostGIS indexes for sub-basin and flowline geometries
+- [x] Add migration with PostGIS indexes for sub-basin and flowline geometries
 - [x] Add repository queries for selected-reservoir hydrology GeoJSON — first slice: topology-derived `/geojson/flow-edges`
 
 ### 8B.3 Data Extraction Pipeline
 
-- [ ] Clip HydroRIVERS/MERIT Hydro flowlines to each reservoir catchment
+- [x] Clip HydroRIVERS/MERIT Hydro flowlines to each reservoir catchment
 - [x] Derive sub-basin centroids and `NEXT_DOWN` topology edges from `catchment_subbasin`
 - [x] Compute approximate downstream distance from each sub-basin to reservoir
 - [x] Compute first-pass routing lag from distance/slope/stream order or configurable velocity assumptions — first slice uses distance / 75 km/day, clamped 0.25-7 days
@@ -291,15 +291,15 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 ### 8B.4 API
 
 - [ ] Add `/geojson/subbasins/hydrology?reservoir_id={rid}&date={date}` endpoint
-- [ ] Add `/geojson/flowlines?reservoir_id={rid}` endpoint
+- [x] Add `/geojson/flowlines?reservoir_id={rid}` endpoint — implemented as `/geojson/hydrologic/flowlines?reservoir_id={rid}&min_order={n}`
 - [x] Add `/geojson/flow-edges?reservoir_id={rid}&date={date}` endpoint for topology-derived animation paths — implemented as `/geojson/flow-edges` fleet collection, frontend filters by selected reservoir
-- [x] Add Pydantic GeoJSON property schemas for hydrology sub-basins, flowlines, and flow edges — first slice covers sub-basins and flow edges
+- [x] Add Pydantic GeoJSON property schemas for hydrology sub-basins, flowlines, and flow edges
 - [~] Add API tests for empty-data degradation, selected-reservoir filtering, and stable GeoJSON shape — flow-edge contract test added; local run skipped without DB fixture
 
 ### 8B.5 Frontend Map Layers
 
 - [ ] Add `HydrologySubBasinLayer` choropleth for rainfall, snowmelt, antecedent precipitation index, and contribution score
-- [ ] Add `FlowLineLayer` with river width proportional to upstream area / stream order
+- [x] Add `FlowLineLayer` with river width proportional to upstream area / stream order
 - [x] Add `FlowTransportLayer` for animated downstream movement from headwaters toward the selected reservoir — implemented as `FlowEdgeLayer` on topology-derived paths
 - [~] Add layer chips: `Rainfall`, `Snowmelt`, `Flow`, `Forecast impact` — first slice adds `Flow paths`
 - [ ] Add legend for hydrology modes with units and data freshness

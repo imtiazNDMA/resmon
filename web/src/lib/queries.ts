@@ -40,6 +40,22 @@ export const useFlowEdges = () =>
     staleTime: Infinity, // topology-derived geometry changes only when catchments refresh
   });
 
+export const useFlowlines = (rid: string | null, minOrder = 1) =>
+  useQuery({
+    queryKey: ["flowlines", rid, minOrder],
+    queryFn: ({ signal }) => api.flowlines(rid!, minOrder, signal),
+    enabled: rid !== null,
+    staleTime: Infinity, // drainage vectors are static map cartography
+  });
+
+export const useHydrologicProvenance = (rid: string | null) =>
+  useQuery({
+    queryKey: ["hydrologicProvenance", rid],
+    queryFn: ({ signal }) => api.hydrologicProvenance(rid!, signal),
+    enabled: rid !== null,
+    staleTime: Infinity,
+  });
+
 export const useDistricts = () =>
   useQuery({
     queryKey: ["districts"],

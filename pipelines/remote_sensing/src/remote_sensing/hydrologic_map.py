@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 import geopandas as gpd
-from shapely.geometry import mapping
+from shapely.geometry import Point
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import transform
 
@@ -21,6 +21,7 @@ GeometryResolution = Literal["raw", "web", "export"]
 QualityFlag = Literal[
     "duplicate_hybas_id",
     "missing_downstream",
+    "external_outlet",
     "cycle_detected",
     "outlet_basin",
     "invalid_geometry",
@@ -60,6 +61,13 @@ class PreparedSubbasinTopology:
     subbasins: tuple[PreparedSubbasin, ...]
     headwater_ids: frozenset[int]
     outlet_ids: frozenset[int]
+    quality_flags: tuple[QualityFlag, ...]
+
+
+@dataclass(frozen=True)
+class PreparedHydrologicMapLayers:
+    subbasins: dict[GeometryResolution, gpd.GeoDataFrame]
+    flowlines: dict[GeometryResolution, gpd.GeoDataFrame]
     quality_flags: tuple[QualityFlag, ...]
 
 
@@ -112,7 +120,17 @@ def prepare_subbasin_topology(rows: Iterable[Mapping]) -> PreparedSubbasinTopolo
     next_by_id = {hybas_id: next_down for hybas_id, next_down in normalized}
     fed_ids = {next_down for _, next_down in normalized if next_down in next_by_id}
     headwater_ids = frozenset(hybas_id for hybas_id, _ in normalized if hybas_id not in fed_ids)
-    outlet_ids = frozenset(hybas_id for hybas_id, next_down in normalized if next_down == 0)
+    external_terminal_ids = {
+        hybas_id
+        for hybas_id, next_down in normalized
+        if next_down != 0 and next_down not in next_by_id
+    }
+    external_outlet_ids = external_terminal_ids if len(external_terminal_ids) == 1 else set()
+    outlet_ids = frozenset(
+        hybas_id
+        for hybas_id, next_down in normalized
+        if next_down == 0 or hybas_id in external_outlet_ids
+    )
 
     prepared = []
     global_flags: set[QualityFlag] = set()
@@ -123,7 +141,10 @@ def prepare_subbasin_topology(rows: Iterable[Mapping]) -> PreparedSubbasinTopolo
         if next_down == 0:
             flags.append("outlet_basin")
         elif next_down not in next_by_id:
-            flags.append("missing_downstream")
+            if hybas_id in external_outlet_ids:
+                flags.extend(["outlet_basin", "external_outlet"])
+            else:
+                flags.append("missing_downstream")
         path_length, has_cycle = _path_length_to_outlet(hybas_id, next_by_id)
         if has_cycle:
             flags.append("cycle_detected")
@@ -168,7 +189,9 @@ def validate_geometries(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     valid_mask = gdf.geometry.is_valid & ~gdf.geometry.is_empty
     gdf = gdf[valid_mask].copy()
 
-    gdf["geometry"] = gdf.geometry.apply(lambda g: g.buffer(0) if not g.is_empty else g)
+    gdf["geometry"] = gdf.geometry.apply(
+        lambda g: g.buffer(0) if not g.is_valid and not g.is_empty else g
+    )
     return gdf.reset_index(drop=True)
 
 
@@ -335,8 +358,9 @@ def add_subbasin_summary_attributes(subbasins_gdf: gpd.GeoDataFrame) -> gpd.GeoD
     areas_km2 = compute_geometry_areas_km2(result)
     result["area_km2"] = areas_km2
 
-    result["centroid_lon"] = result.geometry.centroid.x
-    result["centroid_lat"] = result.geometry.centroid.y
+    centroids = [geom.centroid for geom in result.geometry]
+    result["centroid_lon"] = [point.x for point in centroids]
+    result["centroid_lat"] = [point.y for point in centroids]
 
     return result
 
@@ -438,3 +462,169 @@ def add_geometry_quality_flags(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     quality_flags = compute_geometry_quality_flags(result)
     result["quality_flags"] = quality_flags
     return result
+
+
+def _empty_like(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    return gdf.iloc[0:0].copy().reset_index(drop=True)
+
+
+def _normalize_subbasin_columns(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    result = gdf.copy()
+    rename_map = {}
+    if "hybas_id" not in result.columns and "HYBAS_ID" in result.columns:
+        rename_map["HYBAS_ID"] = "hybas_id"
+    if "next_down" not in result.columns and "NEXT_DOWN" in result.columns:
+        rename_map["NEXT_DOWN"] = "next_down"
+    if rename_map:
+        result = result.rename(columns=rename_map)
+    missing = {"hybas_id", "next_down"} - set(result.columns)
+    if missing:
+        raise ValueError(f"missing required sub-basin columns: {sorted(missing)}")
+    return result
+
+
+def _normalize_flowline_columns(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    result = gdf.copy()
+    rename_map = {}
+    if "flowline_id" not in result.columns:
+        for candidate in ("HYRIV_ID", "COMID", "id"):
+            if candidate in result.columns:
+                rename_map[candidate] = "flowline_id"
+                break
+    if "downstream_id" not in result.columns:
+        for candidate in ("NEXT_DOWN", "NEXTDOWNID", "next_down"):
+            if candidate in result.columns:
+                rename_map[candidate] = "downstream_id"
+                break
+    if "upstream_area_km2" not in result.columns and "UPLAND_SKM" in result.columns:
+        rename_map["UPLAND_SKM"] = "upstream_area_km2"
+    if rename_map:
+        result = result.rename(columns=rename_map)
+    if "flowline_id" not in result.columns:
+        result["flowline_id"] = range(1, len(result) + 1)
+    if "downstream_id" not in result.columns:
+        result["downstream_id"] = None
+    return result
+
+
+def _distance_km(geom: BaseGeometry | None, target: BaseGeometry) -> float | None:
+    if geom is None or geom.is_empty or target.is_empty:
+        return None
+    origin = geom.centroid
+    laea_proj_str = f"+proj=laea +lon_0={origin.x} +lat_0={origin.y} +ellps=WGS84"
+    gdf = gpd.GeoDataFrame({"id": [0, 1]}, geometry=[geom.centroid, target], crs="EPSG:4326")
+    try:
+        projected = gdf.to_crs(laea_proj_str)
+        return float(projected.geometry[0].distance(projected.geometry[1]) / 1000)
+    except Exception:
+        return None
+
+
+def _line_endpoint(geom: BaseGeometry) -> Point | None:
+    if geom.is_empty:
+        return None
+    if hasattr(geom, "coords"):
+        coords = list(geom.coords)
+        return Point(coords[-1]) if coords else None
+    parts = getattr(geom, "geoms", None)
+    if parts:
+        last = parts[-1]
+        coords = list(last.coords) if hasattr(last, "coords") else []
+        return Point(coords[-1]) if coords else None
+    return None
+
+
+def _with_resolutions(gdf: gpd.GeoDataFrame) -> dict[GeometryResolution, gpd.GeoDataFrame]:
+    return {
+        spec.name: simplify_geometries(gdf, spec.simplify_tolerance_deg)
+        for spec in GEOMETRY_RESOLUTIONS
+    }
+
+
+def prepare_hydrologic_map_layers(
+    *,
+    catchment_geom: BaseGeometry,
+    subbasins_gdf: gpd.GeoDataFrame,
+    flowlines_gdf: gpd.GeoDataFrame | None = None,
+    dam_point: BaseGeometry | None = None,
+) -> PreparedHydrologicMapLayers:
+    """Prepare static hydrologic map layers for persistence and web serving.
+
+    This is the Phase 8A.3 orchestration seam: source geometries are reprojected to
+    WGS84, validated, clipped to the reservoir catchment, enriched with topology and
+    summary attributes, tagged with QA flags, and emitted at raw/web/export resolutions.
+    DEM-derived terrain/elevation attributes are intentionally outside this pure vector
+    step until DEM assets are available.
+    """
+    subbasins = _normalize_subbasin_columns(reproject_gdf_to_wgs84(subbasins_gdf))
+    subbasins = validate_geometries(subbasins)
+    subbasins = clip_subbasins_to_catchment(subbasins, catchment_geom)
+    subbasins = add_subbasin_summary_attributes(subbasins)
+    topology = prepare_subbasin_topology(subbasins.to_dict("records"))
+    topology_by_id = {row.hybas_id: row for row in topology.subbasins}
+    subbasins["is_headwater"] = subbasins["hybas_id"].map(
+        lambda value: topology_by_id[int(value)].is_headwater
+    )
+    subbasins["downstream_path_length"] = subbasins["hybas_id"].map(
+        lambda value: topology_by_id[int(value)].downstream_path_length
+    )
+    if dam_point is not None:
+        subbasins["distance_to_reservoir_km"] = [
+            _distance_km(geom, dam_point) for geom in subbasins.geometry
+        ]
+    subbasins = add_geometry_quality_flags(subbasins)
+    subbasins["quality_flags"] = [
+        tuple(sorted(set(geom_flags) | set(topology_by_id[int(hybas_id)].quality_flags)))
+        for hybas_id, geom_flags in zip(
+            subbasins["hybas_id"], subbasins["quality_flags"], strict=True
+        )
+    ]
+
+    if flowlines_gdf is None:
+        flowlines = gpd.GeoDataFrame(
+            {
+                "flowline_id": [],
+                "downstream_id": [],
+                "stream_order": [],
+                "upstream_area_km2": [],
+                "length_km": [],
+                "is_main_stem": [],
+                "terminates_near_reservoir": [],
+                "quality_flags": [],
+            },
+            geometry=[],
+            crs="EPSG:4326",
+        )
+    else:
+        flowlines = _normalize_flowline_columns(reproject_gdf_to_wgs84(flowlines_gdf))
+        flowlines = validate_geometries(flowlines)
+        flowlines = clip_flowlines_to_catchment(flowlines, catchment_geom)
+        if len(flowlines) > 0:
+            flowlines = classify_streams_by_order(flowlines)
+            flowlines = classify_streams_by_upstream_area(flowlines)
+            flowlines = add_flowline_summary_attributes(flowlines)
+            if dam_point is not None:
+                distances = [
+                    _distance_km(point, dam_point)
+                    for point in map(_line_endpoint, flowlines.geometry)
+                ]
+                flowlines["terminates_near_reservoir"] = [
+                    distance is not None and distance <= 2 for distance in distances
+                ]
+            else:
+                flowlines["terminates_near_reservoir"] = False
+            flowlines = add_geometry_quality_flags(flowlines)
+        else:
+            flowlines = _empty_like(flowlines)
+
+    flags: set[QualityFlag] = set(topology.quality_flags)
+    for flags_tuple in subbasins.get("quality_flags", []):
+        flags.update(flags_tuple)
+    for flags_tuple in flowlines.get("quality_flags", []):
+        flags.update(flags_tuple)
+
+    return PreparedHydrologicMapLayers(
+        subbasins=_with_resolutions(subbasins),
+        flowlines=_with_resolutions(flowlines),
+        quality_flags=tuple(sorted(flags)),
+    )

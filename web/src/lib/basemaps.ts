@@ -38,4 +38,4 @@ export const BASEMAPS: Array<{
   },
 ];
 
-export const DEFAULT_BASEMAP: BasemapId = "imagery";
+export const DEFAULT_BASEMAP: BasemapId = "topo";

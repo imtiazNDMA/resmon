@@ -2,7 +2,13 @@ import { useState } from "react";
 import { formatDayMonth, isExtentStale } from "../../lib/extentVisibility";
 import { BASEMAPS } from "../../lib/basemaps";
 import { SAR_COMPOSITES } from "../../lib/sarComposites";
-import { useCatchment, useDistricts, useWaterExtent } from "../../lib/queries";
+import {
+  useCatchment,
+  useDistricts,
+  useFlowlines,
+  useSubBasins,
+  useWaterExtent,
+} from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
 
 /** Collapsible map controls + the always-honest extent date chip. A chip disables
@@ -19,6 +25,8 @@ export default function LayerChips() {
   const showWaterExtent = useAppStore((s) => s.showWaterExtent);
   const toggleLayer = useAppStore((s) => s.toggleLayer);
   const { data: catchment } = useCatchment();
+  const { data: subbasins } = useSubBasins();
+  const { data: flowlines } = useFlowlines(selected);
   const { data: districts } = useDistricts();
   const { data: extent } = useWaterExtent();
   const hasCatchment = !!selected && !!catchment?.features.some(
@@ -27,11 +35,20 @@ export default function LayerChips() {
   const extentFeature = selected ? extent?.features.find(
     (f) => f.properties.reservoir_id === selected,
   ) : undefined;
+  const hasSubBasins =
+    !!selected && !!subbasins?.features.some((f) => f.properties.reservoir_id === selected);
+  const hasFlowPaths = !!selected && !!flowlines?.features.length;
   const hasDistricts = !!districts?.features.length;
   const stale = extentFeature ? isExtentStale(extentFeature.properties.acquisition_date) : false;
   const activeBasemap = BASEMAPS.find((b) => b.id === basemap)?.name ?? "Basemap";
   const activeComposite = SAR_COMPOSITES.find((c) => c.id === sarComposite)?.name ?? "SAR";
-  const activeOverlays = [showCatchment && hasCatchment, showDistricts && hasDistricts, showWaterExtent && extentFeature].filter(Boolean).length;
+  const activeOverlays = [
+    showCatchment && hasCatchment,
+    showSubBasins && hasSubBasins,
+    showFlowEdges && hasFlowPaths,
+    showDistricts && hasDistricts,
+    showWaterExtent && extentFeature,
+  ].filter(Boolean).length;
   return (
     <div className={`map-control-panel ${open ? "open" : "collapsed"}`} aria-label="Map controls">
       <button
@@ -73,6 +90,22 @@ export default function LayerChips() {
                 onClick={() => toggleLayer("catchment")}
               >
                 Catchment
+              </button>
+              <button
+                type="button"
+                className={`map-control-btn ${showSubBasins ? "on" : ""}`}
+                disabled={!hasSubBasins}
+                onClick={() => toggleLayer("subBasins")}
+              >
+                Sub-basins
+              </button>
+              <button
+                type="button"
+                className={`map-control-btn ${showFlowEdges ? "on" : ""}`}
+                disabled={!hasFlowPaths}
+                onClick={() => toggleLayer("flowEdges")}
+              >
+                Drainage network
               </button>
               <button
                 type="button"

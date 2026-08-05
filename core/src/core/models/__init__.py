@@ -7,11 +7,14 @@ from __future__ import annotations
 from core.models.abt import AnalyticalBaseTable
 from core.models.base import CONTRACT_VERSION, Base
 from core.models.capacity_history import ReservoirCapacityHistory
+from core.models.catchment_flowline import CatchmentFlowline
 from core.models.catchment_forcing import CatchmentForcing
 from core.models.catchment_subbasin import CatchmentSubbasin
+from core.models.district_boundary import DistrictBoundary
 from core.models.forecast_forcing import ForecastForcing
 from core.models.ground_truth import GroundTruth
 from core.models.ground_truth_match import GroundTruthMatch
+from core.models.hydrologic_layer_provenance import HydrologicLayerProvenance
 from core.models.model_version import ModelVersion
 from core.models.observation import Observation
 from core.models.pipeline_run import PipelineRun
@@ -28,9 +31,12 @@ __all__ = [
     "Observation",
     "GroundTruth",
     "GroundTruthMatch",
+    "HydrologicLayerProvenance",
     "RatingCurve",
     "CatchmentForcing",
+    "CatchmentFlowline",
     "CatchmentSubbasin",
+    "DistrictBoundary",
     "ForecastForcing",
     "AnalyticalBaseTable",
     "ModelVersion",

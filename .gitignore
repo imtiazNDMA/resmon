@@ -24,3 +24,6 @@ geeservice.json
 # TS build info
 *.tsbuildinfo
 .superpowers/
+
+# Large local GIS source datasets; loaders document expected paths.
+data/HydroRIVERS_v10_as_shp/
