@@ -216,3 +216,12 @@ export interface PmdMonsoonProperties extends PmdFreshnessProperties {
   message: string | null;
   forecast: unknown;
 }
+
+export interface PmdLightningProperties extends PmdFreshnessProperties {
+  strike_id: string | null;
+  strike_time: string | null;
+  polarity: string | null;
+  peak_current_ka: number | null;
+  multiplicity: number | null;
+  window_hours: number;
+}

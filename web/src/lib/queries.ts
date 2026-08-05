@@ -142,3 +142,12 @@ export const usePmdMonsoon = (enabled = true) =>
     staleTime: 5 * 60_000,
     retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
   });
+
+export const usePmdLightning = (hours: number, enabled = true) =>
+  useQuery({
+    queryKey: ["pmdLightning", hours],
+    queryFn: ({ signal }) => api.pmdLightning(hours, signal),
+    enabled,
+    staleTime: 3 * 60_000,
+    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
+  });

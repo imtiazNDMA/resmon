@@ -6,6 +6,7 @@ import {
   useCatchment,
   useDistricts,
   useFlowlines,
+  usePmdLightning,
   usePmdMonsoon,
   usePmdStations,
   usePmdWarnings,
@@ -32,6 +33,9 @@ export default function LayerChips() {
   const showPmdStations = useAppStore((s) => s.showPmdStations);
   const showPmdWarnings = useAppStore((s) => s.showPmdWarnings);
   const showPmdMonsoon = useAppStore((s) => s.showPmdMonsoon);
+  const showPmdLightning = useAppStore((s) => s.showPmdLightning);
+  const pmdLightningHours = useAppStore((s) => s.pmdLightningHours);
+  const setPmdLightningHours = useAppStore((s) => s.setPmdLightningHours);
   const toggleLayer = useAppStore((s) => s.toggleLayer);
   const { data: catchment } = useCatchment();
   const { data: subbasins } = useSubBasins();
@@ -41,6 +45,7 @@ export default function LayerChips() {
   const pmdStations = usePmdStations(open || showPmdStations);
   const pmdWarnings = usePmdWarnings(open || showPmdWarnings);
   const pmdMonsoon = usePmdMonsoon(open || showPmdMonsoon);
+  const pmdLightning = usePmdLightning(pmdLightningHours, open || showPmdLightning);
   const hasCatchment = !!selected && !!catchment?.features.some(
     (f) => f.properties.reservoir_id === selected,
   );
@@ -54,9 +59,11 @@ export default function LayerChips() {
   const pmdDisabled = pmdStations.error instanceof ApiError && pmdStations.error.status === 503;
   const pmdWarningsDisabled = pmdWarnings.error instanceof ApiError && pmdWarnings.error.status === 503;
   const pmdMonsoonDisabled = pmdMonsoon.error instanceof ApiError && pmdMonsoon.error.status === 503;
+  const pmdLightningDisabled = pmdLightning.error instanceof ApiError && pmdLightning.error.status === 503;
   const hasPmdStations = !!pmdStations.data?.features.length;
   const hasPmdWarnings = !!pmdWarnings.data?.features.length;
   const hasPmdMonsoon = !!pmdMonsoon.data?.features.length;
+  const hasPmdLightning = !!pmdLightning.data?.features.length;
   const stale = extentFeature ? isExtentStale(extentFeature.properties.acquisition_date) : false;
   const activeBasemap = BASEMAPS.find((b) => b.id === basemap)?.name ?? "Basemap";
   const activeComposite = SAR_COMPOSITES.find((c) => c.id === sarComposite)?.name ?? "SAR";
@@ -69,8 +76,9 @@ export default function LayerChips() {
     showPmdStations && hasPmdStations,
     showPmdWarnings && hasPmdWarnings,
     showPmdMonsoon && hasPmdMonsoon,
+    showPmdLightning && hasPmdLightning,
   ].filter(Boolean).length;
-  const weatherUnavailable = pmdDisabled || pmdWarningsDisabled || pmdMonsoonDisabled;
+  const weatherUnavailable = pmdDisabled || pmdWarningsDisabled || pmdMonsoonDisabled || pmdLightningDisabled;
   return (
     <div className={`map-control-panel ${open ? "open" : "collapsed"}`} aria-label="Map controls">
       <button
@@ -190,13 +198,33 @@ export default function LayerChips() {
               >
                 Monsoon warnings
               </button>
+              <button
+                type="button"
+                className={`map-control-btn ${showPmdLightning ? "on" : ""}`}
+                disabled={pmdLightningDisabled || !hasPmdLightning}
+                onClick={() => toggleLayer("pmdLightning")}
+              >
+                Lightning
+              </button>
+              <div className="weather-window-row" aria-label="Lightning lookback window">
+                {[1, 6, 12, 24, 48].map((hours) => (
+                  <button
+                    key={hours}
+                    type="button"
+                    className={`weather-window-btn ${pmdLightningHours === hours ? "on" : ""}`}
+                    onClick={() => setPmdLightningHours(hours)}
+                  >
+                    {hours}h
+                  </button>
+                ))}
+              </div>
             </div>
             <small className="map-control-note">
               {weatherUnavailable
                 ? "PMD credentials are not configured on the backend."
-                : pmdStations.isLoading || pmdWarnings.isLoading || pmdMonsoon.isLoading
+                : pmdStations.isLoading || pmdWarnings.isLoading || pmdMonsoon.isLoading || pmdLightning.isLoading
                   ? "Checking PMD weather availability..."
-                  : `${pmdStations.data?.features.length ?? 0} stations · ${pmdWarnings.data?.features.length ?? 0} warnings · ${pmdMonsoon.data?.features.length ?? 0} monsoon`}
+                  : `${pmdStations.data?.features.length ?? 0} stations · ${pmdWarnings.data?.features.length ?? 0} warnings · ${pmdMonsoon.data?.features.length ?? 0} monsoon · ${pmdLightning.data?.features.length ?? 0} strikes`}
             </small>
           </div>
           {showWaterExtent && extentFeature && (

@@ -8,6 +8,7 @@ import type {
   GeoFC,
   HydrologicLayerProvenance,
   MetForcing,
+  PmdLightningProperties,
   PmdMonsoonProperties,
   PmdStationObservationProperties,
   PmdWarningProperties,
@@ -78,4 +79,6 @@ export const api = {
     getJson<GeoFC<PmdWarningProperties>>("/weather/pmd/monitor/warnings", s),
   pmdMonsoon: (s?: AbortSignal) =>
     getJson<GeoFC<PmdMonsoonProperties>>("/weather/pmd/monitor/monsoon", s),
+  pmdLightning: (hours: number, s?: AbortSignal) =>
+    getJson<GeoFC<PmdLightningProperties>>(`/weather/pmd/monitor/lightning?hours=${hours}`, s),
 };

@@ -22,6 +22,8 @@ interface AppState {
   showPmdStations: boolean;
   showPmdWarnings: boolean;
   showPmdMonsoon: boolean;
+  showPmdLightning: boolean;
+  pmdLightningHours: number;
   selectReservoir: (id: ReservoirId) => void;
   openDashboard: () => void;
   setActiveDate: (d: string | null) => void;
@@ -39,7 +41,9 @@ interface AppState {
       | "pmdStations"
       | "pmdWarnings"
       | "pmdMonsoon"
+      | "pmdLightning"
   ) => void;
+  setPmdLightningHours: (hours: number) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -59,6 +63,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   showPmdStations: false,
   showPmdWarnings: false,
   showPmdMonsoon: false,
+  showPmdLightning: false,
+  pmdLightningHours: 1,
   selectReservoir: (id) =>
     set({
       view: "map",
@@ -94,6 +100,9 @@ export const useAppStore = create<AppState>((set, get) => ({
                   ? { showPmdStations: !state.showPmdStations }
                   : layer === "pmdWarnings"
                     ? { showPmdWarnings: !state.showPmdWarnings }
-                    : { showPmdMonsoon: !state.showPmdMonsoon },
+                    : layer === "pmdMonsoon"
+                      ? { showPmdMonsoon: !state.showPmdMonsoon }
+                      : { showPmdLightning: !state.showPmdLightning },
     ),
+  setPmdLightningHours: (hours) => set({ pmdLightningHours: Math.min(48, Math.max(1, hours)) }),
 }));
