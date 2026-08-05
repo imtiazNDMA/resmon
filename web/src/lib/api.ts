@@ -8,6 +8,7 @@ import type {
   GeoFC,
   HydrologicLayerProvenance,
   MetForcing,
+  PmdStationObservationProperties,
   RainfallPoint,
   Reservoir,
   ReservoirMarkerProperties,
@@ -69,4 +70,6 @@ export const api = {
     getJson<GeoFC<DistrictBoundaryProperties>>("/geojson/districts", s),
   waterExtent: (s?: AbortSignal) =>
     getJson<GeoFC<WaterExtentProperties>>("/geojson/water-extent", s),
+  pmdStations: (s?: AbortSignal) =>
+    getJson<GeoFC<PmdStationObservationProperties>>("/weather/pmd/monitor/stations", s),
 };

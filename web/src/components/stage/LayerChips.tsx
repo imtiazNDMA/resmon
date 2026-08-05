@@ -6,10 +6,12 @@ import {
   useCatchment,
   useDistricts,
   useFlowlines,
+  usePmdStations,
   useSubBasins,
   useWaterExtent,
 } from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
+import { ApiError } from "../../lib/api";
 
 /** Collapsible map controls + the always-honest extent date chip. A chip disables
  *  (rather than erroring) when its layer has no data for the selected reservoir. */
@@ -25,12 +27,14 @@ export default function LayerChips() {
   const showFlowEdges = useAppStore((s) => s.showFlowEdges);
   const showDistricts = useAppStore((s) => s.showDistricts);
   const showWaterExtent = useAppStore((s) => s.showWaterExtent);
+  const showPmdStations = useAppStore((s) => s.showPmdStations);
   const toggleLayer = useAppStore((s) => s.toggleLayer);
   const { data: catchment } = useCatchment();
   const { data: subbasins } = useSubBasins();
   const { data: flowlines } = useFlowlines(selected);
   const { data: districts } = useDistricts();
   const { data: extent } = useWaterExtent();
+  const pmdStations = usePmdStations(open || showPmdStations);
   const hasCatchment = !!selected && !!catchment?.features.some(
     (f) => f.properties.reservoir_id === selected,
   );
@@ -41,6 +45,8 @@ export default function LayerChips() {
     !!selected && !!subbasins?.features.some((f) => f.properties.reservoir_id === selected);
   const hasFlowPaths = !!selected && !!flowlines?.features.length;
   const hasDistricts = !!districts?.features.length;
+  const pmdDisabled = pmdStations.error instanceof ApiError && pmdStations.error.status === 503;
+  const hasPmdStations = !!pmdStations.data?.features.length;
   const stale = extentFeature ? isExtentStale(extentFeature.properties.acquisition_date) : false;
   const activeBasemap = BASEMAPS.find((b) => b.id === basemap)?.name ?? "Basemap";
   const activeComposite = SAR_COMPOSITES.find((c) => c.id === sarComposite)?.name ?? "SAR";
@@ -50,6 +56,7 @@ export default function LayerChips() {
     showFlowEdges && hasFlowPaths,
     showDistricts && hasDistricts,
     showWaterExtent && extentFeature,
+    showPmdStations && hasPmdStations,
   ].filter(Boolean).length;
   return (
     <div className={`map-control-panel ${open ? "open" : "collapsed"}`} aria-label="Map controls">
@@ -142,6 +149,28 @@ export default function LayerChips() {
                 </button>
               ))}
             </div>
+          </div>
+          <div className="map-control-section">
+            <div className="map-control-title">Weather</div>
+            <div className="overlay-stack">
+              <button
+                type="button"
+                className={`map-control-btn ${showPmdStations ? "on" : ""}`}
+                disabled={pmdDisabled || !hasPmdStations}
+                onClick={() => toggleLayer("pmdStations")}
+              >
+                PMD stations
+              </button>
+            </div>
+            <small className="map-control-note">
+              {pmdDisabled
+                ? "PMD credentials are not configured on the backend."
+                : hasPmdStations
+                  ? `${pmdStations.data?.features.length ?? 0} stations · ${pmdStations.data?.features[0]?.properties.cache_status ?? "cache"}`
+                  : pmdStations.isLoading
+                    ? "Checking PMD station availability..."
+                    : "No PMD station observations available."}
+            </small>
           </div>
           {showWaterExtent && extentFeature && (
             <span className={`extent-date-chip ${stale ? "stale" : ""}`}>

@@ -10,6 +10,7 @@ import DistrictBoundaryLayer from "./DistrictBoundaryLayer";
 import FlowLineLayer from "./FlowLineLayer";
 import HydrologicLegend from "./HydrologicLegend";
 import LayerChips from "./LayerChips";
+import PmdStationLayer from "./PmdStationLayer";
 import SarTileLayer from "./SarTileLayer";
 import SarTilePreloader from "./SarTilePreloader";
 import SubBasinLayer from "./SubBasinLayer";
@@ -128,6 +129,7 @@ export default function MapView() {
         <SubBasinLayer />
         <FlowLineLayer />
         <WaterExtentLayer />
+        <PmdStationLayer />
         {markers?.features.map((f) => {
           if (f.geometry?.type !== "Point") return null;
           const [lon, lat] = f.geometry.coordinates;

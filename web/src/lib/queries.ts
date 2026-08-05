@@ -115,3 +115,12 @@ export const useMetForcings = (rid: string | null) =>
     enabled: rid !== null,
     staleTime: 10 * 60_000,
   });
+
+export const usePmdStations = (enabled = true) =>
+  useQuery({
+    queryKey: ["pmdStations"],
+    queryFn: ({ signal }) => api.pmdStations(signal),
+    enabled,
+    staleTime: 5 * 60_000,
+    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
+  });

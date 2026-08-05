@@ -165,3 +165,34 @@ export interface ReservoirMarkerProperties {
   risk_level: RiskLevel | null;
   release_probability: number | null;
 }
+
+export interface PmdFreshnessProperties {
+  source: string;
+  source_timestamp: string | null;
+  fetched_at: string;
+  cache_status: string;
+  stale: boolean;
+  ttl_seconds: number;
+}
+
+export interface PmdStationObservationProperties extends PmdFreshnessProperties {
+  station_id: string | null;
+  code: string | null;
+  name: string | null;
+  station_type: string | null;
+  date_time: string | null;
+  temperature_c: number | null;
+  humidity_pct: number | null;
+  pressure_hpa: number | null;
+  wind_speed_mps: number | null;
+  wind_direction_deg: number | null;
+  rain_1h_mm: number | null;
+  rain_6h_mm: number | null;
+  rain_24h_mm: number | null;
+  visibility_km: number | null;
+  status: boolean | null;
+  warn_temp: string | null;
+  warn_wind: string | null;
+  warn_rain: string | null;
+  warn_vis: string | null;
+}

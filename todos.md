@@ -419,9 +419,9 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 ### 8C.7 Frontend Map Layer UX
 
-- [ ] Add a `Weather` group in map controls separate from `Hydrologic layers`, with toggles for observations, warnings, lightning, GLOF, FFD gauges, and PMD prediction rasters
-- [ ] Add weather layer chips that are disabled with clear copy when backend credentials/config are missing, instead of failing silently
-- [ ] Render PMD station observations as clustered or density-thinned Leaflet markers at low zoom; avoid rendering hundreds of DOM markers unclustered
+- [~] Add a `Weather` group in map controls separate from `Hydrologic layers`, with toggles for observations, warnings, lightning, GLOF, FFD gauges, and PMD prediction rasters — Weather group started with PMD station toggle
+- [~] Add weather layer chips that are disabled with clear copy when backend credentials/config are missing, instead of failing silently — PMD station chip handles backend 503 credential state
+- [x] Render PMD station observations as clustered or density-thinned Leaflet markers at low zoom; avoid rendering hundreds of DOM markers unclustered
 - [ ] Render warning/monsoon polygons with severity colors and low-opacity fill so catchment boundaries and drainage remain legible
 - [ ] Render lightning as short-lived point markers with a user-selectable 1–48 hour window
 - [ ] Render FFD river gauges as point markers with status color, discharge, trend, and timestamp tooltips
