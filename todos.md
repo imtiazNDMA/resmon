@@ -338,6 +338,133 @@ Step-by-step build checklist, sequenced on the dependency spine in [docs/plans/0
 
 ---
 
+## Phase 8C — PMD Weather & Forecast Layers
+
+*Goal: integrate PMD/FFD weather observations, warning polygons, and precipitation/temperature forecast layers as secure, cache-efficient, provenance-labelled map overlays and optional catchment forcing inputs. Weather layers explain upstream forcing and forecast context; they do **not** directly observe release events.*
+
+### 8C.0 Security + Source Governance
+
+- [x] Treat the `imtiaz/` PMD documents as local research material only; do not commit plaintext credentials, bearer tokens, cookies, or internal PMD URLs that are not already approved for tracked docs — `imtiaz/` ignored
+- [x] Add `PMD_MONITOR_URL`, `PMD_MONITOR_USER`, `PMD_MONITOR_PASS`, and optional `PMD_PUBLIC_FORECAST_API_KEY` to `.env.example` with empty placeholder values only
+- [x] Store live credentials only in `.env` or deployment secrets; never pass PMD Monitor credentials to the browser — backend `Settings` fields added; no frontend exposure
+- [x] Define a backend source registry for PMD/FFD endpoints with `source_name`, upstream path, cache TTL, expected geometry type, freshness policy, and operational limitations — `PMD_SOURCES`
+- [x] Mark debug/probe endpoints (`/api/pmd/monitor/debug/`, NWFC debug station, raw arbitrary upstream paths) as excluded from our public API and frontend — `EXCLUDED_PMD_ENDPOINTS`
+- [x] Add source attribution strings for PMD Monitor, PMD NWFC, and FFD so legends/tooltips always label weather data provenance — source registry includes attribution names
+
+### 8C.1 Backend PMD Client Foundation
+
+- [x] Add a dedicated backend PMD client module, separate from reservoir repositories and model code, responsible for all upstream HTTP/auth/caching behavior — `api.pmd_client`
+- [x] Implement PMD Monitor login via `POST /user/login`, extracting bearer JWT from the JSON response and retaining the `ews_jwt` cookie server-side
+- [x] Implement a process-local authenticated session cache protected by a lock, with proactive TTL refresh and retry-once re-login on 401/403
+- [x] Handle PMD Monitor self-signed/legacy TLS using a narrowly scoped custom HTTP adapter; keep normal TLS behavior for all other external sources
+- [x] Implement `_pmd_get_json`, `_pmd_post_json`, and `_pmd_get_bytes` as separate code paths so binary GeoTIFF responses are never JSON/text parsed
+- [x] Implement cache-with-stale-fallback per endpoint: return fresh cache on hit, fetch on miss, serve stale-but-labelled fallback on transient upstream failure
+- [ ] Normalize upstream timestamps to explicit PKT/UTC+5 metadata, preserving original source timestamp fields for auditability
+- [x] Add robust data cleaning for PMD sentinel/fault values (`9999`, `999`, `-9999`, `-999`, `2147483.xxx`) before values reach frontend or forcing aggregation
+
+### 8C.2 PMD GeoJSON Observation + Warning Contracts
+
+- [ ] Define typed Pydantic schemas and TypeScript contracts for PMD station observations, NWFC observations, warning polygons, monsoon warnings, lightning strikes, GLOF observations, city forecasts, and FFD water levels
+- [ ] Represent nested JSON-string upstream fields (`fc`, `elements`, `gauges`, selected warning geometry fields) as parsed native JSON in our API responses where safe and stable
+- [ ] Preserve raw upstream IDs/codes (`station_id`, `code`, `data_type`, `model`, `forecast_time`) so map features can be joined, inspected, and refreshed deterministically
+- [ ] Add freshness fields to every PMD response: `source`, `source_timestamp`, `fetched_at`, `cache_status`, `stale`, and `ttl_seconds`
+- [ ] Return empty valid FeatureCollections for normal no-data conditions; reserve non-2xx responses for auth/config/server failures
+- [ ] Add fixture responses for representative non-empty, empty, stale-cache, sentinel-value, and malformed-nested-JSON cases
+
+### 8C.3 Backend PMD GeoJSON API
+
+- [ ] Add `/weather/pmd/monitor/stations` for live SYNOP/METAR/AWS station observations with temperature, rainfall, wind, humidity, pressure, visibility, and warning color fields
+- [ ] Add `/weather/pmd/nwfc/observations` for NWFC station observations and weather-text/icon classification inputs
+- [ ] Add `/weather/pmd/monitor/warnings` for active warning polygons with severity, hazard element, model, forecast time, data time, message, and area
+- [ ] Add `/weather/pmd/monitor/monsoon` for monsoon-specific warnings and rainfall forecast text
+- [ ] Add `/weather/pmd/monitor/glof-observations` for GLOF station readings, connectivity, alert level, rainfall, flow, water level, and temperature
+- [ ] Add `/weather/pmd/monitor/lightning?hours=1..48` for recent lightning strike points
+- [ ] Add `/weather/ffd/waterlevels` for FFD river gauge discharge/status points and parsed gauge arrays
+- [ ] Add `/weather/pmd/monitor/city-forecast` for city current conditions plus parsed 12-step forecast arrays
+- [ ] Add endpoint-level timeout handling so one slow upstream source cannot block unrelated reservoir/hydrologic map endpoints
+- [ ] Add repository-free API tests using mocked PMD client responses; avoid network calls in tests
+
+### 8C.4 PMD Forecast Raster Discovery
+
+- [ ] Confirm which PMD Monitor prediction element codes are live and stable before implementing each raster layer; do not infer codes from display labels alone
+- [ ] Confirm the four WRFPRS precipitation accumulation elements: `HOURTPE`, `SIXTPE`, `TWELVETPE`, `DAYTPE`
+- [ ] Discover and verify codes for 7d precipitation, cumulative precipitation, 6h/12h/24h rainfall-and-snow, and temperature/precipitation anomaly layers before adding them to the product UI
+- [ ] Download one real GeoTIFF per confirmed element and inspect band count, CRS, nodata value, pixel value range, extent, and unit using GDAL
+- [ ] Extract official PMD color ramps from the source portal JavaScript where available; clearly label any fallback color ramp as our own choice, not PMD-official
+- [ ] Record confirmed elements, units, accumulation windows, color stops, source run cadence, and known caveats in a tracked contract document
+
+### 8C.5 Forecast Raster Processing + Tile/Image Serving
+
+- [ ] Add a forecast-raster element registry keyed by stable frontend IDs (`pmd_pred_hourtpe`, etc.) with upstream `data_type`, `element`, label, unit, accumulation window, color ramp, and max frame policy
+- [ ] Add backend endpoint `/weather/pmd/predictions/{element_key}` returning `{element, label, unit, run, steps}` where each step has `date`, `bounds`, `coordinates`, `url`, and `cache_status`
+- [ ] Fetch latest model runs using `/api/modelTimeList?data_type=<data_type>&element=<element>` with 30-minute metadata TTL
+- [ ] Fetch per-run frame lists using `/api/model?data_type=<data_type>&element=<element>&date_time=<run>` with 3-hour metadata TTL
+- [ ] Thin forecast frames for browser performance: dense early window, sparse later window, with element-specific caps to avoid hundreds of simultaneous image overlays
+- [ ] Convert raw GeoTIFF frames server-side with GDAL: download bytes, write temp GeoTIFF, warp to EPSG:3857, colorize with fixed ramp, add alpha, persist PNG + JSON sidecar
+- [ ] Compute image bounds from all four warped raster corners; do not use a two-corner shortcut
+- [ ] Use deterministic on-disk cache keys per `(element, run, forecast_time)` so repeated requests avoid network/GDAL work
+- [ ] Delete intermediate GeoTIFF files after conversion; retain only PNG, metadata sidecar, and optional ramp files
+- [ ] Add disk-cache cleanup policy or operator command for old PMD prediction PNG/JSON files
+- [ ] Add optional `?diag=1` or admin-only cache bypass for operational debugging without exposing raw upstream probes publicly
+
+### 8C.6 Weather Layer Persistence + Catchment Aggregation
+
+- [ ] Decide which PMD datasets remain cache-only display layers and which are persisted for modelling; avoid persisting noisy point observations unless they feed a defined product
+- [ ] Add optional `weather_layer_provenance` or reuse `hydrologic_layer_provenance` only if semantics remain clear; do not conflate static hydrologic provenance with dynamic weather freshness
+- [ ] Add catchment aggregation job for PMD forecast rasters: clip/average/sum precipitation over `reservoir.catchment_geom` and optionally sub-basins where resolution supports it
+- [ ] Write PMD-derived catchment precipitation forecasts to `forecast_forcing` only after unit/time-window alignment is explicit and tested
+- [ ] Write observed/reanalysis-like PMD rainfall summaries to `catchment_forcing` only when source cadence and spatial representativeness are documented
+- [ ] Keep PMD visual layers separate from validated forecasting inputs until walk-forward skill/backtest impact is measured
+- [ ] Add source-version/freshness flags to forcing rows so downstream ML can distinguish ERA5/Open-Meteo/GFS/PMD-derived inputs
+
+### 8C.7 Frontend Map Layer UX
+
+- [ ] Add a `Weather` group in map controls separate from `Hydrologic layers`, with toggles for observations, warnings, lightning, GLOF, FFD gauges, and PMD prediction rasters
+- [ ] Add weather layer chips that are disabled with clear copy when backend credentials/config are missing, instead of failing silently
+- [ ] Render PMD station observations as clustered or density-thinned Leaflet markers at low zoom; avoid rendering hundreds of DOM markers unclustered
+- [ ] Render warning/monsoon polygons with severity colors and low-opacity fill so catchment boundaries and drainage remain legible
+- [ ] Render lightning as short-lived point markers with a user-selectable 1–48 hour window
+- [ ] Render FFD river gauges as point markers with status color, discharge, trend, and timestamp tooltips
+- [ ] Render PMD prediction PNG frames using Leaflet image overlays pinned to returned bounds/coordinates; avoid trying to render raw GeoTIFF in the browser
+- [ ] Add temporal controls for PMD prediction frames that reuse the existing timeline/dock patterns without coupling to SAR acquisition dates
+- [ ] Add layer legends for station weather icons, warning severity, precipitation ramps, and temperature/anomaly ramps
+- [ ] Add hover/click tooltips with source timestamp, cache status, unit, and upstream source; show stale data visibly
+- [ ] Keep all weather overlays selected-reservoir-aware where useful, but allow national context layers when zoomed out
+
+### 8C.8 Weather Report / Analysis Panel
+
+- [ ] Add a compact PMD Weather panel or tab summarizing active selected weather layers, using lazy per-section fetches and per-section loading/error states
+- [ ] Group warnings by hazard type and severity, sort newest-first, and support hazard filters before enabling warning-heavy map layers
+- [ ] Show selected-reservoir weather context: nearest stations, catchment 24h/7d precipitation, active warnings intersecting catchment, and forecast precipitation frames
+- [ ] Add drill-down views for NWFC daily forecast, weekly outlook, rainfall reports, FFD bulletins, and station history only after the base map layers are stable
+- [ ] Add HTML/CSV export later as a separate ticket; do not block map-layer integration on full report export
+- [ ] Escape all third-party scraped text before rendering; React text rendering is safe by default, but any HTML injection path must be explicitly prohibited
+
+### 8C.9 Performance + Reliability Gates
+
+- [ ] Set frontend query stale times to match upstream TTLs; do not poll faster than source cache windows
+- [ ] Abort in-flight fetches on layer toggle-off or reservoir switch to avoid stale layer flashes
+- [ ] Keep PMD raster overlays memory-bounded: cap frame count, unload hidden layer groups, and avoid registering all elements at once
+- [ ] Add backend metrics for upstream fetch count, cache hit/miss/stale fallback count, conversion time, generated PNG count, and endpoint latency
+- [ ] Add request timeouts and circuit-breaker behavior so PMD outage does not degrade reservoir status, SAR tiles, hydrologic layers, or forecasts
+- [ ] Add manual performance budget: all selected-reservoir hydrologic layers plus one PMD raster animation remains responsive on a mid-range laptop and mobile browser
+- [ ] Add smoke script that checks PMD config presence, auth success, one GeoJSON endpoint, one raster metadata endpoint, and one generated PNG URL
+
+### 8C.10 Validation + Acceptance
+
+- [~] Unit-test sentinel-value cleaning, timestamp normalization, nested JSON parsing, element registry validation, frame thinning, and color-ramp generation — first slice covers sentinel cleaning, nested JSON parsing, source registry, auth retry, binary path, and stale cache fallback
+- [ ] API-test stable response contracts for all PMD GeoJSON endpoints using fixtures, including empty/no-data and stale-cache fallback cases
+- [ ] Integration-test forecast raster endpoint with a tiny fixture GeoTIFF so GDAL conversion, alpha handling, bounds, and PNG serving are deterministic in CI
+- [ ] Frontend-test weather layer toggles, disabled states when PMD config is unavailable, legend rendering, stale badges, and temporal raster frame selection
+- [ ] Manual QA on Gobind Sagar, Pong, and Thein: weather layers do not obscure catchment divide, drainage network, water extent, or release-risk UI
+- [ ] Verify precipitation units and accumulation windows before any PMD-derived values are used in `catchment_forcing` or `forecast_forcing`
+- [ ] Document operational limitations: PMD upstream availability, private/internal endpoint dependency, stale cache behavior, model-resolution limits, and non-observability of release events
+- [ ] Re-run forecasting backtests before claiming PMD forecast layers improve release-risk skill
+
+**Exit:** the app can securely display PMD/FFD live weather observations, warning polygons, and at least one optimized precipitation forecast raster layer with provenance, freshness, caching, and graceful degradation. PMD-derived data is only promoted into model forcing after explicit aggregation and validation gates pass.
+
+---
+
 ## Phase 9 — Hardening & automation
 
 *Goal: the lights-out, observable, reproducible system.*

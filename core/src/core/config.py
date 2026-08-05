@@ -40,6 +40,13 @@ class Settings(BaseSettings):
     # --- Local SAR serving ---
     sar_cog_root: str = Field(default="data/sar_cog")
 
+    # --- PMD weather integration ---
+    # Server-side only; never expose these values to the browser.
+    pmd_monitor_url: str | None = Field(default=None)
+    pmd_monitor_user: str | None = Field(default=None)
+    pmd_monitor_pass: str | None = Field(default=None)
+    pmd_public_forecast_api_key: str | None = Field(default=None)
+
 
 @lru_cache
 def get_settings() -> Settings:
