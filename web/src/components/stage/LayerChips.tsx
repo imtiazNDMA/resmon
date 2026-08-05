@@ -1,5 +1,5 @@
 import { formatDayMonth, isExtentStale } from "../../lib/extentVisibility";
-import { useCatchment, useWaterExtent } from "../../lib/queries";
+import { useCatchment, useFlowEdges, useSubBasins, useWaterExtent } from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
 
 /** Top-right layer toggles + the always-honest extent date chip. A chip disables
@@ -7,12 +7,22 @@ import { useAppStore } from "../../lib/store";
 export default function LayerChips() {
   const selected = useAppStore((s) => s.selected);
   const showCatchment = useAppStore((s) => s.showCatchment);
+  const showSubBasins = useAppStore((s) => s.showSubBasins);
+  const showFlowEdges = useAppStore((s) => s.showFlowEdges);
   const showWaterExtent = useAppStore((s) => s.showWaterExtent);
   const toggleLayer = useAppStore((s) => s.toggleLayer);
   const { data: catchment } = useCatchment();
+  const { data: subbasins } = useSubBasins();
+  const { data: flowEdges } = useFlowEdges();
   const { data: extent } = useWaterExtent();
   if (!selected) return null;
   const hasCatchment = !!catchment?.features.some(
+    (f) => f.properties.reservoir_id === selected,
+  );
+  const hasSubBasins = !!subbasins?.features.some(
+    (f) => f.properties.reservoir_id === selected,
+  );
+  const hasFlowEdges = !!flowEdges?.features.some(
     (f) => f.properties.reservoir_id === selected,
   );
   const extentFeature = extent?.features.find(
@@ -27,6 +37,20 @@ export default function LayerChips() {
         onClick={() => toggleLayer("catchment")}
       >
         Catchment
+      </button>
+      <button
+        className={`layer-chip ${showSubBasins ? "on" : ""}`}
+        disabled={!hasSubBasins}
+        onClick={() => toggleLayer("subBasins")}
+      >
+        Sub-basins
+      </button>
+      <button
+        className={`layer-chip ${showFlowEdges ? "on" : ""}`}
+        disabled={!hasFlowEdges}
+        onClick={() => toggleLayer("flowEdges")}
+      >
+        Flow paths
       </button>
       <button
         className={`layer-chip ${showWaterExtent ? "on" : ""}`}

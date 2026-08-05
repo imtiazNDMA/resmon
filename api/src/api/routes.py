@@ -28,6 +28,7 @@ from api.schemas import (
     CurrentEstimateOut,
     DistrictBoundaryProperties,
     FeatureCollection,
+    FlowEdgeProperties,
     ForecastResponse,
     MetForcingOut,
     RainfallPointOut,
@@ -39,6 +40,7 @@ from api.schemas import (
     SarAssetManifestEntryOut,
     SarTileMetricsOut,
     SarTileOut,
+    SubBasinProperties,
     TimeseriesPoint,
     WaterExtentProperties,
 )
@@ -297,6 +299,48 @@ def geojson_catchment(db: Session = Depends(get_db)) -> dict:
         lambda r: {
             "reservoir_id": r["reservoir_id"],
             "name": r["name"],
+            "version": r["catchment_version"],
+        },
+    )
+
+
+@router.get(
+    "/geojson/subbasins", tags=["geojson"], response_model=FeatureCollection[SubBasinProperties]
+)
+def geojson_subbasins(db: Session = Depends(get_db)) -> dict:
+    """Individual upstream sub-basins, the un-dissolved form of `/geojson/catchment`.
+    `is_headwater` marks the top of the catchment."""
+    return _feature_collection(
+        repo.subbasin_features(db),
+        lambda r: {
+            "reservoir_id": r["reservoir_id"],
+            "hybas_id": r["hybas_id"],
+            "next_down": r["next_down"],
+            "is_headwater": r["is_headwater"],
+            "version": r["catchment_version"],
+        },
+    )
+
+
+@router.get(
+    "/geojson/flow-edges", tags=["geojson"], response_model=FeatureCollection[FlowEdgeProperties]
+)
+def geojson_flow_edges(db: Session = Depends(get_db)) -> dict:
+    """Topology-derived downstream flow edges for animating catchment transport.
+
+    These are display edges from each sub-basin interior point to its downstream
+    HydroBASINS neighbour, falling back to the dam point at the outlet. They are a
+    visualization scaffold, not calibrated river hydraulics.
+    """
+    return _feature_collection(
+        repo.flow_edge_features(db),
+        lambda r: {
+            "reservoir_id": r["reservoir_id"],
+            "from_hybas_id": r["from_hybas_id"],
+            "to_hybas_id": r["to_hybas_id"],
+            "is_headwater": r["is_headwater"],
+            "distance_to_reservoir_km": r["distance_to_reservoir_km"],
+            "routing_lag_days": r["routing_lag_days"],
             "version": r["catchment_version"],
         },
     )

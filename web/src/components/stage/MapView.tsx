@@ -5,8 +5,10 @@ import { sarTileQuery, useAcquisitions, useAoi, useMarkers } from "../../lib/que
 import { useAppStore } from "../../lib/store";
 import AreaMeter from "./AreaMeter";
 import CatchmentLayer from "./CatchmentLayer";
+import FlowEdgeLayer from "./FlowEdgeLayer";
 import LayerChips from "./LayerChips";
 import SarTileLayer from "./SarTileLayer";
+import SubBasinLayer from "./SubBasinLayer";
 import TimelineDock from "./TimelineDock";
 import WaterExtentLayer from "./WaterExtentLayer";
 
@@ -60,6 +62,7 @@ export default function MapView() {
   const activeDate = useAppStore((s) => s.activeDate);
   const imageryDateFrom = useAppStore((s) => s.imageryDateFrom);
   const imageryDateTo = useAppStore((s) => s.imageryDateTo);
+  const sarComposite = useAppStore((s) => s.sarComposite);
   const setActiveDate = useAppStore((s) => s.setActiveDate);
   const { data: aoi } = useAoi();
   const { data: markers } = useMarkers();
@@ -89,9 +92,9 @@ export default function MapView() {
     const idx = filteredAcqs.findIndex((a) => a.date === activeDate);
     if (idx < 0) return;
     for (const neighbor of [filteredAcqs[idx - 1], filteredAcqs[idx + 1]]) {
-      if (neighbor) void queryClient.prefetchQuery(sarTileQuery(selected, neighbor.date));
+      if (neighbor) void queryClient.prefetchQuery(sarTileQuery(selected, neighbor.date, sarComposite));
     }
-  }, [selected, activeDate, filteredAcqs, queryClient]);
+  }, [selected, activeDate, filteredAcqs, queryClient, sarComposite]);
 
   return (
     <div className="mapview">
@@ -109,6 +112,8 @@ export default function MapView() {
             style={{ color: "#59b7ff", weight: 1.5, fillOpacity: 0.05 }}
           />
         )}
+        <SubBasinLayer />
+        <FlowEdgeLayer />
         <CatchmentLayer />
         <WaterExtentLayer />
         {markers?.features.map((f) => {

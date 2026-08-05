@@ -81,9 +81,72 @@ def test_geojson_layers(client):
     assert len(aoi["features"]) == 3
     assert aoi["features"][0]["geometry"]["type"] in ("Polygon", "MultiPolygon")
     # Catchment / water-extent layers are valid collections (empty until GEE populates them).
-    for path in ("/geojson/catchment", "/geojson/water-extent"):
+    for path in ("/geojson/catchment", "/geojson/subbasins", "/geojson/water-extent"):
         layer = client.get(path).json()
         assert layer["type"] == "FeatureCollection"
+
+
+def test_geojson_subbasins_serves_topology_and_headwater_flag(client, conn, add_reservoir):
+    rid = add_reservoir("subbasin_res")
+    # 2 drains into 1; nothing drains into 2, so only 2 is a headwater.
+    conn.execute(
+        text(
+            """
+            INSERT INTO catchment_subbasin
+              (reservoir_id, hybas_id, next_down, is_headwater, geom, catchment_version)
+            VALUES
+              (:rid, 4070000010, 0, false,
+               ST_GeomFromText('MULTIPOLYGON(((76 31,76.1 31,76.1 31.1,76 31.1,76 31)))', 4326),
+               'hybas7_v1'),
+              (:rid, 4070000020, 4070000010, true,
+               ST_GeomFromText('MULTIPOLYGON(((76.1 31,76.2 31,76.2 31.1,76.1 31.1,76.1 31)))',
+                               4326),
+               'hybas7_v1')
+            """
+        ),
+        {"rid": rid},
+    )
+    gj = client.get("/geojson/subbasins").json()
+    feats = [f for f in gj["features"] if f["properties"]["reservoir_id"] == rid]
+    assert len(feats) == 2
+    assert all(f["geometry"]["type"] in ("Polygon", "MultiPolygon") for f in feats)
+    by_id = {f["properties"]["hybas_id"]: f["properties"] for f in feats}
+    assert by_id[4070000020]["is_headwater"] is True
+    assert by_id[4070000020]["next_down"] == 4070000010
+    assert by_id[4070000010]["is_headwater"] is False
+    assert by_id[4070000010]["version"] == "hybas7_v1"
+
+
+def test_geojson_flow_edges_serves_downstream_display_paths(client, conn, add_reservoir):
+    rid = add_reservoir("flow_edge_res")
+    conn.execute(
+        text(
+            """
+            INSERT INTO catchment_subbasin
+              (reservoir_id, hybas_id, next_down, is_headwater, geom, catchment_version)
+            VALUES
+              (:rid, 4070000010, 0, false,
+               ST_GeomFromText('MULTIPOLYGON(((76 31,76.1 31,76.1 31.1,76 31.1,76 31)))', 4326),
+               'hybas7_v1'),
+              (:rid, 4070000020, 4070000010, true,
+               ST_GeomFromText('MULTIPOLYGON(((76.1 31,76.2 31,76.2 31.1,76.1 31.1,76.1 31)))',
+                               4326),
+               'hybas7_v1')
+            """
+        ),
+        {"rid": rid},
+    )
+
+    gj = client.get("/geojson/flow-edges").json()
+    feats = [f for f in gj["features"] if f["properties"]["reservoir_id"] == rid]
+    assert len(feats) == 2
+    assert all(f["geometry"]["type"] == "LineString" for f in feats)
+    by_from = {f["properties"]["from_hybas_id"]: f["properties"] for f in feats}
+    assert by_from[4070000020]["to_hybas_id"] == 4070000010
+    assert by_from[4070000020]["is_headwater"] is True
+    assert by_from[4070000020]["distance_to_reservoir_km"] >= 0
+    assert by_from[4070000020]["routing_lag_days"] >= 0.25
+    assert by_from[4070000010]["to_hybas_id"] is None
 
 
 @pytest.fixture

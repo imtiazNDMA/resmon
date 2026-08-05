@@ -4,6 +4,9 @@ import { useCatchment } from "../../lib/queries";
 import { useAppStore } from "../../lib/store";
 
 const CATCHMENT_STYLE = { color: "#d9a45b", weight: 1.5, dashArray: "6 4", fillOpacity: 0.04 };
+/** Hover lifts the catchment to a purple wash. mouseout restores CATCHMENT_STYLE
+ *  wholesale, so the colour reverts with the opacity. */
+const CATCHMENT_HOVER_STYLE = { color: "#a06bd4", fillOpacity: 0.8 };
 
 /** Upstream catchment (HydroBASINS) for the selected reservoir. Dashed sand
  *  outline so it reads as a terrain boundary, not water. Degrades to nothing
@@ -23,7 +26,7 @@ export default function CatchmentLayer() {
       onEachFeature={(_, layer) => {
         layer.on({
           mouseover: (event: LeafletMouseEvent) => {
-            (event.target as Path).setStyle({ fillOpacity: 1 });
+            (event.target as Path).setStyle(CATCHMENT_HOVER_STYLE);
           },
           mouseout: (event: LeafletMouseEvent) => {
             (event.target as Path).setStyle(CATCHMENT_STYLE);

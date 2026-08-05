@@ -3,6 +3,7 @@ import type {
   AoiProperties,
   CatchmentProperties,
   DistrictBoundaryProperties,
+  FlowEdgeProperties,
   GeoFC,
   MetForcing,
   RainfallPoint,
@@ -11,6 +12,7 @@ import type {
   SarAssetManifestEntry,
   SarTile,
   Status,
+  SubBasinProperties,
   WaterExtentProperties,
 } from "../types";
 import type { SarCompositeId } from "./sarComposites";
@@ -49,6 +51,8 @@ export const api = {
     getJson<GeoFC<ReservoirMarkerProperties>>("/geojson/reservoirs", s),
   aoi: (s?: AbortSignal) => getJson<GeoFC<AoiProperties>>("/geojson/aoi", s),
   catchment: (s?: AbortSignal) => getJson<GeoFC<CatchmentProperties>>("/geojson/catchment", s),
+  subbasins: (s?: AbortSignal) => getJson<GeoFC<SubBasinProperties>>("/geojson/subbasins", s),
+  flowEdges: (s?: AbortSignal) => getJson<GeoFC<FlowEdgeProperties>>("/geojson/flow-edges", s),
   districts: (s?: AbortSignal) =>
     getJson<GeoFC<DistrictBoundaryProperties>>("/geojson/districts", s),
   waterExtent: (s?: AbortSignal) =>
