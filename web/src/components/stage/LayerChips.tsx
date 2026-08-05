@@ -21,6 +21,8 @@ export default function LayerChips() {
   const sarComposite = useAppStore((s) => s.sarComposite);
   const setSarComposite = useAppStore((s) => s.setSarComposite);
   const showCatchment = useAppStore((s) => s.showCatchment);
+  const showSubBasins = useAppStore((s) => s.showSubBasins);
+  const showFlowEdges = useAppStore((s) => s.showFlowEdges);
   const showDistricts = useAppStore((s) => s.showDistricts);
   const showWaterExtent = useAppStore((s) => s.showWaterExtent);
   const toggleLayer = useAppStore((s) => s.toggleLayer);

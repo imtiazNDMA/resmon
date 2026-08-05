@@ -15,6 +15,8 @@ interface AppState {
   sarComposite: SarCompositeId;
   playing: boolean;
   showCatchment: boolean;
+  showSubBasins: boolean;
+  showFlowEdges: boolean;
   showDistricts: boolean;
   showWaterExtent: boolean;
   selectReservoir: (id: ReservoirId) => void;
@@ -24,7 +26,7 @@ interface AppState {
   setBasemap: (basemap: BasemapId) => void;
   setSarComposite: (composite: SarCompositeId) => void;
   setPlaying: (p: boolean) => void;
-  toggleLayer: (layer: "catchment" | "districts" | "waterExtent") => void;
+  toggleLayer: (layer: "catchment" | "subBasins" | "flowEdges" | "districts" | "waterExtent") => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -37,6 +39,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   sarComposite: DEFAULT_SAR_COMPOSITE,
   playing: false,
   showCatchment: false,
+  showSubBasins: false,
+  showFlowEdges: false,
   showDistricts: false,
   showWaterExtent: false,
   selectReservoir: (id) =>
@@ -62,8 +66,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((state) =>
       layer === "catchment"
         ? { showCatchment: !state.showCatchment }
-        : layer === "districts"
-          ? { showDistricts: !state.showDistricts }
-        : { showWaterExtent: !state.showWaterExtent },
+        : layer === "subBasins"
+          ? { showSubBasins: !state.showSubBasins }
+          : layer === "flowEdges"
+            ? { showFlowEdges: !state.showFlowEdges }
+            : layer === "districts"
+              ? { showDistricts: !state.showDistricts }
+              : { showWaterExtent: !state.showWaterExtent },
     ),
 }));
