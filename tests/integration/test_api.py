@@ -801,6 +801,121 @@ def test_weather_pmd_monitor_stations_accepts_empty_payload(client):
     assert response.json() == {"type": "FeatureCollection", "features": []}
 
 
+def test_weather_pmd_nwfc_observations_disabled_without_config(client):
+    app.dependency_overrides[get_pmd_monitor_client] = lambda: FakePmdClient(configured=False)
+    try:
+        response = client.get("/weather/pmd/nwfc/observations")
+    finally:
+        app.dependency_overrides.pop(get_pmd_monitor_client, None)
+
+    assert response.status_code == 503
+
+
+def test_weather_pmd_nwfc_observations_serves_typed_geojson(client):
+    payload = {
+        "data": [
+            {
+                "lat": "34.0",
+                "lon": "72.5",
+                "station_id": "nwfc-1",
+                "station_code": "NW01",
+                "station_name": "Peshawar",
+                "valid_time": "2026-08-05T06:00:00+05:00",
+                "weather": "Cloudy",
+                "weather_icon": "cloudy.png",
+                "temperature": 28.1,
+                "humidity": 71,
+                "rain_24h": 2.4,
+            }
+        ]
+    }
+    app.dependency_overrides[get_pmd_monitor_client] = lambda: FakePmdClient(payload=payload)
+    try:
+        response = client.get("/weather/pmd/nwfc/observations")
+    finally:
+        app.dependency_overrides.pop(get_pmd_monitor_client, None)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["type"] == "FeatureCollection"
+    assert len(body["features"]) == 1
+    props = body["features"][0]["properties"]
+    assert props["source"] == pmd_source("nwfc_observations").source_name
+    assert props["station_id"] == "nwfc-1"
+    assert props["code"] == "NW01"
+    assert props["weather_text"] == "Cloudy"
+    assert props["temperature_c"] == 28.1
+    assert props["rain_24h_mm"] == 2.4
+
+
+def test_weather_pmd_nwfc_observations_accepts_empty_payload(client):
+    app.dependency_overrides[get_pmd_monitor_client] = lambda: FakePmdClient(payload={"data": []})
+    try:
+        response = client.get("/weather/pmd/nwfc/observations")
+    finally:
+        app.dependency_overrides.pop(get_pmd_monitor_client, None)
+
+    assert response.status_code == 200
+    assert response.json() == {"type": "FeatureCollection", "features": []}
+
+
+def test_weather_pmd_monitor_glof_observations_disabled_without_config(client):
+    app.dependency_overrides[get_pmd_monitor_client] = lambda: FakePmdClient(configured=False)
+    try:
+        response = client.get("/weather/pmd/monitor/glof-observations")
+    finally:
+        app.dependency_overrides.pop(get_pmd_monitor_client, None)
+
+    assert response.status_code == 503
+
+
+def test_weather_pmd_monitor_glof_observations_serves_typed_geojson(client):
+    payload = [
+        {
+            "lat": "35.9",
+            "lon": "74.3",
+            "station_id": "glof-1",
+            "station_name": "Hunza GLOF",
+            "last_update": "2026-08-05T08:00:00+05:00",
+            "connectivity": "online",
+            "alert_level": "Watch",
+            "rainfall": "9.5",
+            "flow": "1.2",
+            "water_level": "2.1",
+            "temp": "6.3",
+        }
+    ]
+    app.dependency_overrides[get_pmd_monitor_client] = lambda: FakePmdClient(payload=payload)
+    try:
+        response = client.get("/weather/pmd/monitor/glof-observations")
+    finally:
+        app.dependency_overrides.pop(get_pmd_monitor_client, None)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["type"] == "FeatureCollection"
+    assert len(body["features"]) == 1
+    props = body["features"][0]["properties"]
+    assert props["source"] == pmd_source("monitor_glof_observations").source_name
+    assert props["station_id"] == "glof-1"
+    assert props["connected"] is True
+    assert props["alert_level"] == "Watch"
+    assert props["rainfall_mm"] == 9.5
+    assert props["flow_cms"] == 1.2
+    assert props["water_level_m"] == 2.1
+
+
+def test_weather_pmd_monitor_glof_observations_accepts_empty_payload(client):
+    app.dependency_overrides[get_pmd_monitor_client] = lambda: FakePmdClient(payload=[])
+    try:
+        response = client.get("/weather/pmd/monitor/glof-observations")
+    finally:
+        app.dependency_overrides.pop(get_pmd_monitor_client, None)
+
+    assert response.status_code == 200
+    assert response.json() == {"type": "FeatureCollection", "features": []}
+
+
 def test_openapi_published(client):
     schema = client.get("/openapi.json").json()
     assert schema["info"]["title"] == "Reservoir Monitoring & Analytics API"

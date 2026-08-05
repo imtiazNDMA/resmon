@@ -9,7 +9,9 @@ from api.pmd_client import (
     PmdMonitorClient,
     clean_pmd_value,
     extract_jwt,
+    normalize_glof_observation_features,
     normalize_monitor_station_features,
+    normalize_nwfc_observation_features,
     parse_json_string,
     pmd_source,
 )
@@ -123,6 +125,70 @@ def test_normalize_monitor_station_features_accepts_raw_rows_with_lat_lon():
     props = normalized["features"][0]["properties"]
     assert props["temperature_c"] == 29.5
     assert props["rain_24h_mm"] == 12.0
+    assert props["stale"] is True
+
+
+def test_normalize_nwfc_observation_features_preserves_weather_fields():
+    normalized = normalize_nwfc_observation_features(
+        {
+            "data": [
+                {
+                    "latitude": "34.0",
+                    "longitude": "72.5",
+                    "station_code": "NW01",
+                    "station_name": "Peshawar",
+                    "valid_time": "2026-08-05T06:00:00+05:00",
+                    "weather_text": "Cloudy",
+                    "icon": "cloudy.png",
+                    "temp": "28.1",
+                    "pre24": 9999,
+                }
+            ]
+        },
+        cache_status="fetched",
+    )
+
+    feature = normalized["features"][0]
+    assert feature["geometry"] == {"type": "Point", "coordinates": [72.5, 34.0]}
+    props = feature["properties"]
+    assert props["code"] == "NW01"
+    assert props["weather_text"] == "Cloudy"
+    assert props["weather_icon"] == "cloudy.png"
+    assert props["temperature_c"] == 28.1
+    assert props["rain_24h_mm"] is None
+    assert props["source"] == "PMD NWFC"
+
+
+def test_normalize_glof_observation_features_cleans_telemetry():
+    normalized = normalize_glof_observation_features(
+        [
+            {
+                "lat": "35.9",
+                "lon": "74.3",
+                "station_id": "glof-1",
+                "station_name": "Hunza GLOF",
+                "last_update": "2026-08-05T08:00:00+05:00",
+                "connectivity": "online",
+                "alert_level": "Watch",
+                "rainfall": "9.5",
+                "flow": 2147483.75,
+                "water_level": "2.1",
+                "temp": "6.3",
+            }
+        ],
+        cache_status="stale",
+    )
+
+    feature = normalized["features"][0]
+    assert feature["geometry"] == {"type": "Point", "coordinates": [74.3, 35.9]}
+    props = feature["properties"]
+    assert props["station_id"] == "glof-1"
+    assert props["connected"] is True
+    assert props["alert_level"] == "Watch"
+    assert props["rainfall_mm"] == 9.5
+    assert props["flow_cms"] is None
+    assert props["water_level_m"] == 2.1
+    assert props["source"] == "PMD Monitor GLOF"
     assert props["stale"] is True
 
 

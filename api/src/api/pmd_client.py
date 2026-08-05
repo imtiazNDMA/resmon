@@ -305,6 +305,99 @@ def normalize_monitor_station_features(
     return {"type": "FeatureCollection", "features": features}
 
 
+def normalize_nwfc_observation_features(
+    payload: Any, *, cache_status: str, fetched_at: datetime | None = None
+) -> dict[str, Any]:
+    """Normalize PMD NWFC station observations to our public GeoJSON contract."""
+    source = pmd_source("nwfc_observations")
+    timestamp = fetched_at or datetime.now(UTC)
+    features = []
+    for geometry, raw_props in _station_items(payload):
+        props = clean_pmd_value(raw_props)
+        if not isinstance(props, dict):
+            continue
+        point = _point_geometry(geometry, props)
+        if point is None:
+            continue
+        date_time = _text(
+            _first(props, "date_time", "datetime", "obs_time", "time", "valid_time")
+        )
+        weather_text = _text(_first(props, "weather", "weather_text", "description"))
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": point,
+                "properties": {
+                    "station_id": _text(_first(props, "station_id", "id")),
+                    "code": _text(_first(props, "code", "station_code")),
+                    "name": _text(_first(props, "name", "station_name")),
+                    "date_time": date_time,
+                    "weather_text": weather_text,
+                    "weather_icon": _text(_first(props, "weather_icon", "icon", "icon_url")),
+                    "temperature_c": _number(_first(props, "temperature", "temp", "tem")),
+                    "humidity_pct": _number(_first(props, "humidity", "rhu")),
+                    "pressure_hpa": _number(_first(props, "pressure", "prs")),
+                    "wind_speed_mps": _number(_first(props, "wind_speed", "wspd")),
+                    "wind_direction_deg": _number(_first(props, "wind_direction", "wdir")),
+                    "rain_24h_mm": _number(_first(props, "rain_24h", "rain24h", "pre24")),
+                    "source": source.source_name,
+                    "source_timestamp": date_time,
+                    "fetched_at": timestamp,
+                    "cache_status": cache_status,
+                    "stale": cache_status == "stale",
+                    "ttl_seconds": source.ttl_seconds,
+                },
+            }
+        )
+    return {"type": "FeatureCollection", "features": features}
+
+
+def normalize_glof_observation_features(
+    payload: Any, *, cache_status: str, fetched_at: datetime | None = None
+) -> dict[str, Any]:
+    """Normalize PMD GLOF station telemetry to our public GeoJSON contract."""
+    source = pmd_source("monitor_glof_observations")
+    timestamp = fetched_at or datetime.now(UTC)
+    features = []
+    for geometry, raw_props in _station_items(payload):
+        props = clean_pmd_value(raw_props)
+        if not isinstance(props, dict):
+            continue
+        point = _point_geometry(geometry, props)
+        if point is None:
+            continue
+        date_time = _text(
+            _first(props, "date_time", "datetime", "obs_time", "time", "last_update")
+        )
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": point,
+                "properties": {
+                    "station_id": _text(_first(props, "station_id", "id")),
+                    "code": _text(_first(props, "code", "station_code")),
+                    "name": _text(_first(props, "name", "station_name")),
+                    "date_time": date_time,
+                    "connected": _bool_or_none(
+                        _first(props, "connected", "connectivity", "online", "status")
+                    ),
+                    "alert_level": _text(_first(props, "alert_level", "alert", "warning")),
+                    "rainfall_mm": _number(_first(props, "rainfall", "rain", "precip", "pre")),
+                    "flow_cms": _number(_first(props, "flow", "discharge", "flow_cms")),
+                    "water_level_m": _number(_first(props, "water_level", "level", "wl")),
+                    "temperature_c": _number(_first(props, "temperature", "temp", "tem")),
+                    "source": source.source_name,
+                    "source_timestamp": date_time,
+                    "fetched_at": timestamp,
+                    "cache_status": cache_status,
+                    "stale": cache_status == "stale",
+                    "ttl_seconds": source.ttl_seconds,
+                },
+            }
+        )
+    return {"type": "FeatureCollection", "features": features}
+
+
 def clean_pmd_value(value: Any) -> Any:
     """Convert PMD sentinel/fault numeric values to ``None`` recursively."""
     if isinstance(value, dict):

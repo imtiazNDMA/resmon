@@ -33,6 +33,8 @@ from api.schemas import (
     ForecastResponse,
     HydrologicLayerProvenanceOut,
     MetForcingOut,
+    PmdGlofObservationProperties,
+    PmdNwfcObservationProperties,
     PmdStationObservationProperties,
     RainfallPointOut,
     ReleaseRiskEntry,
@@ -282,6 +284,60 @@ def weather_pmd_monitor_stations(
     except pmd.PmdUpstreamError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     return pmd.normalize_monitor_station_features(
+        cached.value,
+        cache_status=cached.cache_status,
+    )
+
+
+@router.get(
+    "/weather/pmd/nwfc/observations",
+    tags=["weather"],
+    response_model=FeatureCollection[PmdNwfcObservationProperties],
+)
+def weather_pmd_nwfc_observations(
+    client: pmd.PmdMonitorClient = Depends(get_pmd_monitor_client),
+) -> dict:
+    """PMD NWFC station observations as normalized GeoJSON points."""
+    source = pmd.pmd_source("nwfc_observations")
+    if not client.configured():
+        raise HTTPException(status_code=503, detail="PMD Monitor credentials are not configured")
+    try:
+        cached = client.cached(
+            "pmd_nwfc_observations",
+            source.ttl_seconds,
+            lambda: client.get_json(source.upstream_path),
+            fallback_key="pmd_nwfc_observations_stale",
+        )
+    except pmd.PmdUpstreamError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return pmd.normalize_nwfc_observation_features(
+        cached.value,
+        cache_status=cached.cache_status,
+    )
+
+
+@router.get(
+    "/weather/pmd/monitor/glof-observations",
+    tags=["weather"],
+    response_model=FeatureCollection[PmdGlofObservationProperties],
+)
+def weather_pmd_monitor_glof_observations(
+    client: pmd.PmdMonitorClient = Depends(get_pmd_monitor_client),
+) -> dict:
+    """PMD Monitor GLOF station telemetry as normalized GeoJSON points."""
+    source = pmd.pmd_source("monitor_glof_observations")
+    if not client.configured():
+        raise HTTPException(status_code=503, detail="PMD Monitor credentials are not configured")
+    try:
+        cached = client.cached(
+            "pmd_monitor_glof_observations",
+            source.ttl_seconds,
+            lambda: client.get_json(source.upstream_path),
+            fallback_key="pmd_monitor_glof_observations_stale",
+        )
+    except pmd.PmdUpstreamError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return pmd.normalize_glof_observation_features(
         cached.value,
         cache_status=cached.cache_status,
     )

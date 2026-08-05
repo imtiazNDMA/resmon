@@ -278,6 +278,46 @@ class PmdStationObservationProperties(BaseModel):
     ttl_seconds: int
 
 
+class PmdNwfcObservationProperties(BaseModel):
+    station_id: str | None
+    code: str | None
+    name: str | None
+    date_time: str | None
+    weather_text: str | None
+    weather_icon: str | None
+    temperature_c: float | None
+    humidity_pct: float | None
+    pressure_hpa: float | None
+    wind_speed_mps: float | None
+    wind_direction_deg: float | None
+    rain_24h_mm: float | None
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
+class PmdGlofObservationProperties(BaseModel):
+    station_id: str | None
+    code: str | None
+    name: str | None
+    date_time: str | None
+    connected: bool | None
+    alert_level: str | None
+    rainfall_mm: float | None
+    flow_cms: float | None
+    water_level_m: float | None
+    temperature_c: float | None
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
 class ReservoirMarkerProperties(BaseModel):
     reservoir_id: str
     name: str
