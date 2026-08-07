@@ -151,3 +151,12 @@ export const usePmdLightning = (hours: number, enabled = true) =>
     staleTime: 3 * 60_000,
     retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
   });
+
+export const usePmdPredictions = (elementKey: string, enabled = true) =>
+  useQuery({
+    queryKey: ["pmdPredictions", elementKey],
+    queryFn: ({ signal }) => api.pmdPredictions(elementKey, signal),
+    enabled,
+    staleTime: 30 * 60_000,
+    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
+  });

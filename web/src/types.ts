@@ -225,3 +225,34 @@ export interface PmdLightningProperties extends PmdFreshnessProperties {
   multiplicity: number | null;
   window_hours: number;
 }
+
+export interface PmdPredictionElement {
+  key: string;
+  data_type: string;
+  element: string;
+  label: string;
+  unit: string;
+  accumulation: string;
+  status: string;
+  color_ramp: string;
+  max_frames: number;
+  notes: string;
+}
+
+export interface PmdPredictionStep {
+  date: string;
+  bounds: number[] | null;
+  coordinates: number[][] | null;
+  url: string | null;
+  cache_status: string;
+}
+
+export interface PmdPredictionResponse {
+  element: PmdPredictionElement;
+  run: string | null;
+  available: boolean;
+  metadata_status: string;
+  cache_status: string;
+  steps: PmdPredictionStep[];
+  limitations: string;
+}
