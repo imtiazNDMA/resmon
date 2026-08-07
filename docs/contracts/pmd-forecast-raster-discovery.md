@@ -13,10 +13,10 @@ Phase 8C.4 tracks PMD Monitor prediction rasters before they become product laye
 
 | Frontend key | data_type | element | Label | Unit | Accumulation | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `pmd_pred_hourtpe` | `WRFPRS` | `HOURTPE` | Hourly precipitation | `mm` | 1h | `candidate` | Must confirm live metadata and raster values before UI exposure. |
-| `pmd_pred_sixtpe` | `WRFPRS` | `SIXTPE` | 6h precipitation | `mm` | 6h | `candidate` | Must confirm whether accumulation resets per frame. |
-| `pmd_pred_twelvetpe` | `WRFPRS` | `TWELVETPE` | 12h precipitation | `mm` | 12h | `candidate` | Must confirm time labels and accumulation semantics. |
-| `pmd_pred_daytpe` | `WRFPRS` | `DAYTPE` | 24h precipitation | `mm` | 24h | `candidate` | Must confirm whether this is daily total or rolling 24h. |
+| `pmd_pred_hourtpe` | `WRFPRS` | `HOURTPE` | Hourly precipitation | `mm` | 1h | `candidate` | Requires live metadata confirmation via `/api/modelTimeList`. Frontend layer controls deployed; awaiting raster evidence. |
+| `pmd_pred_sixtpe` | `WRFPRS` | `SIXTPE` | 6h precipitation | `mm` | 6h | `candidate` | Requires live metadata confirmation via `/api/modelTimeList`. Frontend layer controls deployed; awaiting raster evidence. |
+| `pmd_pred_twelvetpe` | `WRFPRS` | `TWELVETPE` | 12h precipitation | `mm` | 12h | `candidate` | Requires live metadata confirmation via `/api/modelTimeList`. Frontend layer controls deployed; awaiting raster evidence. |
+| `pmd_pred_daytpe` | `WRFPRS` | `DAYTPE` | 24h precipitation | `mm` | 24h | `candidate` | Requires live metadata confirmation via `/api/modelTimeList`. Frontend layer controls deployed; awaiting raster evidence. |
 
 ## Required Evidence Per Element
 
