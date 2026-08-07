@@ -165,3 +165,94 @@ export interface ReservoirMarkerProperties {
   risk_level: RiskLevel | null;
   release_probability: number | null;
 }
+
+export interface PmdFreshnessProperties {
+  source: string;
+  source_timestamp: string | null;
+  fetched_at: string;
+  cache_status: string;
+  stale: boolean;
+  ttl_seconds: number;
+}
+
+export interface PmdStationObservationProperties extends PmdFreshnessProperties {
+  station_id: string | null;
+  code: string | null;
+  name: string | null;
+  station_type: string | null;
+  date_time: string | null;
+  temperature_c: number | null;
+  humidity_pct: number | null;
+  pressure_hpa: number | null;
+  wind_speed_mps: number | null;
+  wind_direction_deg: number | null;
+  rain_1h_mm: number | null;
+  rain_6h_mm: number | null;
+  rain_24h_mm: number | null;
+  visibility_km: number | null;
+  status: boolean | null;
+  warn_temp: string | null;
+  warn_wind: string | null;
+  warn_rain: string | null;
+  warn_vis: string | null;
+}
+
+export interface PmdWarningProperties extends PmdFreshnessProperties {
+  warning_id: string | null;
+  severity: string | null;
+  hazard: string | null;
+  model: string | null;
+  forecast_time: string | null;
+  data_time: string | null;
+  message: string | null;
+  area_name: string | null;
+}
+
+export interface PmdMonsoonProperties extends PmdFreshnessProperties {
+  warning_id: string | null;
+  severity: string | null;
+  data_type: string | null;
+  data_time: string | null;
+  message: string | null;
+  forecast: unknown;
+}
+
+export interface PmdLightningProperties extends PmdFreshnessProperties {
+  strike_id: string | null;
+  strike_time: string | null;
+  polarity: string | null;
+  peak_current_ka: number | null;
+  multiplicity: number | null;
+  window_hours: number;
+}
+
+export interface PmdPredictionElement {
+  key: string;
+  data_type: string;
+  element: string;
+  label: string;
+  unit: string;
+  accumulation: string;
+  status: string;
+  color_ramp: string;
+  max_frames: number;
+  notes: string;
+}
+
+export interface PmdPredictionStep {
+  date: string;
+  bounds: number[] | null;
+  coordinates: number[][] | null;
+  url: string | null;
+  cache_status: string;
+}
+
+export interface PmdPredictionResponse {
+  element: PmdPredictionElement;
+  run: string | null;
+  available: boolean;
+  metadata_status: string;
+  cache_status: string;
+  steps: PmdPredictionStep[];
+  limitations: string;
+}

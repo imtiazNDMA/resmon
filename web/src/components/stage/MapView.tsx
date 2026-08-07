@@ -10,6 +10,10 @@ import DistrictBoundaryLayer from "./DistrictBoundaryLayer";
 import FlowLineLayer from "./FlowLineLayer";
 import HydrologicLegend from "./HydrologicLegend";
 import LayerChips from "./LayerChips";
+import PmdForecastLayer from "./PmdForecastLayer";
+import PmdLightningLayer from "./PmdLightningLayer";
+import PmdStationLayer from "./PmdStationLayer";
+import PmdWarningLayer from "./PmdWarningLayer";
 import SarTileLayer from "./SarTileLayer";
 import SarTilePreloader from "./SarTilePreloader";
 import SubBasinLayer from "./SubBasinLayer";
@@ -128,6 +132,13 @@ export default function MapView() {
         <SubBasinLayer />
         <FlowLineLayer />
         <WaterExtentLayer />
+        <PmdStationLayer />
+        <PmdWarningLayer />
+        <PmdLightningLayer />
+        <PmdForecastLayer elementKey="pmd_pred_hourtpe" label="1h Precip Forecast" />
+        <PmdForecastLayer elementKey="pmd_pred_sixtpe" label="6h Precip Forecast" />
+        <PmdForecastLayer elementKey="pmd_pred_twelvetpe" label="12h Precip Forecast" />
+        <PmdForecastLayer elementKey="pmd_pred_daytpe" label="24h Precip Forecast" />
         {markers?.features.map((f) => {
           if (f.geometry?.type !== "Point") return null;
           const [lon, lat] = f.geometry.coordinates;

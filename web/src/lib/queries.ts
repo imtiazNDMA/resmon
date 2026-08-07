@@ -115,3 +115,48 @@ export const useMetForcings = (rid: string | null) =>
     enabled: rid !== null,
     staleTime: 10 * 60_000,
   });
+
+export const usePmdStations = (enabled = true) =>
+  useQuery({
+    queryKey: ["pmdStations"],
+    queryFn: ({ signal }) => api.pmdStations(signal),
+    enabled,
+    staleTime: 5 * 60_000,
+    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
+  });
+
+export const usePmdWarnings = (enabled = true) =>
+  useQuery({
+    queryKey: ["pmdWarnings"],
+    queryFn: ({ signal }) => api.pmdWarnings(signal),
+    enabled,
+    staleTime: 2 * 60_000,
+    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
+  });
+
+export const usePmdMonsoon = (enabled = true) =>
+  useQuery({
+    queryKey: ["pmdMonsoon"],
+    queryFn: ({ signal }) => api.pmdMonsoon(signal),
+    enabled,
+    staleTime: 5 * 60_000,
+    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
+  });
+
+export const usePmdLightning = (hours: number, enabled = true) =>
+  useQuery({
+    queryKey: ["pmdLightning", hours],
+    queryFn: ({ signal }) => api.pmdLightning(hours, signal),
+    enabled,
+    staleTime: 3 * 60_000,
+    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
+  });
+
+export const usePmdPredictions = (elementKey: string, enabled = true) =>
+  useQuery({
+    queryKey: ["pmdPredictions", elementKey],
+    queryFn: ({ signal }) => api.pmdPredictions(elementKey, signal),
+    enabled,
+    staleTime: 30 * 60_000,
+    retry: (count, err) => !(err instanceof ApiError && err.status === 503) && count < 2,
+  });

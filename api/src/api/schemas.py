@@ -250,6 +250,189 @@ class DistrictBoundaryProperties(BaseModel):
     bbox: list[float]
 
 
+class PmdStationObservationProperties(BaseModel):
+    station_id: str | None
+    code: str | None
+    name: str | None
+    station_type: str | None
+    date_time: str | None
+    temperature_c: float | None
+    humidity_pct: float | None
+    pressure_hpa: float | None
+    wind_speed_mps: float | None
+    wind_direction_deg: float | None
+    rain_1h_mm: float | None
+    rain_6h_mm: float | None
+    rain_24h_mm: float | None
+    visibility_km: float | None
+    status: bool | None
+    warn_temp: str | None
+    warn_wind: str | None
+    warn_rain: str | None
+    warn_vis: str | None
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
+class PmdNwfcObservationProperties(BaseModel):
+    station_id: str | None
+    code: str | None
+    name: str | None
+    date_time: str | None
+    weather_text: str | None
+    weather_icon: str | None
+    temperature_c: float | None
+    humidity_pct: float | None
+    pressure_hpa: float | None
+    wind_speed_mps: float | None
+    wind_direction_deg: float | None
+    rain_24h_mm: float | None
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
+class PmdGlofObservationProperties(BaseModel):
+    station_id: str | None
+    code: str | None
+    name: str | None
+    date_time: str | None
+    connected: bool | None
+    alert_level: str | None
+    rainfall_mm: float | None
+    flow_cms: float | None
+    water_level_m: float | None
+    temperature_c: float | None
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
+class PmdLightningProperties(BaseModel):
+    strike_id: str | None
+    strike_time: str | None
+    polarity: str | None
+    peak_current_ka: float | None
+    multiplicity: float | None
+    window_hours: int
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
+class FfdWaterlevelProperties(BaseModel):
+    station_id: str | None
+    code: str | None
+    name: str | None
+    river: str | None
+    date_time: str | None
+    water_level_m: float | None
+    discharge_cusecs: float | None
+    discharge_cumecs: float | None
+    status: str | None
+    gauges: list[Any] | dict[str, Any] | None
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
+class PmdWarningProperties(BaseModel):
+    warning_id: str | None
+    severity: str | None
+    hazard: str | None
+    model: str | None
+    forecast_time: str | None
+    data_time: str | None
+    message: str | None
+    area_name: str | None
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
+class PmdMonsoonProperties(BaseModel):
+    warning_id: str | None
+    severity: str | None
+    data_type: str | None
+    data_time: str | None
+    message: str | None
+    forecast: Any
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
+class PmdCityForecastProperties(BaseModel):
+    city_id: str | None
+    name: str | None
+    data_time: str | None
+    weather_text: str | None
+    weather_icon: str | None
+    temperature_c: float | None
+    humidity_pct: float | None
+    wind_speed_mps: float | None
+    forecast: list[Any] | dict[str, Any] | None
+    source: str
+    source_timestamp: str | None
+    fetched_at: datetime
+    cache_status: str
+    stale: bool
+    ttl_seconds: int
+
+
+class PmdPredictionElementOut(BaseModel):
+    key: str
+    data_type: str
+    element: str
+    label: str
+    unit: str
+    accumulation: str
+    status: str
+    color_ramp: str
+    max_frames: int
+    notes: str
+
+
+class PmdPredictionStepOut(BaseModel):
+    date: str
+    bounds: list[Any] | None
+    coordinates: list[Any] | None
+    url: str | None
+    cache_status: str
+
+
+class PmdPredictionResponse(BaseModel):
+    element: PmdPredictionElementOut
+    run: str | None
+    available: bool
+    metadata_status: str
+    cache_status: str
+    steps: list[PmdPredictionStepOut]
+    limitations: str
+
+
 class ReservoirMarkerProperties(BaseModel):
     reservoir_id: str
     name: str

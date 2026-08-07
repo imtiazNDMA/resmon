@@ -89,6 +89,7 @@ dependencies = [
     { name = "pillow" },
     { name = "pyshp" },
     { name = "rasterio" },
+    { name = "requests" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -99,6 +100,7 @@ requires-dist = [
     { name = "pillow", specifier = ">=12.3.0" },
     { name = "pyshp", specifier = ">=2.3" },
     { name = "rasterio", specifier = ">=1.5.0" },
+    { name = "requests", specifier = ">=2.32" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30" },
 ]
 

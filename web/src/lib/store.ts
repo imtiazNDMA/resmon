@@ -19,6 +19,15 @@ interface AppState {
   showFlowEdges: boolean;
   showDistricts: boolean;
   showWaterExtent: boolean;
+  showPmdStations: boolean;
+  showPmdWarnings: boolean;
+  showPmdMonsoon: boolean;
+  showPmdLightning: boolean;
+  pmdLightningHours: number;
+  showPmdPredHourly: boolean;
+  showPmdPredSix: boolean;
+  showPmdPredTwelve: boolean;
+  showPmdPredDay: boolean;
   selectReservoir: (id: ReservoirId) => void;
   openDashboard: () => void;
   setActiveDate: (d: string | null) => void;
@@ -26,7 +35,23 @@ interface AppState {
   setBasemap: (basemap: BasemapId) => void;
   setSarComposite: (composite: SarCompositeId) => void;
   setPlaying: (p: boolean) => void;
-  toggleLayer: (layer: "catchment" | "subBasins" | "flowEdges" | "districts" | "waterExtent") => void;
+  toggleLayer: (
+    layer:
+      | "catchment"
+      | "subBasins"
+      | "flowEdges"
+      | "districts"
+      | "waterExtent"
+      | "pmdStations"
+      | "pmdWarnings"
+      | "pmdMonsoon"
+      | "pmdLightning"
+      | "pmdPredHourly"
+      | "pmdPredSix"
+      | "pmdPredTwelve"
+      | "pmdPredDay"
+  ) => void;
+  setPmdLightningHours: (hours: number) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -43,6 +68,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   showFlowEdges: false,
   showDistricts: false,
   showWaterExtent: false,
+  showPmdStations: false,
+  showPmdWarnings: false,
+  showPmdMonsoon: false,
+  showPmdLightning: false,
+  pmdLightningHours: 1,
+  showPmdPredHourly: false,
+  showPmdPredSix: false,
+  showPmdPredTwelve: false,
+  showPmdPredDay: false,
   selectReservoir: (id) =>
     set({
       view: "map",
@@ -72,6 +106,23 @@ export const useAppStore = create<AppState>((set, get) => ({
             ? { showFlowEdges: !state.showFlowEdges }
             : layer === "districts"
               ? { showDistricts: !state.showDistricts }
-              : { showWaterExtent: !state.showWaterExtent },
+              : layer === "waterExtent"
+                ? { showWaterExtent: !state.showWaterExtent }
+                : layer === "pmdStations"
+                  ? { showPmdStations: !state.showPmdStations }
+                  : layer === "pmdWarnings"
+                    ? { showPmdWarnings: !state.showPmdWarnings }
+                    : layer === "pmdMonsoon"
+                      ? { showPmdMonsoon: !state.showPmdMonsoon }
+                      : layer === "pmdLightning"
+                        ? { showPmdLightning: !state.showPmdLightning }
+                        : layer === "pmdPredHourly"
+                          ? { showPmdPredHourly: !state.showPmdPredHourly }
+                          : layer === "pmdPredSix"
+                            ? { showPmdPredSix: !state.showPmdPredSix }
+                            : layer === "pmdPredTwelve"
+                              ? { showPmdPredTwelve: !state.showPmdPredTwelve }
+                              : { showPmdPredDay: !state.showPmdPredDay },
     ),
+  setPmdLightningHours: (hours) => set({ pmdLightningHours: Math.min(48, Math.max(1, hours)) }),
 }));
