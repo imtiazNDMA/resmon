@@ -70,4 +70,20 @@ describe("app store transitions", () => {
     s().toggleLayer("waterExtent");
     expect(s().showWaterExtent).toBe(true);
   });
+
+  it("PMD forecast layers toggle independently", () => {
+    expect(s().showPmdPredHourly).toBe(false);
+    expect(s().showPmdPredSix).toBe(false);
+    expect(s().showPmdPredTwelve).toBe(false);
+    expect(s().showPmdPredDay).toBe(false);
+    s().toggleLayer("pmdPredHourly");
+    expect(s().showPmdPredHourly).toBe(true);
+    expect(s().showPmdPredSix).toBe(false);
+    s().toggleLayer("pmdPredSix");
+    expect(s().showPmdPredHourly).toBe(true);
+    expect(s().showPmdPredSix).toBe(true);
+    s().toggleLayer("pmdPredHourly");
+    expect(s().showPmdPredHourly).toBe(false);
+    expect(s().showPmdPredSix).toBe(true);
+  });
 });
